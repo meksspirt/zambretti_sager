@@ -1,10 +1,10 @@
 /**
- * Zambretti & Sager Weather Card  v1.9.91
+ * Zambretti & Sager Weather Card  v1.9.92
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.91 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.92 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
@@ -842,6 +842,7 @@ function historyChart(points, labels, compact) {
   const cH = H - PAD.top - PAD.bottom;
   const FONT = compact ? 11 : 13;
   const FONT_FAMILY = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+  const gid = "hc" + (++_gradientIdCounter);
 
   // ── Filter out nulls ───────────────────────────────────────────────────
   let pPoints  = points.filter(d => d.p    != null);

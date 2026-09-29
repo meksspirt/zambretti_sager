@@ -1,5 +1,12 @@
 # Changelog
  
+## [1.9.92] — 2026-09-29
+
+### Fixed
+- **Frontend History Chart ReferenceError (`gid is not defined`)**:
+  - Fixed a critical JavaScript runtime exception in `historyChart()` where gradient ID variable `gid` was undeclared, causing `ReferenceError: gid is not defined` whenever valid historical sensor points were loaded.
+  - This resolves the `Configuration error` displayed on the dashboard card when 24h pressure history is fetched.
+
 ## [1.9.91] — 2026-09-29
 
 ### Fixed
