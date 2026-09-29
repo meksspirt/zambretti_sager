@@ -1,4 +1,13 @@
 # Changelog
+ 
+## [1.9.91] — 2026-09-29
+
+### Fixed
+- **Frontend Card History & Trend Recovery on Sensor Reconnection**:
+  - Fixed a frontend throttle bug in `_scheduleHistoryFetch()` where a failed initial history query (e.g. while the barometric sensor was temporarily offline/unavailable) locked the card out of fetching history for 5 minutes. Reduced retry delay to 15 seconds when history data is missing, and trigger an immediate fetch whenever the forecast entity recovers from `unavailable`/`unknown`.
+  - Added auto-discovery and fallback for `entity_pressure` so history pressure queries work seamlessly even if the entity attribute is temporarily omitted.
+  - Automatically re-patch chart and trend timeline DOM in `_patch()` once historical WebSocket data arrives without requiring a full browser refresh.
+  - Fixed interactive chart scrubbing (`_setupHistoryScrubbing`): corrected array property access (`this._historyPoints` array vs `.p`) and aligned scrubbing SVG dimensions/margins with `historyChart`.
 
 ## [1.9.90] — 2026-09-29
 
