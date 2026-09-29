@@ -42,25 +42,51 @@ def test_calculate_zambretti_index():
     """Test Zambretti index calculation for various trends and pressures."""
     # High pressure, rising trend -> index 20 (Settled Fine)
     idx_high_rising = calculate_zambretti_index(1030.0, 2.5)
-    assert 1 <= idx_high_rising <= 32
+    assert 20 <= idx_high_rising <= 32
     assert idx_high_rising == 20
 
-    # Low pressure, falling trend -> high index (Stormy/Rain)
+    # Very high pressure, rising trend (e.g. 1036 hPa) -> index 20 (Settled Fine, never 19 Stormy)
+    assert calculate_zambretti_index(1036.0, 2.0) == 20
+
+    # Very high pressure, steady trend (e.g. 1036 hPa) -> index 10 (Settled Fine, never 9 Rain)
+    assert calculate_zambretti_index(1036.0, 0.0) == 10
+
+    # Low pressure, falling trend -> index 9 (Very Unsettled Rain)
     idx_low_falling = calculate_zambretti_index(970.0, -3.0)
-    assert 1 <= idx_low_falling <= 32
-    assert idx_low_falling >= 10
+    assert 1 <= idx_low_falling <= 9
+    assert idx_low_falling == 9
 
     # Normal pressure, steady
     idx_normal_steady = calculate_zambretti_index(1013.25, 0.0)
-    assert 1 <= idx_normal_steady <= 32
+    assert 10 <= idx_normal_steady <= 19
+    assert idx_normal_steady == 12
 
-    # Clamping tests
-    assert calculate_zambretti_index(1200.0, 5.0) == 1
-    assert calculate_zambretti_index(700.0, -5.0) == 32
+    # Group boundary clamping tests:
+    # Rising group is strictly [20, 32]
+    assert calculate_zambretti_index(1200.0, 5.0) == 20
+    assert calculate_zambretti_index(700.0, 5.0) == 32
+    # Falling group is strictly [1, 9]
+    assert calculate_zambretti_index(1200.0, -5.0) == 1
+    assert calculate_zambretti_index(700.0, -5.0) == 9
+    # Steady group is strictly [10, 19]
+    assert calculate_zambretti_index(1200.0, 0.0) == 10
+    assert calculate_zambretti_index(700.0, 0.0) == 19
 
     # All indices 1-32 map to valid keys or stable
     for z in range(1, 33):
         assert z in ZAMBRETTI_MAPPING
+
+
+def test_extrapolations_at_high_pressure():
+    """Verify that extrapolations at high pressure do not erroneously predict storms."""
+    # Current pressure 1034.0 hPa rising from 1033.0 hPa (user issue scenario)
+    res = calculate_extrapolations(p_now=1034.0, p_3h=1033.0, p_6h=1032.0, p_12h=1032.0)
+    for horizon, forecast in res.items():
+        assert forecast.predicted_pressure >= 1034.0
+        # High pressure must predict fine weather, never stormy/rain
+        assert forecast.forecast_state in ("settled_fine", "fine_weather"), (
+            f"Horizon {horizon}h predicted {forecast.forecast_state} at {forecast.predicted_pressure} hPa!"
+        )
 
 
 def test_calculate_precipitation_probability():

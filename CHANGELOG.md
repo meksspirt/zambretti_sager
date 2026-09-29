@@ -1,5 +1,13 @@
 # Changelog
  
+## [1.9.93] — 2026-09-29
+
+### Fixed
+- **High Pressure Extrapolations Erroneously Predicting Storms (`stormy_much_rain`)**:
+  - Fixed an index boundary overflow bug in `calculate_zambretti_index()` where high barometric pressure under rising or steady trends ($P \ge 1032$ hPa) calculated an index below the group's lower threshold (e.g. $185 - 0.16 \times 1036 = 19.24 \to 19$), which erroneously crossed into the lower group's most severe storm state (`19: stormy_much_rain` in Steady, or `9: very_unsettled_rain` in Falling).
+  - Enforced strict group-specific clamping for all three Zambretti operational windows: Falling (`[1, 9]`), Steady (`[10, 19]`), and Rising (`[20, 32]`), ensuring high pressure strictly maps to fine weather (`settled_fine` / `fine_weather`) and prevents cross-group state pollution.
+  - Normalized pressure change rates in `calculate_extrapolations()` to the standard 3-hour tendency rate ($hPa / 3h$) required by the Zambretti algorithm rather than passing multi-hour accumulated deltas against 3h thresholds.
+
 ## [1.9.92] — 2026-09-29
 
 ### Fixed
