@@ -210,6 +210,29 @@ async def test_async_get_history_pressure_from_recorder_wrapper():
 
 
 @pytest.mark.asyncio
+async def test_async_get_history_pressure_from_recorder_with_corrector():
+    """Test compatibility wrapper forwards pressure_corrector."""
+    from unittest.mock import patch
+
+    mock_hass = MagicMock()
+    mock_recorder = MagicMock()
+
+    now = datetime.datetime(2026, 9, 21, 14, 0, tzinfo=datetime.UTC)
+    t_3h = now - datetime.timedelta(hours=3)
+    s_3h = MagicMock(state="1000.0", last_changed=t_3h, attributes={"unit_of_measurement": "hPa"})
+
+    mock_recorder.async_add_executor_job = AsyncMock(return_value={"sensor.pressure": [s_3h]})
+
+    with patch(
+        "custom_components.zambretti_sager.history.get_instance", return_value=mock_recorder
+    ):
+        val = await async_get_history_pressure_from_recorder(
+            mock_hass, "sensor.pressure", 3, now, pressure_corrector=lambda p: p + 15.0
+        )
+    assert val == 1015.0
+
+
+@pytest.mark.asyncio
 async def test_async_warm_history_buffer():
     """Test warming up buffer from recorder."""
     from unittest.mock import patch

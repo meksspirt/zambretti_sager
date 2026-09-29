@@ -327,3 +327,66 @@ async def test_coordinator_fetch_history_pressures_batch_fallback():
     call_args = mock_batch.call_args[0]
     assert call_args[2] == [3, 6, 12]
     assert coord._history_warmed is True
+
+
+@pytest.mark.asyncio
+async def test_coordinator_historical_pressure_no_double_sea_level_correction():
+    """Test that historical pressure is not double-compensated for sea level (Issue #13)."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {"pressure_sensor": "sensor.pressure", "use_sea_level_correction": True}
+    mock_entry.options = {}
+
+    # Altitude 300m: raw 980 hPa corresponds to sea-level pressure ~1015.4 hPa
+    altitude = 300.0
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=altitude)
+    coord.temp_id = None
+    coord.wind_id = None
+    coord.humidity_id = None
+    coord._history_warmed = True
+
+    # Expected sea-level pressure for 980 hPa at 300m and 15°C
+    expected_sea_level = coord._correct_pressure(980.0)
+    assert expected_sea_level > 1010.0
+
+    # At 3 hours ago, buffer has reading (already sea-level corrected when stored)
+    now = datetime.datetime.now(datetime.UTC)
+    coord._history_buffer.append(now - datetime.timedelta(hours=3), expected_sea_level)
+
+    # Current raw sensor pressure is also 980.0 hPa (steady atmospheric pressure)
+    pressure_state = MagicMock(
+        entity_id="sensor.pressure",
+        state="980.0",
+        attributes={"unit_of_measurement": "hPa"},
+    )
+    mock_hass.states.get.side_effect = lambda eid: (
+        pressure_state if eid == "sensor.pressure" else None
+    )
+
+    data = await coord._async_update_data()
+
+    assert data.available is True
+    # Both p_now and p_3h must equal the single sea-level corrected value
+    assert data.p_now == round(expected_sea_level, 1)
+    assert data.p_3h == round(expected_sea_level, 1)
+    # Delta over 3 hours must be ~0.0 hPa (steady), NOT a massive false drop caused by double correction
+    assert pytest.approx(data.delta_3h, abs=0.1) == 0.0
+    assert "Steady" in data.trend_label
+
+
+def test_coordinator_correct_history_pressure_fallback_chain():
+    """Test _correct_history_pressure returns value directly or cascades fallback."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {"pressure_sensor": "sensor.pressure", "use_sea_level_correction": True}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=500.0)
+
+    # Value is present -> returned as-is without second altitude correction
+    assert coord._correct_history_pressure(1013.25, fallback=1020.0) == 1013.25
+
+    # Value is None -> returns fallback
+    assert coord._correct_history_pressure(None, fallback=1020.0) == 1020.0

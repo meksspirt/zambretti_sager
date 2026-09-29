@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.90] — 2026-09-29
+
+### Fixed
+- **Historical Pressure Double Sea-Level Compensation ([#13](https://github.com/ziffmafiya/zambretti_sager/issues/13))**:
+  - Fixed an issue where historical readings from `PressureHistoryBuffer` and recorder batch queries (which were already compensated to sea level upon buffer ingestion/warming) were erroneously passed through `_correct_history_pressure` and re-compensated a second time.
+  - This eliminated artificial pressure inflation for past readings (`pressure_3h_ago`), incorrect extreme negative 3-hour barometric deltas, and erroneous storm/rain forecast triggers when sea-level compensation is enabled.
+  - Added unit test reproducing Issue #13 and verifying that historical pressures and barometric deltas remain strictly accurate without double correction.
+
 ## [1.9.89] — 2026-09-21
 
 ### Added
