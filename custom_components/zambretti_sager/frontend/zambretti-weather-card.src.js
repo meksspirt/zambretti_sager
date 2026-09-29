@@ -1,10 +1,10 @@
 /**
- * Zambretti & Sager Weather Card  v1.9.89
+ * Zambretti & Sager Weather Card  v1.9.91
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.89 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.91 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
