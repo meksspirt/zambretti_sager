@@ -525,3 +525,74 @@ async def test_async_remove_entry_preserves_resources_when_other_entries_exist()
 
         await async_remove_entry(mock_hass, mock_entry1)
         mock_reg.async_unregister.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_coordinator_event_driven_logging():
+    """Test coordinator logs on initial forecast and changes, but not on identical cycles."""
+    from unittest.mock import patch
+
+    from custom_components.zambretti_sager.coordinator import ZambrettiSagerCoordinator
+
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.data = {"pressure_sensor": "sensor.pressure"}
+    mock_entry.options = {}
+    mock_entry.title = "Test Weather"
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=0.0)
+    coord._history_warmed = True
+
+    pressure_state = MagicMock(state="1020.0", attributes={"unit_of_measurement": "hPa"})
+    mock_hass.states.get.side_effect = lambda eid: (
+        pressure_state if eid == "sensor.pressure" else None
+    )
+
+    # Cycle 1: First forecast
+    with (
+        patch.object(
+            coord, "_fetch_history_pressures", return_value={3: 1020.0, 6: 1020.0, 12: 1020.0}
+        ),
+        patch.object(coord, "_get_wind_direction", return_value=None),
+        patch.object(coord, "_get_wind_speed", return_value=None),
+        patch.object(coord, "_get_humidity", return_value=None),
+        patch.object(coord, "_get_temperature", return_value=15.0),
+        patch.object(coord, "_is_nighttime", return_value=False),
+        patch("custom_components.zambretti_sager.coordinator._LOGGER.info") as mock_log_info,
+    ):
+        await coord._async_update_data()
+        assert mock_log_info.call_count == 1
+        assert "Initial forecast established" in mock_log_info.call_args[0][0]
+
+    # Cycle 2: Same conditions -> no new log entry
+    pressure_state.state = "1020.1"
+    with (
+        patch.object(
+            coord, "_fetch_history_pressures", return_value={3: 1020.0, 6: 1020.0, 12: 1020.0}
+        ),
+        patch.object(coord, "_get_wind_direction", return_value=None),
+        patch.object(coord, "_get_wind_speed", return_value=None),
+        patch.object(coord, "_get_humidity", return_value=None),
+        patch.object(coord, "_get_temperature", return_value=15.0),
+        patch.object(coord, "_is_nighttime", return_value=False),
+        patch("custom_components.zambretti_sager.coordinator._LOGGER.info") as mock_log_info,
+    ):
+        await coord._async_update_data()
+        assert mock_log_info.call_count == 0
+
+    # Cycle 3: Sharp pressure drop -> forecast/trend changes -> log emitted
+    pressure_state.state = "1000.0"
+    with (
+        patch.object(
+            coord, "_fetch_history_pressures", return_value={3: 1015.0, 6: 1020.0, 12: 1020.0}
+        ),
+        patch.object(coord, "_get_wind_direction", return_value=None),
+        patch.object(coord, "_get_wind_speed", return_value=None),
+        patch.object(coord, "_get_humidity", return_value=None),
+        patch.object(coord, "_get_temperature", return_value=15.0),
+        patch.object(coord, "_is_nighttime", return_value=False),
+        patch("custom_components.zambretti_sager.coordinator._LOGGER.info") as mock_log_info,
+    ):
+        await coord._async_update_data()
+        assert mock_log_info.call_count == 1
+        assert "Forecast changed" in mock_log_info.call_args[0][0]

@@ -74,6 +74,11 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         self._history_buffer = PressureHistoryBuffer()
         self._history_warmed = False
 
+        # State tracking for clean, low-frequency logging
+        self._last_logged_zambretti: str | None = None
+        self._last_logged_trend: str | None = None
+        self._first_forecast_logged = False
+
         # Load sensor entity IDs from config entry
         self._update_sensor_ids()
 
@@ -93,6 +98,9 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             self._last_pressure_id = new_pressure_id
             self._history_buffer.clear()
             self._history_warmed = False
+            self._first_forecast_logged = False
+            self._last_logged_zambretti = None
+            self._last_logged_trend = None
 
         self.pressure_id = new_pressure_id
         self.wind_id = (
@@ -206,6 +214,11 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                 pressure_corrector=corrector,
             )
             self._history_warmed = True
+            _LOGGER.info(
+                "History buffer initialized with %d points from recorder for %s",
+                len(self._history_buffer),
+                self.pressure_id,
+            )
 
         # Append current reading and prune buffer
         self._history_buffer.append(now_dt, p_now)
@@ -239,6 +252,37 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         )
 
         forecast_data = ForecastEngine.compute(observations)
+
+        # Log on first startup, or only when forecast state or trend direction changes
+        if not self._first_forecast_logged:
+            _LOGGER.info(
+                "Initial forecast established for %s: %s | Trend: %s (ΔP: %+.1f hPa/3h) | P: %.1f hPa | Rain: %d%%",
+                self.entry.title,
+                forecast_data.zambretti_state,
+                forecast_data.trend_label,
+                forecast_data.delta_3h or 0.0,
+                forecast_data.p_now or 0.0,
+                forecast_data.precip_probability or 0,
+            )
+            self._first_forecast_logged = True
+            self._last_logged_zambretti = forecast_data.zambretti_state
+            self._last_logged_trend = forecast_data.trend_label
+        elif (
+            forecast_data.zambretti_state != self._last_logged_zambretti
+            or forecast_data.trend_label != self._last_logged_trend
+        ):
+            _LOGGER.info(
+                "Forecast changed for %s: %s (was: %s) | Trend: %s (ΔP: %+.1f hPa/3h) | P: %.1f hPa | Rain: %d%%",
+                self.entry.title,
+                forecast_data.zambretti_state,
+                self._last_logged_zambretti or "none",
+                forecast_data.trend_label,
+                forecast_data.delta_3h or 0.0,
+                forecast_data.p_now or 0.0,
+                forecast_data.precip_probability or 0,
+            )
+            self._last_logged_zambretti = forecast_data.zambretti_state
+            self._last_logged_trend = forecast_data.trend_label
 
         _LOGGER.debug(
             "Coordinator update: p_now=%.1f delta_3h=%.2f zambretti=%s sager=%s night=%s (buffer: %d pts)",

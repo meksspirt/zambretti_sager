@@ -9,6 +9,7 @@
 - **Database Recorder Shielding**: Added _unrecorded_attributes to WeatherSensorBase, preventing unnecessary database bloat and disk writes in SQLite/MariaDB upon sensor micro-fluctuations.
 - **Batched History Warming**: Implemented cached closure _create_pressure_corrector() during history warm-up, eliminating repeated temperature unit conversions and sea-level lookups for hundreds of historical data points.
 - **Removed Redundant Force Updates**: Removed _attr_force_update = True from LastUpdateSensor.
+- **Low-Frequency Event-Driven Logging**: Added clean INFO-level logging for forecast and barometric trend transitions while suppressing redundant per-poll entries, keeping Home Assistant logs clean and uncluttered.
 
 #### 🌦️ Meteorological Algorithm Accuracy & Weather Platform
 - **Non-Linear Synoptic Trend Damping**: Introduced synoptic trend deceleration $\Delta P(t) = \text{rate}_{3h} \cdot (t / 3)^{0.65}$ with physical bounding $[950..1060\text{ hPa}]$ for 12h and 24h barometric extrapolations, replacing erroneous linear runaway forecasts.
