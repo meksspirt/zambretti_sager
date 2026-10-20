@@ -390,3 +390,29 @@ def test_coordinator_correct_history_pressure_fallback_chain():
 
     # Value is None -> returns fallback
     assert coord._correct_history_pressure(None, fallback=1020.0) == 1020.0
+
+
+def test_coordinator_clearing_optional_sensors():
+    """Test that clearing optional sensors in options (setting them to None) is respected."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {
+        "pressure_sensor": "sensor.pressure",
+        "wind_sensor": "sensor.wind",
+        "wind_speed_sensor": "sensor.speed",
+        "temperature_sensor": "sensor.temp",
+        "humidity_sensor": "sensor.humidity",
+    }
+    mock_entry.options = {
+        "wind_sensor": None,
+        "humidity_sensor": None,
+    }
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+
+    assert coord.pressure_id == "sensor.pressure"
+    assert coord.wind_id is None
+    assert coord.wind_speed_id == "sensor.speed"
+    assert coord.temp_id == "sensor.temp"
+    assert coord.humidity_id is None

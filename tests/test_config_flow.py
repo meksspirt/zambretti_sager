@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 from custom_components.zambretti_sager.config_flow import (
     _apply_location,
+    _get_entry_value,
     _normalize_optional_entities,
 )
 from custom_components.zambretti_sager.const import (
@@ -45,7 +48,21 @@ def test_normalize_optional_entities():
     normalized = _normalize_optional_entities(user_input)
 
     assert normalized[CONF_PRESSURE_SENSOR] == "sensor.barometer"
-    assert CONF_WIND_SENSOR not in normalized
-    assert CONF_WIND_SPEED_SENSOR not in normalized
+    assert normalized[CONF_WIND_SENSOR] is None
+    assert normalized[CONF_WIND_SPEED_SENSOR] is None
     assert normalized[CONF_TEMPERATURE_SENSOR] == "sensor.temp"
-    assert CONF_HUMIDITY_SENSOR not in normalized
+    assert normalized[CONF_HUMIDITY_SENSOR] is None
+
+
+def test_get_entry_value_prefers_options_even_when_none():
+    """Test _get_entry_value respects cleared options (None) over data."""
+    mock_entry = MagicMock()
+    mock_entry.data = {
+        CONF_PRESSURE_SENSOR: "sensor.barometer",
+        CONF_WIND_SENSOR: "sensor.old_wind",
+    }
+    mock_entry.options = {
+        CONF_WIND_SENSOR: None,
+    }
+    assert _get_entry_value(mock_entry, CONF_PRESSURE_SENSOR) == "sensor.barometer"
+    assert _get_entry_value(mock_entry, CONF_WIND_SENSOR) is None

@@ -7,6 +7,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from homeassistant.components.sensor import SensorDeviceClass
+
+from custom_components.zambretti_sager.algorithms import SAGER_OPTIONS, ZAMBRETTI_OPTIONS
 from custom_components.zambretti_sager.coordinator import ForecastData
 from custom_components.zambretti_sager.sensor import (
     LastUpdateSensor,
@@ -62,6 +65,8 @@ def test_zambretti_sensor(mock_coordinator):
     """Test ZambrettiSensor properties and attributes."""
     sensor = ZambrettiSensor(mock_coordinator)
     assert sensor.translation_key == "zambretti_forecast"
+    assert sensor.device_class == SensorDeviceClass.ENUM
+    assert sensor.options == ZAMBRETTI_OPTIONS
     assert sensor.unique_id == "test_entry_id_zambretti"
     assert sensor.native_value == "settled_fine"
     assert sensor.available is True
@@ -78,6 +83,8 @@ def test_sager_sensor(mock_coordinator):
     """Test SagerSensor properties."""
     sensor = SagerSensor(mock_coordinator)
     assert sensor.translation_key == "sager_forecast"
+    assert sensor.device_class == SensorDeviceClass.ENUM
+    assert sensor.options == SAGER_OPTIONS
     assert sensor.unique_id == "test_entry_id_sager"
     assert sensor.native_value == "sager_fair_improving"
 
@@ -86,16 +93,22 @@ def test_forecast_horizon_sensors(mock_coordinator):
     """Test 6h, 12h, and 24h Zambretti extrapolation sensors."""
     s6 = ZambrettiForecast6h(mock_coordinator)
     assert s6.translation_key == "zambretti_forecast_6h"
+    assert s6.device_class == SensorDeviceClass.ENUM
+    assert s6.options == ZAMBRETTI_OPTIONS
     assert s6.native_value == "fairly_fine_improving"
     assert s6.extra_state_attributes["predicted_pressure_hpa"] == 1020.8
 
     s12 = ZambrettiForecast12h(mock_coordinator)
     assert s12.translation_key == "zambretti_forecast_12h"
+    assert s12.device_class == SensorDeviceClass.ENUM
+    assert s12.options == ZAMBRETTI_OPTIONS
     assert s12.native_value == "fine_weather"
     assert s12.extra_state_attributes["predicted_pressure_hpa"] == 1025.2
 
     s24 = ZambrettiForecast24h(mock_coordinator)
     assert s24.translation_key == "zambretti_forecast_24h"
+    assert s24.device_class == SensorDeviceClass.ENUM
+    assert s24.options == ZAMBRETTI_OPTIONS
     assert s24.native_value == "settled_fine"
     assert s24.extra_state_attributes["predicted_pressure_hpa"] == 1032.2
 

@@ -11,6 +11,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .algorithms import SAGER_OPTIONS, ZAMBRETTI_OPTIONS
 from .const import DOMAIN, VERSION
 from .coordinator import ForecastData, ZambrettiConfigEntry, ZambrettiSagerCoordinator
 
@@ -92,6 +93,8 @@ class ZambrettiSensor(WeatherSensorBase):
     """Current Zambretti forecast sensor based on the 3-hour pressure trend."""
 
     _attr_translation_key = "zambretti_forecast"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ZAMBRETTI_OPTIONS
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
         """Initialize the Zambretti forecast sensor."""
@@ -118,6 +121,8 @@ class SagerSensor(WeatherSensorBase):
     """Sager forecast sensor based on pressure, trend, and wind direction."""
 
     _attr_translation_key = "sager_forecast"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = SAGER_OPTIONS
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
         """Initialize the Sager forecast sensor."""
@@ -142,6 +147,8 @@ class ZambrettiForecast6h(WeatherSensorBase):
     """Zambretti forecast sensor for 6 hours ahead (3-hour trend extrapolated ×2)."""
 
     _attr_translation_key = "zambretti_forecast_6h"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ZAMBRETTI_OPTIONS
     _attr_icon = "mdi:weather-partly-cloudy"
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
@@ -171,6 +178,8 @@ class ZambrettiForecast12h(WeatherSensorBase):
     """Zambretti forecast sensor for 12 hours ahead (6-hour trend extrapolated ×2)."""
 
     _attr_translation_key = "zambretti_forecast_12h"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ZAMBRETTI_OPTIONS
     _attr_icon = "mdi:weather-cloudy"
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
@@ -200,6 +209,8 @@ class ZambrettiForecast24h(WeatherSensorBase):
     """Zambretti forecast sensor for 24 hours ahead (12-hour trend extrapolated ×2)."""
 
     _attr_translation_key = "zambretti_forecast_24h"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ZAMBRETTI_OPTIONS
     _attr_icon = "mdi:weather-sunset"
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:

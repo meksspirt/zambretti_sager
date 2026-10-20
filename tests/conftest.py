@@ -144,6 +144,14 @@ if "homeassistant" not in sys.modules:
             def force_update(self):
                 return getattr(self, "_attr_force_update", False)
 
+            @property
+            def device_class(self):
+                return getattr(self, "_attr_device_class", None)
+
+            @property
+            def options(self):
+                return getattr(self, "_attr_options", None)
+
         class MockCoordinatorEntity(MockEntity):
             pass
 

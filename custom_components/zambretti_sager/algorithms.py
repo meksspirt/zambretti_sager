@@ -183,6 +183,21 @@ _SAGER_WIND_TABLE: Final[dict[str, dict[str, dict[str | None, str]]]] = {
     },
 }
 
+# Exhaustive list of valid Zambretti forecast string states (for SensorDeviceClass.ENUM)
+ZAMBRETTI_OPTIONS: Final[list[str]] = list(
+    dict.fromkeys(list(ZAMBRETTI_MAPPING.values()) + ["stable"])
+)
+
+# Exhaustive list of valid Sager forecast string states (for SensorDeviceClass.ENUM)
+SAGER_OPTIONS: Final[list[str]] = list(
+    dict.fromkeys(
+        val
+        for trend_map in _SAGER_WIND_TABLE.values()
+        for wind_map in trend_map.values()
+        for val in wind_map.values()
+    )
+)
+
 
 def classify_pressure_trend(delta_hpa: float) -> str:
     """Classify pressure trend for the Sager algorithm.

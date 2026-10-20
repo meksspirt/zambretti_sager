@@ -39,7 +39,9 @@ FIELDS = (
 
 def build(t: dict) -> dict:
     data = copy.deepcopy(BASE)
-    for step in ("user",):
+    for step in ("user", "reconfigure"):
+        if step not in data["config"]["step"]:
+            continue
         s = data["config"]["step"][step]
         s["title"] = t["title"]
         s["description"] = t["desc"]
@@ -93,6 +95,9 @@ def build(t: dict) -> dict:
     data["config"]["error"] = {"cannot_connect": t["err_conn"], "unknown": t["err_unk"]}
     data["config"]["abort"] = {"already_configured": t["abort"]}
     data["entity"]["sensor"]["zambretti_forecast"]["state"] = t["z"]
+    data["entity"]["sensor"]["zambretti_forecast_6h"]["state"] = t["z"]
+    data["entity"]["sensor"]["zambretti_forecast_12h"]["state"] = t["z"]
+    data["entity"]["sensor"]["zambretti_forecast_24h"]["state"] = t["z"]
     data["entity"]["sensor"]["sager_forecast"]["state"] = t["s"]
     return data
 

@@ -1063,6 +1063,37 @@ function historyChart(points, labels, compact) {
  * Renders the weather card, handles hass state updates via full rebuild (_render)
  * or lightweight patch (_patch), and fetches 24h history for the chart/timeline.
  */
+// ── Pressure Unit Converter ────────────────────────────────────────────────
+/**
+ * Normalizes pressure value to hPa based on the sensor's unit_of_measurement.
+ * Supports hPa, mbar, mmHg, inHg, psi, Pa, kPa, bar.
+ */
+function normalizePressureToHpa(val, unit) {
+  if (val == null) return null;
+  const v = typeof val === "number" ? val : parseFloat(val);
+  if (isNaN(v)) return null;
+  const u = (unit || "hpa").trim().toLowerCase();
+  switch (u) {
+    case "hpa":
+    case "mbar":
+      return v;
+    case "mmhg":
+      return v * 1.33322387415;
+    case "inhg":
+      return v * 33.863886666667;
+    case "psi":
+      return v * 68.947572932;
+    case "pa":
+      return v / 100;
+    case "kpa":
+      return v * 10;
+    case "bar":
+      return v * 1000;
+    default:
+      return v;
+  }
+}
+
 class ZambrettiWeatherCard extends HTMLElement {
   constructor() {
     super();
@@ -1231,6 +1262,8 @@ class ZambrettiWeatherCard extends HTMLElement {
    */
   _scheduleHistoryFetch(force = false) {
     if (this._historyFetching) return;
+    const cfg = this._config;
+    if (!cfg.show_history && !cfg.show_trend) return;
     if (typeof document !== "undefined" && document.hidden) {
       this._historyFetchPending = true;
       return;
@@ -1268,19 +1301,27 @@ class ZambrettiWeatherCard extends HTMLElement {
     const precipId = cfg.entity_precip;
     const pressureId = this._attr(zId, "pressure_sensor", null) || cfg.entity_pressure || null;
 
-    if (!zId && !precipId) return;
+    if (!zId && !precipId && !pressureId) return;
+
+    const showHistory = cfg.show_history !== false && !!cfg.show_history;
+    const showTrend   = cfg.show_trend !== false && !!cfg.show_trend;
+    if (!showHistory && !showTrend) return;
+
+    // Only request entities that are actually needed for enabled UI sections
+    const needZ = showTrend || (!pressureId && showHistory);
+    const needPrecip = showHistory && cfg.show_precip !== false && !!precipId;
+    const needPressure = showHistory && !!pressureId;
+
+    if (!needZ && !needPrecip && !needPressure) return;
 
     // Chart uses 24h window; timeline uses 48h to catch more state changes
     const chartStart    = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
     const timelineStart = new Date(endTime.getTime() - 48 * 60 * 60 * 1000);
 
     try {
-      // Two separate requests:
-      // 1. Zambretti: minimal_response=false to get attributes (pressure_hpa)
-      // 2. Precip:    minimal_response=true  (only state value needed)
       const [zResult, prResult, pResult] = await Promise.all([
-        // Zambretti: 48h, full format for timeline states
-        zId ? this._hass.callWS({
+        // Zambretti: 48h, full format for timeline states or fallback pressure
+        (needZ && zId) ? this._hass.callWS({
           type: "history/history_during_period",
           start_time: timelineStart.toISOString(),
           end_time:   endTime.toISOString(),
@@ -1290,7 +1331,7 @@ class ZambrettiWeatherCard extends HTMLElement {
           significant_changes_only: false,
         }) : Promise.resolve({}),
         // Precip: 24h, minimal (only state value needed)
-        precipId ? this._hass.callWS({
+        (needPrecip && precipId) ? this._hass.callWS({
           type: "history/history_during_period",
           start_time: chartStart.toISOString(),
           end_time:   endTime.toISOString(),
@@ -1300,7 +1341,7 @@ class ZambrettiWeatherCard extends HTMLElement {
           significant_changes_only: false,
         }) : Promise.resolve({}),
         // Raw pressure sensor: 24h, minimal (dense real data from BMP280)
-        pressureId ? this._hass.callWS({
+        (needPressure && pressureId) ? this._hass.callWS({
           type: "history/history_during_period",
           start_time: chartStart.toISOString(),
           end_time:   endTime.toISOString(),
@@ -1331,21 +1372,43 @@ class ZambrettiWeatherCard extends HTMLElement {
         return entry.attributes ?? entry.a ?? {};
       }
 
-      // ── Build timeMap from zambretti history (last 24h only for chart) ─
+      // ── Build timeMap from pressure history (last 24h only for chart) ──
       const timeMap = new Map();
       const zHistory = zResult[zId] || [];
       const chartStartMs = chartStart.getTime();
 
+      // Current sea-level pressure from Zambretti entity attributes (for delta alignment)
+      const pSeaCurRaw = this._attr(zId, "pressure_hpa", null);
+      const pSeaCur = (pSeaCurRaw != null && !isNaN(parseFloat(pSeaCurRaw))) ? parseFloat(pSeaCurRaw) : NaN;
+
       if (pressureId) {
-        // ── Use raw pressure sensor (dense data, e.g. BMP280 every 5 min) ─
+        // ── Use raw pressure sensor with unit conversion & sea-level alignment ─
         const pHistory = pResult[pressureId] || [];
+        const rawUnit = this._attr(pressureId, "unit_of_measurement", "hPa");
+        const rawState = this._state(pressureId);
+        const pRawCurHpa = normalizePressureToHpa(rawState, rawUnit);
+
+        let seaDelta = 0;
+        if (!isNaN(pSeaCur) && pRawCurHpa != null && !isNaN(pRawCurHpa)) {
+          seaDelta = pSeaCur - pRawCurHpa;
+        }
+
         for (const entry of pHistory) {
           const t   = entryTime(entry);
           if (t.getTime() < chartStartMs) continue;
           const key = bucket(t);
-          const p   = parseFloat(entryState(entry));
+          const rawP = entryState(entry);
+          const pHpa = normalizePressureToHpa(rawP, rawUnit);
           if (!timeMap.has(key)) timeMap.set(key, { t, p: null, precip: null });
-          if (!isNaN(p)) timeMap.get(key).p = p;
+          if (pHpa != null && !isNaN(pHpa)) timeMap.get(key).p = pHpa + seaDelta;
+        }
+
+        // Inject live current sea-level pressure at end time
+        const liveP = !isNaN(pSeaCur) ? pSeaCur : (pRawCurHpa != null ? (pRawCurHpa + seaDelta) : null);
+        if (liveP != null && !isNaN(liveP)) {
+          const nowKey = bucket(endTime);
+          if (!timeMap.has(nowKey)) timeMap.set(nowKey, { t: endTime, p: null, precip: null });
+          timeMap.get(nowKey).p = liveP;
         }
       } else {
         // ── Fallback: pressure from zambretti sensor attributes ────────────
@@ -1357,6 +1420,11 @@ class ZambrettiWeatherCard extends HTMLElement {
           const p    = parseFloat(attrs.pressure_hpa);
           if (!timeMap.has(key)) timeMap.set(key, { t, p: null, precip: null });
           if (!isNaN(p)) timeMap.get(key).p = p;
+        }
+        if (!isNaN(pSeaCur)) {
+          const nowKey = bucket(endTime);
+          if (!timeMap.has(nowKey)) timeMap.set(nowKey, { t: endTime, p: null, precip: null });
+          timeMap.get(nowKey).p = pSeaCur;
         }
       }
 
@@ -1675,6 +1743,17 @@ class ZambrettiWeatherCard extends HTMLElement {
     return getPrecipLabel(this._config.language || "auto", this._hass?.language || "en");
   }
 
+  /** Computes the card theme background consistently for both _render and _patch. */
+  _computeThemeBg(condThemeKey, isVintage) {
+    const cfg = this._config;
+    if (isVintage && !cfg.custom_bg) {
+      return "radial-gradient(circle at 50% 25%, #2d1f14 0%, #19110a 55%, #0d0805 100%)";
+    }
+    const autoTheme = cfg.auto_theme !== false;
+    const baseBg = autoTheme ? (getTheme(condThemeKey).bg) : (cfg.custom_bg || DEFAULT_THEME.bg);
+    return autoTheme ? applyAlpha(baseBg, cfg.theme_alpha) : baseBg;
+  }
+
   /** Performs a full shadow DOM rebuild of the card. Called on first render or after a condition/theme change. */
   _render() {
     if (!this._hass) return;
@@ -1718,14 +1797,8 @@ class ZambrettiWeatherCard extends HTMLElement {
     }
 
     // Theme
-    const autoTheme = cfg.auto_theme !== false;
-    let theme;
-    if (isVintage && !cfg.custom_bg) {
-      theme = { bg: "radial-gradient(circle at 50% 25%, #2d1f14 0%, #19110a 55%, #0d0805 100%)" };
-    } else {
-      theme = autoTheme ? getTheme(condThemeKey) : {bg: cfg.custom_bg || DEFAULT_THEME.bg};
-      theme = { bg: autoTheme ? applyAlpha(theme.bg, cfg.theme_alpha) : theme.bg };
-    }
+    const themeBg = this._computeThemeBg(condThemeKey, isVintage);
+    const theme = { bg: themeBg };
 
     const zLabel = L[zState] || zState || "—";
     const sLabel = L[sState] || sState || "—";
@@ -1915,13 +1988,8 @@ class ZambrettiWeatherCard extends HTMLElement {
       ? "night_clear" : (ZAMBRETTI_CONDITION[zState] || "partlycloudy");
 
     // If icon, theme or card style changed — full rebuild
-    const autoTheme = cfg.auto_theme !== false;
-    let theme = autoTheme ? getTheme(condThemeKey) : {bg: cfg.custom_bg || DEFAULT_THEME.bg};
-    if (isVintage && !cfg.custom_bg && autoTheme) {
-      theme = { bg: "linear-gradient(150deg, #1f1a14 0%, #2a2218 50%, #16120d 100%)" };
-    }
-    theme = { bg: applyAlpha(theme.bg, cfg.theme_alpha) };
-    if (iconKey !== this._lastIconKey || theme.bg !== this._lastThemeBg || cfg.card_style !== this._lastStyle) {
+    const themeBg = this._computeThemeBg(condThemeKey, isVintage);
+    if (iconKey !== this._lastIconKey || themeBg !== this._lastThemeBg || cfg.card_style !== this._lastStyle) {
       this._rendered = false;
       this._render();
       return;

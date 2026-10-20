@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
@@ -62,13 +64,20 @@ HUMIDITY_SENSOR_SELECTOR = selector.EntitySelector(
 
 
 def _normalize_optional_entities(data: dict) -> dict:
-    """Remove empty optional sensor entries from config data."""
+    """Normalize empty optional sensor entries to None."""
     normalized = dict(data)
     for key in OPTIONAL_ENTITY_KEYS:
         val = normalized.get(key)
         if val is None or (isinstance(val, str) and not val.strip()):
-            normalized.pop(key, None)
+            normalized[key] = None
     return normalized
+
+
+def _get_entry_value(entry: config_entries.ConfigEntry, key: str, default: Any = None) -> Any:
+    """Return option value if key is present in options, else fall back to data."""
+    if key in entry.options:
+        return entry.options[key]
+    return entry.data.get(key, default)
 
 
 def _apply_location(data: dict) -> dict:
@@ -138,26 +147,14 @@ class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 reason="reconfigure_successful",
             )
 
-        current_pressure = entry.options.get(CONF_PRESSURE_SENSOR) or entry.data.get(
-            CONF_PRESSURE_SENSOR
-        )
-        current_wind = entry.options.get(CONF_WIND_SENSOR) or entry.data.get(CONF_WIND_SENSOR)
-        current_wind_speed = entry.options.get(CONF_WIND_SPEED_SENSOR) or entry.data.get(
-            CONF_WIND_SPEED_SENSOR
-        )
-        current_temp = entry.options.get(CONF_TEMPERATURE_SENSOR) or entry.data.get(
-            CONF_TEMPERATURE_SENSOR
-        )
-        current_humidity = entry.options.get(CONF_HUMIDITY_SENSOR) or entry.data.get(
-            CONF_HUMIDITY_SENSOR
-        )
-        current_use_sea_level = (
-            entry.options.get(CONF_USE_SEA_LEVEL)
-            if CONF_USE_SEA_LEVEL in entry.options
-            else entry.data.get(CONF_USE_SEA_LEVEL, False)
-        )
-        current_lat = entry.options.get(CONF_LATITUDE) or entry.data.get(CONF_LATITUDE)
-        current_lon = entry.options.get(CONF_LONGITUDE) or entry.data.get(CONF_LONGITUDE)
+        current_pressure = _get_entry_value(entry, CONF_PRESSURE_SENSOR)
+        current_wind = _get_entry_value(entry, CONF_WIND_SENSOR)
+        current_wind_speed = _get_entry_value(entry, CONF_WIND_SPEED_SENSOR)
+        current_temp = _get_entry_value(entry, CONF_TEMPERATURE_SENSOR)
+        current_humidity = _get_entry_value(entry, CONF_HUMIDITY_SENSOR)
+        current_use_sea_level = _get_entry_value(entry, CONF_USE_SEA_LEVEL, False)
+        current_lat = _get_entry_value(entry, CONF_LATITUDE)
+        current_lon = _get_entry_value(entry, CONF_LONGITUDE)
 
         default_location = {
             "latitude": current_lat if current_lat is not None else self.hass.config.latitude,
@@ -230,26 +227,14 @@ class ZambrettiSagerOptionsFlowHandler(config_entries.OptionsFlow):
 
         entry = self._config_entry
         # Read current values from options first, fall back to data
-        current_pressure = entry.options.get(CONF_PRESSURE_SENSOR) or entry.data.get(
-            CONF_PRESSURE_SENSOR
-        )
-        current_wind = entry.options.get(CONF_WIND_SENSOR) or entry.data.get(CONF_WIND_SENSOR)
-        current_wind_speed = entry.options.get(CONF_WIND_SPEED_SENSOR) or entry.data.get(
-            CONF_WIND_SPEED_SENSOR
-        )
-        current_temp = entry.options.get(CONF_TEMPERATURE_SENSOR) or entry.data.get(
-            CONF_TEMPERATURE_SENSOR
-        )
-        current_humidity = entry.options.get(CONF_HUMIDITY_SENSOR) or entry.data.get(
-            CONF_HUMIDITY_SENSOR
-        )
-        current_use_sea_level = (
-            entry.options.get(CONF_USE_SEA_LEVEL)
-            if CONF_USE_SEA_LEVEL in entry.options
-            else entry.data.get(CONF_USE_SEA_LEVEL, False)
-        )
-        current_lat = entry.options.get(CONF_LATITUDE) or entry.data.get(CONF_LATITUDE)
-        current_lon = entry.options.get(CONF_LONGITUDE) or entry.data.get(CONF_LONGITUDE)
+        current_pressure = _get_entry_value(entry, CONF_PRESSURE_SENSOR)
+        current_wind = _get_entry_value(entry, CONF_WIND_SENSOR)
+        current_wind_speed = _get_entry_value(entry, CONF_WIND_SPEED_SENSOR)
+        current_temp = _get_entry_value(entry, CONF_TEMPERATURE_SENSOR)
+        current_humidity = _get_entry_value(entry, CONF_HUMIDITY_SENSOR)
+        current_use_sea_level = _get_entry_value(entry, CONF_USE_SEA_LEVEL, False)
+        current_lat = _get_entry_value(entry, CONF_LATITUDE)
+        current_lon = _get_entry_value(entry, CONF_LONGITUDE)
 
         if current_lat is not None and current_lon is not None:
             default_location = {

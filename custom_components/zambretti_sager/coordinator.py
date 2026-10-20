@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import datetime
 import logging
 
@@ -83,7 +85,9 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         """Update sensor entity IDs from config entry on reload."""
         entry = self.entry
         new_pressure_id = (
-            entry.options.get(CONF_PRESSURE_SENSOR) or entry.data[CONF_PRESSURE_SENSOR]
+            entry.options.get(CONF_PRESSURE_SENSOR)
+            if CONF_PRESSURE_SENSOR in entry.options
+            else entry.data[CONF_PRESSURE_SENSOR]
         )
         if new_pressure_id != self._last_pressure_id:
             self._sea_level_warning_logged = False
@@ -92,23 +96,41 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             self._history_warmed = False
 
         self.pressure_id = new_pressure_id
-        self.wind_id = entry.options.get(CONF_WIND_SENSOR) or entry.data.get(CONF_WIND_SENSOR)
-        self.wind_speed_id = entry.options.get(CONF_WIND_SPEED_SENSOR) or entry.data.get(
-            CONF_WIND_SPEED_SENSOR
+        self.wind_id = (
+            entry.options.get(CONF_WIND_SENSOR)
+            if CONF_WIND_SENSOR in entry.options
+            else entry.data.get(CONF_WIND_SENSOR)
         )
-        self.temp_id = entry.options.get(CONF_TEMPERATURE_SENSOR) or entry.data.get(
-            CONF_TEMPERATURE_SENSOR
+        self.wind_speed_id = (
+            entry.options.get(CONF_WIND_SPEED_SENSOR)
+            if CONF_WIND_SPEED_SENSOR in entry.options
+            else entry.data.get(CONF_WIND_SPEED_SENSOR)
         )
-        self.humidity_id = entry.options.get(CONF_HUMIDITY_SENSOR) or entry.data.get(
-            CONF_HUMIDITY_SENSOR
+        self.temp_id = (
+            entry.options.get(CONF_TEMPERATURE_SENSOR)
+            if CONF_TEMPERATURE_SENSOR in entry.options
+            else entry.data.get(CONF_TEMPERATURE_SENSOR)
+        )
+        self.humidity_id = (
+            entry.options.get(CONF_HUMIDITY_SENSOR)
+            if CONF_HUMIDITY_SENSOR in entry.options
+            else entry.data.get(CONF_HUMIDITY_SENSOR)
         )
         self.use_sea_level = (
             entry.options.get(CONF_USE_SEA_LEVEL)
             if CONF_USE_SEA_LEVEL in entry.options
             else entry.data.get(CONF_USE_SEA_LEVEL, False)
         )
-        self.latitude = entry.options.get(CONF_LATITUDE) or entry.data.get(CONF_LATITUDE)
-        self.longitude = entry.options.get(CONF_LONGITUDE) or entry.data.get(CONF_LONGITUDE)
+        self.latitude = (
+            entry.options.get(CONF_LATITUDE)
+            if CONF_LATITUDE in entry.options
+            else entry.data.get(CONF_LATITUDE)
+        )
+        self.longitude = (
+            entry.options.get(CONF_LONGITUDE)
+            if CONF_LONGITUDE in entry.options
+            else entry.data.get(CONF_LONGITUDE)
+        )
 
     def _start_pressure_watcher(self) -> None:
         """Subscribe to pressure sensor state changes for immediate updates."""
