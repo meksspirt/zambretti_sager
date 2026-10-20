@@ -4,13 +4,13 @@
 
 ### One-click install
 
-[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ziffmafiya&repository=zambretti_sager&category=integration)
+[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=meksspirt&repository=zambretti_sager&category=integration)
 
 ### Manual HACS setup
 
 1. Open **HACS → Integrations**
 2. Click **⋮ → Custom repositories**
-3. Add URL: `https://github.com/ziffmafiya/zambretti_sager`
+3. Add URL: `https://github.com/meksspirt/zambretti_sager`
 4. Category: **Integration**
 5. Click **Install**
 6. Restart Home Assistant

@@ -5,7 +5,7 @@
 
 set -e
 
-REPO="ziffmafiya/zambretti_sager"
+REPO="meksspirt/zambretti_sager"
 WIKI_DIR="$(cd "$(dirname "$0")" && pwd)"
 TEMP_DIR=$(mktemp -d)
 

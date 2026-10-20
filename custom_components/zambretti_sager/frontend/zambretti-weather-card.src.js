@@ -16,7 +16,7 @@ if (!window.customCards.some(c => c.type === "zambretti-weather-card")) {
     name:             "Zambretti & Sager Weather Card",
     description:      "Weather forecasts (Modern iOS, Vintage Barometer, Compact Tile)",
     preview:          true,
-    documentationURL: "https://github.com/ziffmafiya/zambretti_sager",
+    documentationURL: "https://github.com/meksspirt/zambretti_sager",
   });
 }
 if (!window.customCards.some(c => c.type === "custom:zambretti-weather-card")) {
@@ -25,7 +25,7 @@ if (!window.customCards.some(c => c.type === "custom:zambretti-weather-card")) {
     name:             "Zambretti & Sager Weather Card",
     description:      "Weather forecasts (Modern iOS, Vintage Barometer, Compact Tile)",
     preview:          true,
-    documentationURL: "https://github.com/ziffmafiya/zambretti_sager",
+    documentationURL: "https://github.com/meksspirt/zambretti_sager",
   });
 }
 
@@ -2469,7 +2469,7 @@ if (!window.customCards.some(c => c.type === "zambretti-weather-card")) {
     name:             "Zambretti & Sager Weather Card",
     description:      "Weather forecasts (Modern iOS, Vintage Barometer, Compact Tile)",
     preview:          true,
-    documentationURL: "https://github.com/ziffmafiya/zambretti_sager",
+    documentationURL: "https://github.com/meksspirt/zambretti_sager",
   });
 }
 if (!window.customCards.some(c => c.type === "custom:zambretti-weather-card")) {
@@ -2478,6 +2478,6 @@ if (!window.customCards.some(c => c.type === "custom:zambretti-weather-card")) {
     name:             "Zambretti & Sager Weather Card",
     description:      "Weather forecasts (Modern iOS, Vintage Barometer, Compact Tile)",
     preview:          true,
-    documentationURL: "https://github.com/ziffmafiya/zambretti_sager",
+    documentationURL: "https://github.com/meksspirt/zambretti_sager",
   });
 }

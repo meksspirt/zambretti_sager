@@ -6,7 +6,7 @@
 A Home Assistant custom integration that provides weather forecasting using the classic Zambretti and Sager algorithms based on barometric pressure trends.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ziffmafiya/zambretti_sager/main/logo.png" alt="Zambretti & Sager Logo" width="400">
+  <img src="https://raw.githubusercontent.com/meksspirt/zambretti_sager/main/logo.png" alt="Zambretti & Sager Logo" width="400">
 </p>
 
 ---
@@ -15,9 +15,9 @@ A Home Assistant custom integration that provides weather forecasting using the 
 
 Click the button below to install directly via HACS:
 
-[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ziffmafiya&repository=zambretti_sager&category=integration)
+[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=meksspirt&repository=zambretti_sager&category=integration)
 
-Or open HACS → **Integrations** → **Custom repositories** → add `https://github.com/ziffmafiya/zambretti_sager` (category: Integration).
+Or open HACS → **Integrations** → **Custom repositories** → add `https://github.com/meksspirt/zambretti_sager` (category: Integration).
 
 After installation, click here to start setup:
 
@@ -29,7 +29,7 @@ After installation, click here to start setup:
 ## Features
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ziffmafiya/zambretti_sager/main/card-screenshot.png" alt="Zambretti Weather Card" width="400">
+  <img src="https://raw.githubusercontent.com/meksspirt/zambretti_sager/main/card-screenshot.png" alt="Zambretti Weather Card" width="400">
 </p>
 
 The integration includes a built-in **Lovelace card** that displays the current forecast with animated weather icons, night mode, wind info, pressure sparkline, and a 24-hour history chart. It is registered automatically — no manual resource setup needed.
@@ -51,7 +51,7 @@ The integration includes a built-in **Lovelace card** that displays the current 
 
 ### ⚡ One-Click HACS Install
 
-[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ziffmafiya&repository=zambretti_sager&category=integration)
+[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=meksspirt&repository=zambretti_sager&category=integration)
 
 Then configure:
 
@@ -61,7 +61,7 @@ Then configure:
 
 1. Open HACS → **Integrations**
 2. Click the three dots → **Custom repositories**
-3. Add `https://github.com/ziffmafiya/zambretti_sager` with category **Integration**
+3. Add `https://github.com/meksspirt/zambretti_sager` with category **Integration**
 4. Click **Install**
 5. Restart Home Assistant
 
@@ -154,7 +154,7 @@ The integration uses the [Open-Elevation API](https://open-elevation.com). Check
 
 - **Zambretti Algorithm** — developed by Negretti and Zambra in the early 1900s
 - **Sager Algorithm** — developed by meteorologist Raymond Sager
-- **Integration Author** — Maksym ([@ziffmafiya](https://github.com/ziffmafiya))
+- **Integration Author** — Maksym ([@meksspirt](https://github.com/meksspirt))
 
 ## License
 
@@ -162,4 +162,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Support
 
-Found a bug or have a suggestion? [Open an issue](https://github.com/ziffmafiya/zambretti_sager/issues) on GitHub.
+Found a bug or have a suggestion? [Open an issue](https://github.com/meksspirt/zambretti_sager/issues) on GitHub.

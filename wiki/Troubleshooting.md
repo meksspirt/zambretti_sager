@@ -107,7 +107,7 @@ Restart HA and check **Settings → System → Logs**.
 
 ## Report an issue
 
-If the problem is not resolved, [open an Issue](https://github.com/ziffmafiya/zambretti_sager/issues) with:
+If the problem is not resolved, [open an Issue](https://github.com/meksspirt/zambretti_sager/issues) with:
 
 - Integration version
 - Home Assistant version

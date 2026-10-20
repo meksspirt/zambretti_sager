@@ -8,7 +8,7 @@ A **Home Assistant custom integration** that forecasts weather using the classic
 | **Domain** | `zambretti_sager` |
 | **HACS** | ✅ Supported |
 | **License** | MIT |
-| **Author** | Maksym ([@ziffmafiya](https://github.com/ziffmafiya)) |
+| **Author** | Maksym ([@meksspirt](https://github.com/meksspirt)) |
 
 ---
 
@@ -32,7 +32,7 @@ A **Home Assistant custom integration** that forecasts weather using the classic
 2. Configure the integration in **Settings → Devices & Services → Add Integration**
 3. Add the [Zambretti Weather Card](Zambretti-Weather-Card) to your dashboard
 
-[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ziffmafiya&repository=zambretti_sager&category=integration)
+[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=meksspirt&repository=zambretti_sager&category=integration)
 
 [![Open in Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=zambretti_sager)
 
@@ -66,6 +66,6 @@ A **Home Assistant custom integration** that forecasts weather using the classic
 
 ## Support
 
-- 🐛 [Report a bug](https://github.com/ziffmafiya/zambretti_sager/issues)
-- 📖 [Repository README](https://github.com/ziffmafiya/zambretti_sager)
-- 📋 [Changelog](https://github.com/ziffmafiya/zambretti_sager/blob/main/CHANGELOG.md)
+- 🐛 [Report a bug](https://github.com/meksspirt/zambretti_sager/issues)
+- 📖 [Repository README](https://github.com/meksspirt/zambretti_sager)
+- 📋 [Changelog](https://github.com/meksspirt/zambretti_sager/blob/main/CHANGELOG.md)

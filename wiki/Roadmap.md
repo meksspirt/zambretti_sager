@@ -67,8 +67,8 @@ Current project status and development plans.
 
 ## How to influence the roadmap
 
-1. ⭐ Star the [GitHub repo](https://github.com/ziffmafiya/zambretti_sager)
-2. 💬 [Open an Issue](https://github.com/ziffmafiya/zambretti_sager/issues) with a suggestion
+1. ⭐ Star the [GitHub repo](https://github.com/meksspirt/zambretti_sager)
+2. 💬 [Open an Issue](https://github.com/meksspirt/zambretti_sager/issues) with a suggestion
 3. 🔧 Submit a Pull Request
 4. 🌍 Help translate to a new language
 
@@ -76,7 +76,7 @@ Current project status and development plans.
 
 ## Version history
 
-Full changelog: [CHANGELOG.md](https://github.com/ziffmafiya/zambretti_sager/blob/main/CHANGELOG.md)
+Full changelog: [CHANGELOG.md](https://github.com/meksspirt/zambretti_sager/blob/main/CHANGELOG.md)
 
 | Version | Date | Highlights |
 |---|---|---|
