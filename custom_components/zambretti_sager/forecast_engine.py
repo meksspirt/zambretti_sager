@@ -61,6 +61,7 @@ class WeatherObservations:
     humidity: float | None = None
     temperature: float = 15.0
     altitude: float | None = None
+    latitude: float | None = None
     is_night: bool = False
     timestamp: datetime.datetime | None = None
 
@@ -74,13 +75,33 @@ class ForecastEngine:
         delta_3h = round(obs.p_now - obs.p_3h, 2)
         trend_label = get_trend_label(delta_3h)
 
-        zambretti_index = calculate_zambretti_index(obs.p_now, delta_3h)
+        month = obs.timestamp.month if obs.timestamp else None
+        zambretti_index = calculate_zambretti_index(
+            obs.p_now,
+            delta_3h,
+            month=month,
+            wind_degrees=obs.wind_degrees,
+            latitude=obs.latitude,
+        )
         zambretti_state = ZAMBRETTI_MAPPING.get(zambretti_index, "stable")
 
-        sager_state = calculate_sager_forecast(obs.p_now, delta_3h, obs.wind_degrees)
+        sager_state = calculate_sager_forecast(
+            obs.p_now,
+            delta_3h,
+            obs.wind_degrees,
+            latitude=obs.latitude,
+        )
         wind_direction = wind_degrees_to_compass(obs.wind_degrees)
 
-        extrapolations = calculate_extrapolations(obs.p_now, obs.p_3h, obs.p_6h, obs.p_12h)
+        extrapolations = calculate_extrapolations(
+            obs.p_now,
+            obs.p_3h,
+            obs.p_6h,
+            obs.p_12h,
+            month=month,
+            wind_degrees=obs.wind_degrees,
+            latitude=obs.latitude,
+        )
         precip_prob = calculate_precipitation_probability(obs.p_now, delta_3h, obs.humidity)
 
         f6 = extrapolations[6]

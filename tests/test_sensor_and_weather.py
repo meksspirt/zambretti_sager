@@ -133,8 +133,9 @@ def test_last_update_sensor(mock_coordinator):
 
 
 def test_weather_entity(mock_coordinator):
-    """Test ZambrettiWeather entity condition and forecast properties."""
+    """Test ZambrettiWeather entity condition, night mode, and enriched forecast properties."""
     weather = ZambrettiWeather(mock_coordinator)
+    # Daytime fine weather -> sunny
     assert weather.condition == "sunny"
     assert weather.native_temperature == 21.5
     assert weather.native_pressure == 1016.4
@@ -148,3 +149,17 @@ def test_weather_entity(mock_coordinator):
     assert forecast[0]["condition"] is not None
     assert forecast[0]["native_temperature"] == 21.5
     assert forecast[0]["native_pressure"] == 1020.8
+    assert forecast[0]["precipitation_probability"] == 10
+    assert forecast[0]["wind_speed"] == 3.5
+    assert forecast[0]["wind_bearing"] == 270.0
+
+    # Nighttime fine weather -> clear-night
+    mock_coordinator.data.is_night = True
+    assert weather.condition == "clear-night"
+
+    # Stable state night/day mapping
+    mock_coordinator.data.zambretti_state = "stable"
+    mock_coordinator.data.is_night = False
+    assert weather.condition == "sunny"
+    mock_coordinator.data.is_night = True
+    assert weather.condition == "clear-night"

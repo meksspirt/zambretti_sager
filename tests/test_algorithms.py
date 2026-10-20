@@ -143,20 +143,55 @@ def test_calculate_sager_forecast():
 
 
 def test_calculate_extrapolations():
-    """Test 6h, 12h, and 24h pressure and forecast extrapolations."""
-    # Pressure rising from 1010 to 1012 in 3 hours
+    """Test 6h, 12h, and 24h pressure and forecast extrapolations with synoptic damping."""
+    # Pressure rising from 1010 to 1012 in 3 hours (+2.0 hPa / 3h)
     res = calculate_extrapolations(p_now=1012.0, p_3h=1010.0, p_6h=1008.0, p_12h=1004.0)
 
     assert 6 in res
     assert 12 in res
     assert 24 in res
 
-    # 6h: delta = (1012 - 1010) * 2 = +4.0 -> predicted = 1016.0
-    assert res[6].predicted_pressure == 1016.0
+    # 6h: delta = +2.0 * (2.0 ** 0.65) ≈ +3.1 -> predicted = 1015.1
+    assert res[6].predicted_pressure == 1015.1
     assert res[6].forecast_state in ZAMBRETTI_MAPPING.values()
 
-    # 12h: delta = (1012 - 1008) / 6 * 12 = +8.0 -> predicted = 1020.0
-    assert res[12].predicted_pressure == 1020.0
+    # 12h: delta = +2.0 * (4.0 ** 0.65) ≈ +4.9 -> predicted = 1016.9
+    assert res[12].predicted_pressure == 1016.9
 
-    # 24h: delta = (1012 - 1004) / 12 * 24 = +16.0 -> predicted = 1028.0
-    assert res[24].predicted_pressure == 1028.0
+    # 24h: delta = +2.0 * (8.0 ** 0.65) ≈ +7.7 -> predicted = 1019.7
+    assert res[24].predicted_pressure == 1019.7
+
+
+def test_calculate_extrapolations_physical_clamping():
+    """Test that extreme pressure extrapolations clamp to physical bounds (950..1060 hPa)."""
+    # Extreme collapse: 970 dropping 15 hPa in 3h
+    res_drop = calculate_extrapolations(p_now=970.0, p_3h=985.0)
+    assert res_drop[24].predicted_pressure == 950.0
+
+    # Extreme surge: 1045 rising 15 hPa in 3h
+    res_surge = calculate_extrapolations(p_now=1045.0, p_3h=1030.0)
+    assert res_surge[24].predicted_pressure == 1060.0
+
+
+def test_southern_hemisphere_adjustments():
+    """Test hemisphere inversion in Sager and Zambretti algorithms."""
+    # In Sager, for fair zone + steady trend:
+    # Northern hemisphere (lat > 0): S wind gives sager_fair_tending_to_deteriorate, N gives sager_fair_no_change
+    res_nh_s = calculate_sager_forecast(1025.0, 0.0, wind_degrees=180.0, latitude=50.0)
+    res_nh_n = calculate_sager_forecast(1025.0, 0.0, wind_degrees=0.0, latitude=50.0)
+    assert res_nh_s == "sager_fair_tending_to_deteriorate"
+    assert res_nh_n == "sager_fair_no_change"
+
+    # Southern hemisphere (lat < 0): N wind brings warm equatorial air (deteriorating), S wind brings polar air (no change)
+    res_sh_n = calculate_sager_forecast(1025.0, 0.0, wind_degrees=0.0, latitude=-35.0)
+    res_sh_s = calculate_sager_forecast(1025.0, 0.0, wind_degrees=180.0, latitude=-35.0)
+    assert res_sh_n == "sager_fair_tending_to_deteriorate"
+    assert res_sh_s == "sager_fair_no_change"
+
+    # Zambretti seasonal test:
+    # Month 1 (January): winter in NH, summer in SH
+    # Steady 1014 hPa:
+    idx_nh_jan = calculate_zambretti_index(1014.0, 0.0, month=1, latitude=50.0)
+    idx_sh_jan = calculate_zambretti_index(1014.0, 0.0, month=1, latitude=-35.0)
+    # Summer effective pressure is higher, resulting in a lower/finer Zambretti index
+    assert idx_sh_jan <= idx_nh_jan

@@ -46,6 +46,16 @@ ZAMBRETTI_MAPPING: Final[dict[int, str]] = {
     32: "stormy_much_rain",
 }
 
+# Synoptic damping exponent for multi-hour barometric trend decay
+DAMPING_EXPONENT: Final[float] = 0.65
+MIN_PHYSICAL_PRESSURE: Final[float] = 950.0
+MAX_PHYSICAL_PRESSURE: Final[float] = 1060.0
+
+
+def _clamp_pressure(pressure: float) -> float:
+    """Clamp pressure within physical atmospheric limits at sea level."""
+    return max(MIN_PHYSICAL_PRESSURE, min(MAX_PHYSICAL_PRESSURE, pressure))
+
 # Sager algorithm pressure trend thresholds (hPa over ~3 hours)
 SAGER_TREND_RAPID: Final[float] = 1.4
 SAGER_TREND_SLOW: Final[float] = 0.7
@@ -232,24 +242,58 @@ def get_trend_label(delta_hpa: float) -> str:
     }.get(trend, "→ Steady")
 
 
-def calculate_zambretti_index(p_now: float, delta_hpa: float) -> int:
-    """Calculate Zambretti index (1–32) from pressure and trend.
+def calculate_zambretti_index(
+    p_now: float,
+    delta_hpa: float,
+    month: int | None = None,
+    wind_degrees: float | None = None,
+    latitude: float | None = None,
+) -> int:
+    """Calculate Zambretti index (1–32) from pressure, trend, season, and wind.
 
-    The original Zambretti algorithm uses different formulas for
-    falling, steady, and rising pressure trends, corresponding to
-    the three distinct windows of the Zambretti wheel:
-      - Falling (indices 1–9):   1 = settled fine,  9 = very unsettled rain
-      - Steady  (indices 10–19): 10 = settled fine, 19 = stormy much rain
-      - Rising  (indices 20–32): 20 = settled fine, 32 = stormy much rain
+    Accounts for:
+      - 3 pressure trend windows: falling (1-9), steady (10-19), rising (20-32)
+      - Seasonal offset: summer tends finer (+1 hPa equiv), winter tends unsettled (-1 hPa equiv),
+        with inverted seasons in the Southern Hemisphere (latitude < 0)
+      - Wind direction refinement: polar/continental winds boost effective pressure (+1.5 hPa),
+        equatorial/oceanic winds reduce effective pressure (-1.5 hPa)
     """
+    p_eff = p_now
+
+    # Seasonal adjustment
+    if month is not None:
+        is_southern = latitude is not None and latitude < 0
+        is_summer = month in (6, 7, 8) if not is_southern else month in (12, 1, 2)
+        is_winter = month in (12, 1, 2) if not is_southern else month in (6, 7, 8)
+        if is_summer:
+            p_eff += 1.0
+        elif is_winter:
+            p_eff -= 1.0
+
+    # Wind direction adjustment
+    if wind_degrees is not None:
+        compass = wind_degrees_to_compass(wind_degrees)
+        quadrant = WIND_QUADRANTS.get(compass)
+        if quadrant:
+            if latitude is not None and latitude < 0:
+                if quadrant == "northerly":
+                    p_eff -= 1.5  # Warm/moist air from equator in SH
+                elif quadrant == "southerly":
+                    p_eff += 1.5  # Cold/dry polar air in SH
+            else:
+                if quadrant == "southerly":
+                    p_eff -= 1.5  # Warm/moist oceanic air in NH
+                elif quadrant == "northerly":
+                    p_eff += 1.5  # Cold/dry continental air in NH
+
     if delta_hpa <= -1.6:  # Falling
-        z = round(127 - 0.12 * p_now)
+        z = round(127 - 0.12 * p_eff)
         return max(1, min(z, 9))
     elif delta_hpa >= 1.6:  # Rising
-        z = round(185 - 0.16 * p_now)
+        z = round(185 - 0.16 * p_eff)
         return max(20, min(z, 32))
     else:  # Steady
-        z = round(144 - 0.13 * p_now)
+        z = round(144 - 0.13 * p_eff)
         return max(10, min(z, 19))
 
 
@@ -305,36 +349,46 @@ def wind_degrees_to_compass(degrees: float | None) -> str | None:
     return WIND_COMPASS[index]
 
 
-def _get_wind_modifier(wind_degrees: float | None) -> str | None:
-    """Convert wind direction to a Sager wind quadrant modifier."""
+def _get_wind_modifier(
+    wind_degrees: float | None, latitude: float | None = None
+) -> str | None:
+    """Convert wind direction to a Sager wind quadrant modifier, accounting for hemisphere."""
     if wind_degrees is None:
         return None
     compass = wind_degrees_to_compass(wind_degrees)
-    return WIND_QUADRANTS.get(compass)
+    quadrant = WIND_QUADRANTS.get(compass)
+    if quadrant and latitude is not None and latitude < 0:
+        # Invert meridional quadrant for Southern Hemisphere
+        if quadrant == "northerly":
+            return "southerly"
+        if quadrant == "southerly":
+            return "northerly"
+    return quadrant
 
 
 def calculate_sager_forecast(
     pressure_hpa: float,
     delta_hpa: float,
     wind_degrees: float | None = None,
+    latitude: float | None = None,
 ) -> str:
-    """Calculate Sager forecast with wind direction refinement.
+    """Calculate Sager forecast with wind direction refinement and hemisphere support.
 
-    Uses pressure zone, 3-hour trend, and optional wind direction to select
-    the most appropriate forecast state. Wind direction is grouped into four
-    quadrants (northerly/easterly/southerly/westerly) that modify the base
-    pressure-trend prediction.
+    Uses pressure zone, 3-hour trend, optional wind direction, and latitude to select
+    the most appropriate forecast state. In the Southern Hemisphere (latitude < 0),
+    the meridional wind influence is inverted.
 
     Args:
         pressure_hpa: Current pressure (preferably sea-level corrected) in hPa.
         delta_hpa: Pressure change over ~3 hours.
         wind_degrees: Optional wind direction in degrees.
+        latitude: Station latitude in degrees (used for hemisphere determination).
 
     Returns:
         Translation key for the Sager forecast state.
     """
     trend = classify_pressure_trend(delta_hpa)
-    modifier = _get_wind_modifier(wind_degrees)
+    modifier = _get_wind_modifier(wind_degrees, latitude=latitude)
 
     if pressure_hpa > 1020:
         zone = "fair"
@@ -358,39 +412,50 @@ class ExtrapolatedForecast:
 def calculate_extrapolations(
     p_now: float,
     p_3h: float,
-    p_6h: float | None,
-    p_12h: float | None,
+    p_6h: float | None = None,
+    p_12h: float | None = None,
+    month: int | None = None,
+    wind_degrees: float | None = None,
+    latitude: float | None = None,
 ) -> dict[int, ExtrapolatedForecast]:
     """Calculate extrapolated pressure and Zambretti states for 6h, 12h, and 24h horizons.
 
-    Args:
-        p_now: Current sea-level pressure.
-        p_3h: Pressure 3 hours ago.
-        p_6h: Pressure 6 hours ago (if available).
-        p_12h: Pressure 12 hours ago (if available).
-
-    Returns:
-        Dict mapping horizon in hours (6, 12, 24) to ExtrapolatedForecast.
+    Applies non-linear synoptic damping (alpha ≈ 0.65) to prevent unrealistically
+    extreme pressure deviations on longer horizons, and clamps to physical bounds.
     """
-    # 6h extrapolation (trend over 3h extrapolated x2)
+    # 6h extrapolation: (6/3)^0.65 ≈ 1.569
     rate_3h = p_now - p_3h
-    delta_6h = rate_3h * 2
-    predicted_p_6h = round(p_now + delta_6h, 1)
+    delta_6h = rate_3h * (2.0 ** DAMPING_EXPONENT)
+    predicted_p_6h = round(_clamp_pressure(p_now + delta_6h), 1)
     zambretti_6h = ZAMBRETTI_MAPPING.get(
-        calculate_zambretti_index(predicted_p_6h, rate_3h), "stable"
+        calculate_zambretti_index(
+            predicted_p_6h,
+            rate_3h,
+            month=month,
+            wind_degrees=wind_degrees,
+            latitude=latitude,
+        ),
+        "stable",
     )
 
-    # 12h extrapolation
+    # 12h extrapolation: (12/3)^0.65 ≈ 2.462
     p_ref_12 = p_6h if p_6h is not None else p_3h
     h_12 = 6 if p_6h is not None else 3
     rate_12_3h = (p_now - p_ref_12) / h_12 * 3
-    delta_12h = (p_now - p_ref_12) / h_12 * 12
-    predicted_p_12h = round(p_now + delta_12h, 1)
+    delta_12h = rate_12_3h * (4.0 ** DAMPING_EXPONENT)
+    predicted_p_12h = round(_clamp_pressure(p_now + delta_12h), 1)
     zambretti_12h = ZAMBRETTI_MAPPING.get(
-        calculate_zambretti_index(predicted_p_12h, rate_12_3h), "stable"
+        calculate_zambretti_index(
+            predicted_p_12h,
+            rate_12_3h,
+            month=month,
+            wind_degrees=wind_degrees,
+            latitude=latitude,
+        ),
+        "stable",
     )
 
-    # 24h extrapolation
+    # 24h extrapolation: (24/3)^0.65 ≈ 3.864
     if p_12h is not None:
         p_ref_24 = p_12h
         h_24 = 12
@@ -402,10 +467,17 @@ def calculate_extrapolations(
         h_24 = 3
 
     rate_24_3h = (p_now - p_ref_24) / h_24 * 3
-    delta_24h = (p_now - p_ref_24) / h_24 * 24
-    predicted_p_24h = round(p_now + delta_24h, 1)
+    delta_24h = rate_24_3h * (8.0 ** DAMPING_EXPONENT)
+    predicted_p_24h = round(_clamp_pressure(p_now + delta_24h), 1)
     zambretti_24h = ZAMBRETTI_MAPPING.get(
-        calculate_zambretti_index(predicted_p_24h, rate_24_3h), "stable"
+        calculate_zambretti_index(
+            predicted_p_24h,
+            rate_24_3h,
+            month=month,
+            wind_degrees=wind_degrees,
+            latitude=latitude,
+        ),
+        "stable",
     )
 
     return {

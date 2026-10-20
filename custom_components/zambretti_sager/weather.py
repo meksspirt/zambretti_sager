@@ -46,7 +46,7 @@ ZAMBRETTI_TO_CONDITION: dict[str, str] = {
     "unsettled_short_fine_intervals": "partlycloudy",
     "very_unsettled_finer_at_times": "rainy",
     "stormy_possibly_improving": "lightning-rainy",
-    "stable": "clear-night",
+    "stable": "sunny",
 }
 
 
@@ -93,7 +93,10 @@ class ZambrettiWeather(CoordinatorEntity, WeatherEntity):
         d = self.data
         if not d or not d.available or not d.zambretti_state:
             return None
-        return ZAMBRETTI_TO_CONDITION.get(d.zambretti_state)
+        cond = ZAMBRETTI_TO_CONDITION.get(d.zambretti_state)
+        if cond == "sunny" and d.is_night:
+            return "clear-night"
+        return cond
 
     @property
     def native_temperature(self) -> float | None:
@@ -149,15 +152,21 @@ class ZambrettiWeather(CoordinatorEntity, WeatherEntity):
             cond = ZAMBRETTI_TO_CONDITION.get(state) if state else None
             forecast_time = (now + timedelta(hours=hours)).isoformat()
 
-            items.append(
-                Forecast(
-                    datetime=forecast_time,
-                    condition=cond,
-                    native_temperature=d.temperature,
-                    native_temperature_unit=self._attr_native_temperature_unit,
-                    native_pressure=p_pred,
-                    native_pressure_unit=self._attr_native_pressure_unit,
-                )
-            )
+            forecast_dict: dict = {
+                "datetime": forecast_time,
+                "condition": cond,
+                "native_temperature": d.temperature,
+                "native_temperature_unit": self._attr_native_temperature_unit,
+                "native_pressure": p_pred,
+                "native_pressure_unit": self._attr_native_pressure_unit,
+            }
+            if d.precip_probability is not None:
+                forecast_dict["precipitation_probability"] = d.precip_probability
+            if d.wind_speed is not None:
+                forecast_dict["wind_speed"] = d.wind_speed
+            if d.wind_degrees is not None:
+                forecast_dict["wind_bearing"] = d.wind_degrees
+
+            items.append(Forecast(**forecast_dict))
 
         return items

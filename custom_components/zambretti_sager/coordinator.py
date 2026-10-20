@@ -235,6 +235,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             humidity=humidity,
             temperature=temperature,
             altitude=self.altitude,
+            latitude=self.latitude,
             is_night=is_night,
             timestamp=now_dt,
         )
