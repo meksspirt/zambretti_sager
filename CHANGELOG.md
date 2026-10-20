@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.0.0] — 2026-10-20
+
+### Major Release & Architectural Optimization
+
+#### ⚡ Performance & Database Optimization (Home Assistant Recorder)
+- **Eliminated Sensor Attribute Duplication**: Restricted high-frequency observation telemetry (pressure_hpa, wind_speed, wind_degrees, humidity_%, ltitude_m, is_night, etc.) strictly to the primary ZambrettiSensor entity.
+- **Database Recorder Shielding**: Added _unrecorded_attributes to WeatherSensorBase, preventing unnecessary database bloat and disk writes in SQLite/MariaDB upon sensor micro-fluctuations.
+- **Batched History Warming**: Implemented cached closure _create_pressure_corrector() during history warm-up, eliminating repeated temperature unit conversions and sea-level lookups for hundreds of historical data points.
+- **Removed Redundant Force Updates**: Removed _attr_force_update = True from LastUpdateSensor.
+
+#### 🌦️ Meteorological Algorithm Accuracy & Weather Platform
+- **Non-Linear Synoptic Trend Damping**: Introduced synoptic trend deceleration $\Delta P(t) = \text{rate}_{3h} \cdot (t / 3)^{0.65}$ with physical bounding $[950..1060\text{ hPa}]$ for 12h and 24h barometric extrapolations, replacing erroneous linear runaway forecasts.
+- **Southern Hemisphere Adaptation**: Implemented automatic meridional wind quadrant inversion (
+ortherly $\leftrightarrow$ southerly) when latitude < 0, preserving meteorological accuracy of canonical Sager tables and Zambretti seasonal adjustments across both hemispheres.
+- **Enhanced Weather Platform (weather.py)**: Added day/night condition adaptation (clear-night vs sunny) and enriched Forecast objects with precipitation_probability, wind_speed, and wind_bearing.
+
+#### 🎨 Lovelace Card & Visual Editor Improvements
+- **Fixed Vintage Needle Animation Reset**: Unified theme calculation (_computeThemeBg) between _render() and _patch(), preserving SVG needle transitions and preventing unnecessary Shadow DOM re-renders.
+- **Multi-Station Support & Entity Selector**: Added interactive ha-entity-picker to the visual card editor for selecting the primary ntity_zambretti sensor with intelligent prefix matching (sensor.<station>_) across all sibling sensors.
+- **Sea-Level Aligned 24h Pressure Graph**: Added unit normalization (
+ormalizePressureToHpa) and sea-level delta offset alignment on the 24h history chart.
+- **Full Localization**: Added multi-station entity selection labels for all 20 supported languages.
+
+#### 🏛️ Home Assistant Quality Architecture
+- **Declarative SensorEntityDescription**: Refactored sensor.py to declarative descriptions, cutting boilerplate in half while preserving 100% backward compatibility.
+- **Unified Config Flow**: Unified schema generation between reconfigure and options flow, eliminating deprecated OptionsFlow.__init__ overrides.
+- **Automatic Lovelace Resource Cleanup**: Added sync_remove_entry lifecycle hook to automatically deregister card resources when the integration is removed.
+- **Expanded Test Suite**: Extended test coverage to 62 unit tests (100% passing).
+
 ## [1.9.94] — 2026-10-20
 
 ### Changed
