@@ -172,45 +172,45 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
           dur="2.8s" begin="1.0s" repeatCount="indefinite" calcMode="linear"/>
       </path>
     </g>
-  </svg>`},ne={settled_fine:"sunny",fine_weather:"sunny",fine_becoming_less_settled:"partlycloudy",fairly_fine_showery_later:"partlycloudy",showery_becoming_more_unsettled:"rainy",unsettled_rain_later:"cloudy",rain_at_times_worse_later:"rainy",rain_at_times_becoming_very_unsettled:"pouring",very_unsettled_rain:"pouring",fine_possibly_showers:"partlycloudy",fairly_fine_showers_likely:"partlycloudy",showery_bright_intervals:"rainy",changeable_some_rain:"cloudy",unsettled_rain_at_times:"rainy",rain_at_frequent_intervals:"pouring",stormy_much_rain:"lightning-rainy",becoming_fine:"partlycloudy",fairly_fine_improving:"partlycloudy",fairly_fine_possibly_showers_early:"partlycloudy",showery_early_improving:"rainy",changeable_mending:"cloudy",rather_unsettled_clearing_later:"cloudy",unsettled_probably_improving:"cloudy",unsettled_short_fine_intervals:"cloudy",very_unsettled_finer_at_times:"pouring",stormy_possibly_improving:"lightning-rainy",stable:"partlycloudy"};function ae(o,t){return o==="settled_fine"||o==="fine_weather"?t?"night_clear":"sunny":ne[o]||"partlycloudy"}function J(o,t=""){const i=re[o]||re.partlycloudy;if(!t)return i.replace("<svg ",'<svg role="img" ');const a=String(t).replace(/"/g,"&quot;");return i.replace("<svg ",`<svg role="img" aria-label="${a}" `)}const fe={sunny:{bg:"linear-gradient(135deg,#FF8C00 0%,#FFA500 40%,#FFD700 100%)"},night_clear:{bg:"linear-gradient(135deg,#070B14 0%,#0F172A 50%,#1E293B 100%)"},partlycloudy:{bg:"linear-gradient(135deg,#FF8C00 0%,#BBDEFB 50%,#FFFFFF 100%)"},cloudy:{bg:"linear-gradient(135deg,#606C76 0%,#7E8A95 50%,#A2AEB8 100%)"},rainy:{bg:"linear-gradient(135deg,#425363 0%,#54677A 50%,#70879C 100%)"},pouring:{bg:"linear-gradient(135deg,#1C242D 0%,#2B3745 50%,#3F5063 100%)"},"lightning-rainy":{bg:"linear-gradient(135deg,#23153A 0%,#43286B 50%,#6943A3 100%)"},snowy:{bg:"linear-gradient(135deg,#B8C6D4 0%,#DDE5ED 50%,#F4F7FA 100%)"},windy:{bg:"linear-gradient(135deg,#5F9EA0 0%,#87B6B8 50%,#B4D3D4 100%)"}},se={bg:"linear-gradient(135deg,#1565C0 0%,#1976D2 100%)"};function ue(o){return fe[o]||se}function ye(o,t){if(t===void 0||t>=100||typeof t!="number"||isNaN(t))return o;const i=Math.max(0,Math.min(100,t)),a=Math.round(i/100*255).toString(16).padStart(2,"0").toUpperCase();return o.replace(/#([0-9a-fA-F]{6})(?![0-9a-fA-F])/gi,`#$1${a}`)}function we(o,t){return(t[o]||o||"\u2014").split(/[,\s]+/).filter(Boolean).slice(0,2).join(" ")}let ee=0;function oe(o){return o==null?"":["N","NE","E","SE","S","SW","W","NW"][Math.round(o%360/45)%8]}function le(o,t,i){if(o==null)return null;const a=parseFloat(o);if(isNaN(a))return null;const g=(i||"m/s").toLowerCase().replace(" ",""),r=(t||"m/s").toLowerCase().replace(" ","");let s;return g==="km/h"||g==="kmh"?s=a/3.6:g==="mph"?s=a/2.23694:g==="kn"||g==="kt"||g==="knots"?s=a/1.94384:s=a,r==="mph"?`${(s*2.23694).toFixed(1)} mph`:r==="km/h"||r==="kmh"?`${Math.round(s*3.6)} km/h`:r==="kn"||r==="kt"?`${(s*1.94384).toFixed(1)} kn`:`${s.toFixed(1)} m/s`}function be(o,t,i,a={},g={}){const r=o!=null&&!isNaN(o)?o:1013.25,s=t!=null&&!isNaN(t)?t:r,d=i!=null&&!isNaN(i)?i:r-s,v=960,f=1060,$=-120,p=120;function S(e){const n=Math.max(v,Math.min(f,e));return $+(n-v)/(f-v)*(p-$)}function M(e){return Math.max(-4,Math.min(4,e))/4*45}const I=S(r),C=S(s),x=M(d),L=g.showSubdial!==!1,m="vb"+ ++ee,E=200,_=200;let P="",A="";for(let e=960;e<=1060;e+=1){const l=(S(e)-90)*(Math.PI/180),c=e%10===0,w=e%5===0,V=168,O=c?152:w?157:162,j=c?1.6:w?1:.6,H=(E+V*Math.cos(l)).toFixed(1),q=(_+V*Math.sin(l)).toFixed(1),U=(E+O*Math.cos(l)).toFixed(1),G=(_+O*Math.sin(l)).toFixed(1);if(P+=`<line x1="${H}" y1="${q}" x2="${U}" y2="${G}" stroke="#2e200c" stroke-width="${j}" stroke-linecap="round"/>`,c){const Z=(E+138*Math.cos(l)).toFixed(1),Q=(_+138*Math.sin(l)+3.5).toFixed(1);A+=`<text x="${Z}" y="${Q}" font-size="9" font-weight="800" fill="#1c1204">${e}</text>`}}for(let e=720;e<=795;e+=5){const n=e*1.33322;if(n>=v&&n<=f){const c=(S(n)-90)*(Math.PI/180),w=(E+143*Math.cos(c)).toFixed(1),V=(_+143*Math.sin(c)).toFixed(1),O=(E+148*Math.cos(c)).toFixed(1),j=(_+148*Math.sin(c)).toFixed(1);if(P+=`<line x1="${w}" y1="${V}" x2="${O}" y2="${j}" stroke="#7d6739" stroke-width="0.8"/>`,e%10===0){const H=(E+125*Math.cos(c)).toFixed(1),q=(_+125*Math.sin(c)+2.5).toFixed(1);A+=`<text x="${H}" y="${q}" font-size="7" font-weight="700" fill="#5e491c">${e}</text>`}}}const N=a.storm||"STORMY",D=a.rain||"RAIN",R=a.change||"CHANGE",y=a.fair||"FAIR",F=a.very_dry||"VERY DRY",B=a.falling||"FALLING",h=a.steady||"STEADY",u=a.rising||"RISING",z=a.delta_3h||"\u0394 3 HOURS",k=a.aneroid||"ANEROID BAROMETER",b=a.compensated||"Compensated for Temperature";return`<svg role="img" aria-label="${`${k}: ${r.toFixed(1)} hPa, \u03943h ${d>=0?"+":""}${d.toFixed(1)} hPa`}" viewBox="0 0 400 400" class="vintage-dial-svg" xmlns="http://www.w3.org/2000/svg">
+  </svg>`},ne={settled_fine:"sunny",fine_weather:"sunny",fine_becoming_less_settled:"partlycloudy",fairly_fine_showery_later:"partlycloudy",showery_becoming_more_unsettled:"rainy",unsettled_rain_later:"cloudy",rain_at_times_worse_later:"rainy",rain_at_times_becoming_very_unsettled:"pouring",very_unsettled_rain:"pouring",fine_possibly_showers:"partlycloudy",fairly_fine_showers_likely:"partlycloudy",showery_bright_intervals:"rainy",changeable_some_rain:"cloudy",unsettled_rain_at_times:"rainy",rain_at_frequent_intervals:"pouring",stormy_much_rain:"lightning-rainy",becoming_fine:"partlycloudy",fairly_fine_improving:"partlycloudy",fairly_fine_possibly_showers_early:"partlycloudy",showery_early_improving:"rainy",changeable_mending:"cloudy",rather_unsettled_clearing_later:"cloudy",unsettled_probably_improving:"cloudy",unsettled_short_fine_intervals:"cloudy",very_unsettled_finer_at_times:"pouring",stormy_possibly_improving:"lightning-rainy",stable:"partlycloudy"};function ae(o,t){return o==="settled_fine"||o==="fine_weather"?t?"night_clear":"sunny":ne[o]||"partlycloudy"}function J(o,t=""){const i=re[o]||re.partlycloudy;if(!t)return i.replace("<svg ",'<svg role="img" ');const a=String(t).replace(/"/g,"&quot;");return i.replace("<svg ",`<svg role="img" aria-label="${a}" `)}const fe={sunny:{bg:"linear-gradient(135deg,#FF8C00 0%,#FFA500 40%,#FFD700 100%)"},night_clear:{bg:"linear-gradient(135deg,#070B14 0%,#0F172A 50%,#1E293B 100%)"},partlycloudy:{bg:"linear-gradient(135deg,#FF8C00 0%,#BBDEFB 50%,#FFFFFF 100%)"},cloudy:{bg:"linear-gradient(135deg,#606C76 0%,#7E8A95 50%,#A2AEB8 100%)"},rainy:{bg:"linear-gradient(135deg,#425363 0%,#54677A 50%,#70879C 100%)"},pouring:{bg:"linear-gradient(135deg,#1C242D 0%,#2B3745 50%,#3F5063 100%)"},"lightning-rainy":{bg:"linear-gradient(135deg,#23153A 0%,#43286B 50%,#6943A3 100%)"},snowy:{bg:"linear-gradient(135deg,#B8C6D4 0%,#DDE5ED 50%,#F4F7FA 100%)"},windy:{bg:"linear-gradient(135deg,#5F9EA0 0%,#87B6B8 50%,#B4D3D4 100%)"}},se={bg:"linear-gradient(135deg,#1565C0 0%,#1976D2 100%)"};function ue(o){return fe[o]||se}function ye(o,t){if(t===void 0||t>=100||typeof t!="number"||isNaN(t))return o;const i=Math.max(0,Math.min(100,t)),a=Math.round(i/100*255).toString(16).padStart(2,"0").toUpperCase();return o.replace(/#([0-9a-fA-F]{6})(?![0-9a-fA-F])/gi,`#$1${a}`)}function we(o,t){return(t[o]||o||"\u2014").split(/[,\s]+/).filter(Boolean).slice(0,2).join(" ")}let ee=0;function oe(o){return o==null?"":["N","NE","E","SE","S","SW","W","NW"][Math.round(o%360/45)%8]}function le(o,t,i){if(o==null)return null;const a=parseFloat(o);if(isNaN(a))return null;const l=(i||"m/s").toLowerCase().replace(" ",""),r=(t||"m/s").toLowerCase().replace(" ","");let s;return l==="km/h"||l==="kmh"?s=a/3.6:l==="mph"?s=a/2.23694:l==="kn"||l==="kt"||l==="knots"?s=a/1.94384:s=a,r==="mph"?`${(s*2.23694).toFixed(1)} mph`:r==="km/h"||r==="kmh"?`${Math.round(s*3.6)} km/h`:r==="kn"||r==="kt"?`${(s*1.94384).toFixed(1)} kn`:`${s.toFixed(1)} m/s`}function be(o,t,i,a={},l={}){const r=o!=null&&!isNaN(o)?o:1013.25,s=t!=null&&!isNaN(t)?t:r,c=i!=null&&!isNaN(i)?i:r-s,u=960,m=1060,x=-120,p=120;function v(e){const n=Math.max(u,Math.min(m,e));return x+(n-u)/(m-u)*(p-x)}function C(e){return Math.max(-4,Math.min(4,e))/4*45}const I=v(r),M=v(s),$=C(c),L=l.showSubdial!==!1,f="vb"+ ++ee,E=200,d=200;let P="",N="";for(let e=960;e<=1060;e+=1){const _=(v(e)-90)*(Math.PI/180),g=e%10===0,k=e%5===0,V=168,O=g?152:k?157:162,j=g?1.6:k?1:.6,H=(E+V*Math.cos(_)).toFixed(1),q=(d+V*Math.sin(_)).toFixed(1),G=(E+O*Math.cos(_)).toFixed(1),U=(d+O*Math.sin(_)).toFixed(1);if(P+=`<line x1="${H}" y1="${q}" x2="${G}" y2="${U}" stroke="#2e200c" stroke-width="${j}" stroke-linecap="round"/>`,g){const Z=(E+138*Math.cos(_)).toFixed(1),Q=(d+138*Math.sin(_)+3.5).toFixed(1);N+=`<text x="${Z}" y="${Q}" font-size="9" font-weight="800" fill="#1c1204">${e}</text>`}}for(let e=720;e<=795;e+=5){const n=e*1.33322;if(n>=u&&n<=m){const g=(v(n)-90)*(Math.PI/180),k=(E+143*Math.cos(g)).toFixed(1),V=(d+143*Math.sin(g)).toFixed(1),O=(E+148*Math.cos(g)).toFixed(1),j=(d+148*Math.sin(g)).toFixed(1);if(P+=`<line x1="${k}" y1="${V}" x2="${O}" y2="${j}" stroke="#7d6739" stroke-width="0.8"/>`,e%10===0){const H=(E+125*Math.cos(g)).toFixed(1),q=(d+125*Math.sin(g)+2.5).toFixed(1);N+=`<text x="${H}" y="${q}" font-size="7" font-weight="700" fill="#5e491c">${e}</text>`}}}const A=a.storm||"STORMY",D=a.rain||"RAIN",R=a.change||"CHANGE",b=a.fair||"FAIR",F=a.very_dry||"VERY DRY",B=a.falling||"FALLING",h=a.steady||"STEADY",y=a.rising||"RISING",S=a.delta_3h||"\u0394 3 HOURS",z=a.aneroid||"ANEROID BAROMETER",w=a.compensated||"Compensated for Temperature";return`<svg role="img" aria-label="${`${z}: ${r.toFixed(1)} hPa, \u03943h ${c>=0?"+":""}${c.toFixed(1)} hPa`}" viewBox="0 0 400 400" class="vintage-dial-svg" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="${m}_bezel" cx="50%" cy="50%" r="50%">
+      <radialGradient id="${f}_bezel" cx="50%" cy="50%" r="50%">
         <stop offset="85%" stop-color="#4a3718" />
         <stop offset="92%" stop-color="#cfab56" />
         <stop offset="96%" stop-color="#fdf3a9" />
         <stop offset="98%" stop-color="#8a6721" />
         <stop offset="100%" stop-color="#2a1d08" />
       </radialGradient>
-      <linearGradient id="${m}_brass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="${f}_brass" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#d4af37" />
         <stop offset="25%" stop-color="#fff2a3" />
         <stop offset="50%" stop-color="#99731d" />
         <stop offset="75%" stop-color="#ffd966" />
         <stop offset="100%" stop-color="#5e440e" />
       </linearGradient>
-      <radialGradient id="${m}_parchment" cx="50%" cy="50%" r="50%">
+      <radialGradient id="${f}_parchment" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="#fffdf5" />
         <stop offset="65%" stop-color="#f5eed7" />
         <stop offset="88%" stop-color="#e6dcbc" />
         <stop offset="100%" stop-color="#c4b48d" />
       </radialGradient>
-      <linearGradient id="${m}_steel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="${f}_steel" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#1c2536" />
         <stop offset="50%" stop-color="#2b3b54" />
         <stop offset="100%" stop-color="#0f1622" />
       </linearGradient>
-      <linearGradient id="${m}_gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="${f}_gold" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#e5c158" />
         <stop offset="50%" stop-color="#fff5b8" />
         <stop offset="100%" stop-color="#9a741c" />
       </linearGradient>
-      <filter id="${m}_shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <filter id="${f}_shadow" x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.5"/>
       </filter>
     </defs>
 
     <!-- Outer Brass Bezel -->
-    <circle cx="200" cy="200" r="196" fill="url(#${m}_bezel)" stroke="#1a1103" stroke-width="2" />
+    <circle cx="200" cy="200" r="196" fill="url(#${f}_bezel)" stroke="#1a1103" stroke-width="2" />
     
     <!-- Brass Screws -->
     <g fill="#ffd966" stroke="#4a3718" stroke-width="1">
@@ -225,29 +225,29 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
     </g>
 
     <!-- Inner Stepped Brass Rim -->
-    <circle cx="200" cy="200" r="176" fill="none" stroke="url(#${m}_brass)" stroke-width="8" />
+    <circle cx="200" cy="200" r="176" fill="none" stroke="url(#${f}_brass)" stroke-width="8" />
     <circle cx="200" cy="200" r="172" fill="none" stroke="#2a1e09" stroke-width="1.5" />
 
     <!-- Parchment Dial Face -->
-    <circle cx="200" cy="200" r="170" fill="url(#${m}_parchment)" />
+    <circle cx="200" cy="200" r="170" fill="url(#${f}_parchment)" />
     <circle cx="200" cy="200" r="170" fill="none" stroke="#8c7849" stroke-width="1" opacity="0.6" />
     <circle cx="200" cy="200" r="148" fill="none" stroke="#a08955" stroke-width="0.8" stroke-dasharray="2 2" opacity="0.7" />
     <circle cx="200" cy="200" r="115" fill="none" stroke="#a08955" stroke-width="0.6" opacity="0.5" />
 
     <!-- Weather Condition Arc Labels -->
     <g font-family="'Cinzel', Georgia, serif" font-weight="800" text-anchor="middle" fill="#2d1f0e">
-      <text transform="translate(110, 275) rotate(-45)" font-size="11" letter-spacing="1">${N}</text>
+      <text transform="translate(110, 275) rotate(-45)" font-size="11" letter-spacing="1">${A}</text>
       <text transform="translate(96, 185) rotate(-22)" font-size="11.5" letter-spacing="1.5">${D}</text>
       <text transform="translate(200, 94)" font-size="13" font-weight="900" letter-spacing="2.5" fill="#1f1406">${R}</text>
-      <text transform="translate(304, 185) rotate(22)" font-size="11.5" letter-spacing="1.5">${y}</text>
+      <text transform="translate(304, 185) rotate(22)" font-size="11.5" letter-spacing="1.5">${b}</text>
       <text transform="translate(290, 275) rotate(45)" font-size="11" letter-spacing="1">${F}</text>
     </g>
 
     <!-- Center Inscription -->
     <g text-anchor="middle">
-      <text x="200" y="145" font-family="'Cinzel', Georgia, serif" font-size="11" font-weight="bold" fill="#523d1c" letter-spacing="3">${k}</text>
+      <text x="200" y="145" font-family="'Cinzel', Georgia, serif" font-size="11" font-weight="bold" fill="#523d1c" letter-spacing="3">${z}</text>
       <path d="M 140 152 Q 200 156 260 152" fill="none" stroke="#7a5d2e" stroke-width="0.8" />
-      <text x="200" y="166" font-family="'Playfair Display', Georgia, serif" font-style="italic" font-size="9" fill="#755a2f">${b}</text>
+      <text x="200" y="166" font-family="'Playfair Display', Georgia, serif" font-style="italic" font-size="9" fill="#755a2f">${w}</text>
     </g>
 
     <!-- Sub-Dial: 3h Pressure Trend Indicator -->
@@ -257,12 +257,12 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
       <circle cx="0" cy="0" r="30" fill="none" stroke="#b09b6c" stroke-width="0.5" stroke-dasharray="1.5 1.5" />
       <text x="-18" y="16" font-family="'Cinzel', Georgia, serif" font-size="6.5" font-weight="bold" fill="#8f2d18" text-anchor="middle">${B}</text>
       <text x="0" y="-19" font-family="'Cinzel', Georgia, serif" font-size="6.5" font-weight="bold" fill="#4d3b20" text-anchor="middle">${h}</text>
-      <text x="18" y="16" font-family="'Cinzel', Georgia, serif" font-size="6.5" font-weight="bold" fill="#1b5e20" text-anchor="middle">${u}</text>
-      <text x="0" y="11" font-family="sans-serif" font-size="6" fill="#7a6745" text-anchor="middle">${z}</text>
+      <text x="18" y="16" font-family="'Cinzel', Georgia, serif" font-size="6.5" font-weight="bold" fill="#1b5e20" text-anchor="middle">${y}</text>
+      <text x="0" y="11" font-family="sans-serif" font-size="6" fill="#7a6745" text-anchor="middle">${S}</text>
       <line x1="-24" y1="0" x2="-20" y2="0" stroke="#4a391e" stroke-width="0.8"/>
       <line x1="0" y1="-24" x2="0" y2="-20" stroke="#4a391e" stroke-width="0.8"/>
       <line x1="24" y1="0" x2="20" y2="0" stroke="#4a391e" stroke-width="0.8"/>
-      <g class="v-needle-trend" style="transform-origin:0px 0px; transform:rotate(${x.toFixed(1)}deg);">
+      <g class="v-needle-trend" style="transform-origin:0px 0px; transform:rotate(${$.toFixed(1)}deg);">
         <path d="M -1.5 6 L -0.6 -22 L 0.6 -22 L 1.5 6 Z" fill="#8f2d18" />
         <circle cx="0" cy="0" r="3" fill="#3a2a11" stroke="#ffd966" stroke-width="0.6"/>
       </g>
@@ -270,83 +270,83 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
 
     <!-- Scale Ticks & Numbers -->
     <g stroke-linecap="round">${P}</g>
-    <g font-family="'Cinzel', Georgia, serif" font-size="8.5" font-weight="700" fill="#2e200c" text-anchor="middle">${A}</g>
+    <g font-family="'Cinzel', Georgia, serif" font-size="8.5" font-weight="700" fill="#2e200c" text-anchor="middle">${N}</g>
 
     <!-- NEEDLE 1: Reference Marker (3 Hours Ago) - Gold/Brass -->
-    <g class="v-needle-ref" style="transform-origin:200px 200px; transform:rotate(${C.toFixed(1)}deg);" filter="url(#${m}_shadow)">
-      <path d="M 197 60 L 200 48 L 203 60 L 201 100 L 199 100 Z" fill="url(#${m}_gold)" stroke="#664d12" stroke-width="0.7"/>
+    <g class="v-needle-ref" style="transform-origin:200px 200px; transform:rotate(${M.toFixed(1)}deg);" filter="url(#${f}_shadow)">
+      <path d="M 197 60 L 200 48 L 203 60 L 201 100 L 199 100 Z" fill="url(#${f}_gold)" stroke="#664d12" stroke-width="0.7"/>
       <circle cx="200" cy="54" r="2.2" fill="#ffeaa7"/>
-      <circle cx="200" cy="245" r="7" fill="none" stroke="url(#${m}_gold)" stroke-width="1.8"/>
-      <line x1="200" y1="200" x2="200" y2="238" stroke="url(#${m}_gold)" stroke-width="1.8"/>
+      <circle cx="200" cy="245" r="7" fill="none" stroke="url(#${f}_gold)" stroke-width="1.8"/>
+      <line x1="200" y1="200" x2="200" y2="238" stroke="url(#${f}_gold)" stroke-width="1.8"/>
     </g>
 
     <!-- NEEDLE 2: Main Active Pressure Needle - Blued Steel -->
-    <g class="v-needle-main" style="transform-origin:200px 200px; transform:rotate(${I.toFixed(1)}deg);" filter="url(#${m}_shadow)">
-      <path d="M 198.5 200 L 197 105 Q 194 92 195.5 82 Q 197 72 200 45 Q 203 72 204.5 82 Q 206 92 203 105 L 201.5 200 Z" fill="url(#${m}_steel)"/>
+    <g class="v-needle-main" style="transform-origin:200px 200px; transform:rotate(${I.toFixed(1)}deg);" filter="url(#${f}_shadow)">
+      <path d="M 198.5 200 L 197 105 Q 194 92 195.5 82 Q 197 72 200 45 Q 203 72 204.5 82 Q 206 92 203 105 L 201.5 200 Z" fill="url(#${f}_steel)"/>
       <line x1="200" y1="52" x2="200" y2="190" stroke="#718ba8" stroke-width="0.8" opacity="0.6"/>
       <polygon points="200,80 203.5,88 200,96 196.5,88" fill="#d4af37" stroke="#332408" stroke-width="0.5"/>
       <circle cx="200" cy="88" r="1.2" fill="#1b2838"/>
-      <path d="M 198 200 L 196.5 240 Q 192 250 200 256 Q 208 250 203.5 240 L 202 200 Z" fill="url(#${m}_steel)"/>
+      <path d="M 198 200 L 196.5 240 Q 192 250 200 256 Q 208 250 203.5 240 L 202 200 Z" fill="url(#${f}_steel)"/>
       <circle cx="200" cy="245" r="4.5" fill="#151d2a" stroke="#d4af37" stroke-width="0.8"/>
     </g>
 
     <!-- Central Brass Hub -->
-    <g filter="url(#${m}_shadow)">
-      <circle cx="200" cy="200" r="18" fill="url(#${m}_brass)" stroke="#3d2c0e" stroke-width="1.5"/>
+    <g filter="url(#${f}_shadow)">
+      <circle cx="200" cy="200" r="18" fill="url(#${f}_brass)" stroke="#3d2c0e" stroke-width="1.5"/>
       <circle cx="200" cy="200" r="15" fill="#a8842c" stroke="#523c10" stroke-width="1"/>
-      <circle cx="200" cy="200" r="9" fill="url(#${m}_bezel)" stroke="#2b1c05" stroke-width="1"/>
+      <circle cx="200" cy="200" r="9" fill="url(#${f}_bezel)" stroke="#2b1c05" stroke-width="1"/>
       <circle cx="200" cy="200" r="5" fill="#fdf0a6"/>
       <line x1="197" y1="197" x2="203" y2="203" stroke="#523c10" stroke-width="1"/>
     </g>
 
     <!-- Glass Reflection -->
     <circle cx="200" cy="200" r="170" fill="none" opacity="0.3" pointer-events="none"/>
-  </svg>`}function _e(o,t=""){const r=2*Math.PI*44,s=r*.75,d=r-s,v=s*(o/100),f=r-v,$=-225,p=o<30?"#90CAF9":o<60?"#42A5F5":"#1565C0",S="pw"+ ++ee;return`<svg role="img" aria-label="${t?`${t}: ${o}%`:`Precipitation: ${o}%`}" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  </svg>`}function _e(o,t=""){const r=2*Math.PI*44,s=r*.75,c=r-s,u=s*(o/100),m=r-u,x=-225,p=o<30?"#90CAF9":o<60?"#42A5F5":"#1565C0",v="pw"+ ++ee;return`<svg role="img" aria-label="${t?`${t}: ${o}%`:`Precipitation: ${o}%`}" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
     <defs>
-      <linearGradient id="${S}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="${v}" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="${p}" stop-opacity="0.75"/>
         <stop offset="100%" stop-color="${p}" stop-opacity="1"/>
       </linearGradient>
     </defs>
     <circle cx="60" cy="60" r="44" fill="none"
       stroke="rgba(255,255,255,0.20)" stroke-width="10"
-      stroke-dasharray="${s.toFixed(2)} ${d.toFixed(2)}"
-      stroke-linecap="round" transform="rotate(${$} 60 60)"/>
+      stroke-dasharray="${s.toFixed(2)} ${c.toFixed(2)}"
+      stroke-linecap="round" transform="rotate(${x} 60 60)"/>
     <circle cx="60" cy="60" r="44" fill="none"
-      stroke="url(#${S})" stroke-width="10"
-      stroke-dasharray="${v.toFixed(2)} ${f.toFixed(2)}"
-      stroke-linecap="round" transform="rotate(${$} 60 60)"
+      stroke="url(#${v})" stroke-width="10"
+      stroke-dasharray="${u.toFixed(2)} ${m.toFixed(2)}"
+      stroke-linecap="round" transform="rotate(${x} 60 60)"
       style="transition:stroke-dasharray .9s ease"/>
     <text x="60" y="60" text-anchor="middle" dominant-baseline="central"
       fill="white" font-size="22" font-weight="900"
       font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">${o}%</text>
-  </svg>`}function ce(o,t,i){if(!o||o.length===0)return'<div class="tl-empty">\u2014 no trend data yet \u2014</div>';const a=i?28:34;function g(s){return`${String(s.getHours()).padStart(2,"0")}:${String(s.getMinutes()).padStart(2,"0")}`}return`<div class="tl-inner">${o.map((s,d)=>{const v=d===o.length-1,f=ne[s.state]||"partlycloudy",$=t[s.state]||s.state||"\u2014",p=$.split(/[,\s]+/)[0],S=g(s.t),M=s.isCurrent||v?" tl-current":"",I=J(f,`${S}: ${$}`);return`
-      <div class="tl-step${M}">
+  </svg>`}function ce(o,t,i){if(!o||o.length===0)return'<div class="tl-empty">\u2014 no trend data yet \u2014</div>';const a=i?28:34;function l(s){return`${String(s.getHours()).padStart(2,"0")}:${String(s.getMinutes()).padStart(2,"0")}`}return`<div class="tl-inner">${o.map((s,c)=>{const u=c===o.length-1,m=ne[s.state]||"partlycloudy",x=t[s.state]||s.state||"\u2014",p=x.split(/[,\s]+/)[0],v=l(s.t),C=s.isCurrent||u?" tl-current":"",I=J(m,`${v}: ${x}`);return`
+      <div class="tl-step${C}">
         <div class="tl-icon" style="width:${a}px;height:${a}px">${I}</div>
         <div class="tl-lbl">${p}</div>
-        <div class="tl-time">${S}</div>
+        <div class="tl-time">${v}</div>
       </div>
-      ${v?"":'<div class="tl-arrow">\u203A</div>'}`}).join("")}</div>`}function de(o,t,i){if(!o||o.length<2)return'<div class="hchart-empty">\u2014 no history data yet \u2014</div>';const a=560,g=i?150:200,r={top:22,right:16,bottom:38,left:56},s=a-r.left-r.right,d=g-r.top-r.bottom,v=i?11:13,f="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",$="hc"+ ++ee;let p=o.filter(e=>e.p!=null),S=o.filter(e=>e.precip!=null);if(p.length>=4){const e=[...p].map(w=>w.p).sort((w,V)=>w-V),n=e[Math.floor(e.length*.25)],l=e[Math.floor(e.length*.75)],c=l-n;p=p.filter(w=>w.p>=n-3*c&&w.p<=l+3*c)}let M=980,I=1040;if(p.length){const e=p.map(w=>w.p),n=Math.min(...e),l=Math.max(...e),c=Math.max(2,(l-n)*.15);M=Math.floor(n-c),I=Math.ceil(l+c)}const C=o[0].t.getTime(),x=o[o.length-1].t.getTime(),L=x-C||1;function m(e){return r.left+(e.getTime()-C)/L*s}function E(e){return r.top+(1-(e-M)/(I-M))*d}function _(e){return r.top+(1-e/100)*d}function P(e,n){return e.length?e.map((l,c)=>`${c===0?"M":"L"}${m(l.t).toFixed(1)},${n(c===0?e[0][n===E?"p":"precip"]:l[n===E?"p":"precip"]).toFixed(1)}`).join(" "):""}const A=p.map((e,n)=>`${n===0?"M":"L"}${m(e.t).toFixed(1)},${E(e.p).toFixed(1)}`).join(" "),N=S.map((e,n)=>`${n===0?"M":"L"}${m(e.t).toFixed(1)},${_(e.precip).toFixed(1)}`).join(" "),D=p.length?A+` L${m(p[p.length-1].t).toFixed(1)},${(r.top+d).toFixed(1)} L${m(p[0].t).toFixed(1)},${(r.top+d).toFixed(1)} Z`:"",R=i?3:4,y=Math.ceil((I-M)/(R-1)/5)*5,F=[];for(let e=Math.ceil(M/5)*5;e<=I;e+=y)F.push(e);const B=[0,25,50,75,100],h=[];{const e=new Date(C);e.setMinutes(0,0,0),e.setHours(e.getHours()+1);const n=new Date(e);for(;n.getTime()<=x;)n.getHours()%6===0&&h.push({t:new Date(n),label:`${String(n.getHours()).padStart(2,"0")}:00`}),n.setHours(n.getHours()+1)}const u=m(new Date(x));let z="";if(p.length){const e=p[p.length-1],n=m(e.t),l=E(e.p);z=`
-      <circle cx="${n.toFixed(1)}" cy="${l.toFixed(1)}" r="5" fill="#90CAF9" stroke="#fff" stroke-width="1.5"/>
-      <text x="${(n-8).toFixed(1)}" y="${(l+14).toFixed(1)}" text-anchor="middle"
-        fill="#90CAF9" font-size="${v+2}" font-weight="800"
-        font-family="${f}">${e.p.toFixed(1)}</text>`}let k="";if(S.length){const e=S[S.length-1],n=m(e.t),l=_(e.precip);k=`
-      <circle cx="${n.toFixed(1)}" cy="${l.toFixed(1)}" r="4.5" fill="rgba(255,255,255,0.90)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
-      <text x="${(n-8).toFixed(1)}" y="${(l-10).toFixed(1)}" text-anchor="middle"
-        fill="rgba(255,255,255,0.85)" font-size="${v+1}" font-weight="700"
-        font-family="${f}">${e.precip.toFixed(0)}%</text>`}const b=S.length?N+` L${m(S[S.length-1].t).toFixed(1)},${(r.top+d).toFixed(1)} L${m(S[0].t).toFixed(1)},${(r.top+d).toFixed(1)} Z`:"";let T="24-hour pressure and precipitation chart";if(p.length){const e=p.map(n=>n.p);T=`24-hour pressure and precipitation chart: pressure from ${Math.min(...e).toFixed(1)} to ${Math.max(...e).toFixed(1)} hPa`}return`<svg role="img" aria-label="${T}" viewBox="0 0 ${a} ${g}" class="history-chart-svg" xmlns="http://www.w3.org/2000/svg"
+      ${u?"":'<div class="tl-arrow">\u203A</div>'}`}).join("")}</div>`}function de(o,t,i){if(!o||o.length<2)return'<div class="hchart-empty">\u2014 no history data yet \u2014</div>';const a=560,l=i?150:200,r={top:22,right:16,bottom:38,left:56},s=a-r.left-r.right,c=l-r.top-r.bottom,u=i?11:13,m="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",x="hc"+ ++ee;let p=o.filter(e=>e.p!=null),v=o.filter(e=>e.precip!=null);if(p.length>=4){const e=[...p].map(k=>k.p).sort((k,V)=>k-V),n=e[Math.floor(e.length*.25)],_=e[Math.floor(e.length*.75)],g=_-n;p=p.filter(k=>k.p>=n-3*g&&k.p<=_+3*g)}let C=980,I=1040;if(p.length){const e=p.map(k=>k.p),n=Math.min(...e),_=Math.max(...e),g=Math.max(2,(_-n)*.15);C=Math.floor(n-g),I=Math.ceil(_+g)}const M=o[0].t.getTime(),$=o[o.length-1].t.getTime(),L=$-M||1;function f(e){return r.left+(e.getTime()-M)/L*s}function E(e){return r.top+(1-(e-C)/(I-C))*c}function d(e){return r.top+(1-e/100)*c}function P(e,n){return e.length?e.map((_,g)=>`${g===0?"M":"L"}${f(_.t).toFixed(1)},${n(g===0?e[0][n===E?"p":"precip"]:_[n===E?"p":"precip"]).toFixed(1)}`).join(" "):""}const N=p.map((e,n)=>`${n===0?"M":"L"}${f(e.t).toFixed(1)},${E(e.p).toFixed(1)}`).join(" "),A=v.map((e,n)=>`${n===0?"M":"L"}${f(e.t).toFixed(1)},${d(e.precip).toFixed(1)}`).join(" "),D=p.length?N+` L${f(p[p.length-1].t).toFixed(1)},${(r.top+c).toFixed(1)} L${f(p[0].t).toFixed(1)},${(r.top+c).toFixed(1)} Z`:"",R=i?3:4,b=Math.ceil((I-C)/(R-1)/5)*5,F=[];for(let e=Math.ceil(C/5)*5;e<=I;e+=b)F.push(e);const B=[0,25,50,75,100],h=[];{const e=new Date(M);e.setMinutes(0,0,0),e.setHours(e.getHours()+1);const n=new Date(e);for(;n.getTime()<=$;)n.getHours()%6===0&&h.push({t:new Date(n),label:`${String(n.getHours()).padStart(2,"0")}:00`}),n.setHours(n.getHours()+1)}const y=f(new Date($));let S="";if(p.length){const e=p[p.length-1],n=f(e.t),_=E(e.p);S=`
+      <circle cx="${n.toFixed(1)}" cy="${_.toFixed(1)}" r="5" fill="#90CAF9" stroke="#fff" stroke-width="1.5"/>
+      <text x="${(n-8).toFixed(1)}" y="${(_+14).toFixed(1)}" text-anchor="middle"
+        fill="#90CAF9" font-size="${u+2}" font-weight="800"
+        font-family="${m}">${e.p.toFixed(1)}</text>`}let z="";if(v.length){const e=v[v.length-1],n=f(e.t),_=d(e.precip);z=`
+      <circle cx="${n.toFixed(1)}" cy="${_.toFixed(1)}" r="4.5" fill="rgba(255,255,255,0.90)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+      <text x="${(n-8).toFixed(1)}" y="${(_-10).toFixed(1)}" text-anchor="middle"
+        fill="rgba(255,255,255,0.85)" font-size="${u+1}" font-weight="700"
+        font-family="${m}">${e.precip.toFixed(0)}%</text>`}const w=v.length?A+` L${f(v[v.length-1].t).toFixed(1)},${(r.top+c).toFixed(1)} L${f(v[0].t).toFixed(1)},${(r.top+c).toFixed(1)} Z`:"";let T="24-hour pressure and precipitation chart";if(p.length){const e=p.map(n=>n.p);T=`24-hour pressure and precipitation chart: pressure from ${Math.min(...e).toFixed(1)} to ${Math.max(...e).toFixed(1)} hPa`}return`<svg role="img" aria-label="${T}" viewBox="0 0 ${a} ${l}" class="history-chart-svg" xmlns="http://www.w3.org/2000/svg"
     style="width:100%;height:100%;display:block;overflow:visible;cursor:crosshair">
     <defs>
-      <linearGradient id="${$}_p" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="${x}_p" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%"   stop-color="#90CAF9" stop-opacity="0.40"/>
         <stop offset="100%" stop-color="#90CAF9" stop-opacity="0.05"/>
       </linearGradient>
-      <linearGradient id="${$}_pr" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="${x}_pr" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%"   stop-color="rgba(255,255,255,0.22)" stop-opacity="1"/>
         <stop offset="100%" stop-color="rgba(255,255,255,0.02)" stop-opacity="1"/>
       </linearGradient>
-      <clipPath id="${$}_clip">
-        <rect x="${r.left}" y="${r.top}" width="${s}" height="${d}"/>
+      <clipPath id="${x}_clip">
+        <rect x="${r.left}" y="${r.top}" width="${s}" height="${c}"/>
       </clipPath>
     </defs>
 
@@ -354,76 +354,76 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
     ${F.map(e=>{const n=E(e).toFixed(1);return`<line x1="${r.left}" y1="${n}" x2="${r.left+s}" y2="${n}"
         stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4 5"/>`}).join("")}
     <!-- Vertical grid lines (time ticks) -->
-    ${h.map(({t:e})=>{const n=m(e).toFixed(1);return`<line x1="${n}" y1="${r.top}" x2="${n}" y2="${r.top+d}"
+    ${h.map(({t:e})=>{const n=f(e).toFixed(1);return`<line x1="${n}" y1="${r.top}" x2="${n}" y2="${r.top+c}"
         stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="2 5"/>`}).join("")}
 
-    <g clip-path="url(#${$}_clip)">
+    <g clip-path="url(#${x}_clip)">
       <!-- Precip area fill -->
-      ${b?`<path d="${b}" fill="url(#${$}_pr)"/>`:""}
+      ${w?`<path d="${w}" fill="url(#${x}_pr)"/>`:""}
       <!-- Precip line: dashed white, visible on any background -->
-      ${N?`<path d="${N}" fill="none" stroke="rgba(255,255,255,0.72)"
+      ${A?`<path d="${A}" fill="none" stroke="rgba(255,255,255,0.72)"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         stroke-dasharray="5 4"/>`:""}
       <!-- Pressure area fill -->
-      ${D?`<path d="${D}" fill="url(#${$}_p)"/>`:""}
+      ${D?`<path d="${D}" fill="url(#${x}_p)"/>`:""}
       <!-- Pressure line: solid, on top -->
-      ${A?`<path d="${A}" fill="none" stroke="#90CAF9"
+      ${N?`<path d="${N}" fill="none" stroke="#90CAF9"
         stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`:""}
+      ${S}
       ${z}
-      ${k}
     </g>
 
     <!-- Left Y-axis labels (pressure) -->
-    ${F.map(e=>{const n=E(e);return n<r.top-4||n>r.top+d+4?"":`<text x="${r.left-7}" y="${n.toFixed(1)}" text-anchor="end"
+    ${F.map(e=>{const n=E(e);return n<r.top-4||n>r.top+c+4?"":`<text x="${r.left-7}" y="${n.toFixed(1)}" text-anchor="end"
         dominant-baseline="middle" fill="rgba(255,255,255,0.70)"
-        font-size="${v}" font-family="${f}">${e}</text>`}).join("")}
+        font-size="${u}" font-family="${m}">${e}</text>`}).join("")}
 
     <!-- Right Y-axis labels (precip %) \u2014 positioned inside right edge -->
-    ${B.map(e=>{const n=_(e);return n<r.top-4||n>r.top+d+4?"":`<text x="${(r.left+s-2).toFixed(1)}" y="${n.toFixed(1)}" text-anchor="end"
+    ${B.map(e=>{const n=d(e);return n<r.top-4||n>r.top+c+4?"":`<text x="${(r.left+s-2).toFixed(1)}" y="${n.toFixed(1)}" text-anchor="end"
         dominant-baseline="middle" fill="rgba(255,255,255,0.45)"
-        font-size="${v-2}" font-family="${f}">${e}%</text>`}).join("")}
+        font-size="${u-2}" font-family="${m}">${e}%</text>`}).join("")}
 
     <!-- X-axis time labels -->
-    ${h.map(({t:e,label:n})=>{const l=m(e);return l<r.left+6||l>r.left+s-6?"":`<text x="${l.toFixed(1)}" y="${(r.top+d+15).toFixed(1)}" text-anchor="middle"
-        fill="rgba(255,255,255,0.55)" font-size="${v}"
-        font-family="${f}">${n}</text>`}).join("")}
+    ${h.map(({t:e,label:n})=>{const _=f(e);return _<r.left+6||_>r.left+s-6?"":`<text x="${_.toFixed(1)}" y="${(r.top+c+15).toFixed(1)}" text-anchor="middle"
+        fill="rgba(255,255,255,0.55)" font-size="${u}"
+        font-family="${m}">${n}</text>`}).join("")}
 
     <!-- Axis borders -->
-    <line x1="${r.left}" y1="${r.top}" x2="${r.left}" y2="${r.top+d}"
+    <line x1="${r.left}" y1="${r.top}" x2="${r.left}" y2="${r.top+c}"
       stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-    <line x1="${r.left}" y1="${r.top+d}" x2="${r.left+s}" y2="${r.top+d}"
+    <line x1="${r.left}" y1="${r.top+c}" x2="${r.left+s}" y2="${r.top+c}"
       stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
 
     <!-- Legend -->
     <circle cx="${r.left+7}" cy="${r.top-7}" r="4" fill="#90CAF9"/>
     <text x="${r.left+15}" y="${r.top-4}" fill="rgba(255,255,255,0.70)"
-      font-size="${v}" font-family="${f}" dominant-baseline="middle">hPa</text>
+      font-size="${u}" font-family="${m}" dominant-baseline="middle">hPa</text>
     <circle cx="${r.left+52}" cy="${r.top-7}" r="4" fill="rgba(255,255,255,0.80)"/>
     <text x="${r.left+60}" y="${r.top-4}" fill="rgba(255,255,255,0.60)"
-      font-size="${v}" font-family="${f}" dominant-baseline="middle">precip %</text>
+      font-size="${u}" font-family="${m}" dominant-baseline="middle">precip %</text>
 
     <!-- Interactive Scrub Cursor & Tooltip -->
     <g class="hchart-scrub-cursor" style="opacity:0; pointer-events:none; transition:opacity 0.15s ease-out;">
-      <line class="hchart-scrub-line" x1="${r.left}" y1="${r.top}" x2="${r.left}" y2="${r.top+d}" stroke="#FFD54F" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <line class="hchart-scrub-line" x1="${r.left}" y1="${r.top}" x2="${r.left}" y2="${r.top+c}" stroke="#FFD54F" stroke-width="1.5" stroke-dasharray="3 3"/>
       <circle class="hchart-scrub-dot-halo" cx="${r.left}" cy="${r.top}" r="8" fill="rgba(255,213,79,0.3)"/>
       <circle class="hchart-scrub-dot" cx="${r.left}" cy="${r.top}" r="4.5" fill="#FFD54F" stroke="#ffffff" stroke-width="1.5"/>
       <g class="hchart-scrub-tip" transform="translate(${r.left+40}, ${r.top+10})">
         <rect x="-38" y="-11" width="76" height="22" rx="6" fill="#0f172a" stroke="#FFD54F" stroke-width="1" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
-        <text class="hchart-scrub-tip-txt" x="0" y="3.5" fill="#ffffff" font-size="${v+1}" font-weight="700" text-anchor="middle" font-family="${f}">1014.2 hPa</text>
+        <text class="hchart-scrub-tip-txt" x="0" y="3.5" fill="#ffffff" font-size="${u+1}" font-weight="700" text-anchor="middle" font-family="${m}">1014.2 hPa</text>
       </g>
     </g>
-  </svg>`}function ge(o,t){if(o==null)return null;const i=typeof o=="number"?o:parseFloat(o);if(isNaN(i))return null;switch((t||"hpa").trim().toLowerCase()){case"hpa":case"mbar":return i;case"mmhg":return i*1.33322387415;case"inhg":return i*33.863886666667;case"psi":return i*68.947572932;case"pa":return i/100;case"kpa":return i*10;case"bar":return i*1e3;default:return i}}class ve extends HTMLElement{constructor(){super(),this.attachShadow({mode:"open"}),this._config={},this._historyPoints=null,this._historyFetching=!1}static async getConfigElement(){return await import(new URL("./zambretti-weather-card-editor.js",import.meta.url).href),document.createElement("zambretti-weather-card-editor")}static getStubConfig(t){let i="sensor.zambretti_forecast",a="sensor.sager_forecast",g="sensor.zambretti_forecast_6h",r="sensor.zambretti_forecast_12h",s="sensor.zambretti_forecast_24h",d="sensor.precipitation_probability";if(t&&t.states){const v=Object.keys(t.states),f=$=>v.find(p=>p.includes($));i=f("zambretti_forecast")||f("zambretti")||i,a=f("sager_forecast")||f("sager")||a,g=f("zambretti_forecast_6h")||f("forecast_6h")||g,r=f("zambretti_forecast_12h")||f("forecast_12h")||r,s=f("zambretti_forecast_24h")||f("forecast_24h")||s,d=f("precip_probability")||f("precipitation_probability")||d}return{entity_zambretti:i,entity_sager:a,entity_6h:g,entity_12h:r,entity_24h:s,entity_precip:d,entity_wind_speed:"",card_style:"modern",show_wind:!0,show_sager:!0,show_precip:!0,show_forecasts:!0,show_trend:!1,show_history:!1,language:"auto",wind_unit:"m/s",compact:!1,auto_theme:!0,theme_alpha:100}}setConfig(t){this._rendered=!1,this._entitiesResolved=!1,(t.show_history!==this._config.show_history||t.show_trend!==this._config.show_trend)&&(this._historyPoints=null,this._timelineSteps=null),this._config={entity_zambretti:"sensor.zambretti_forecast",entity_sager:"sensor.sager_forecast",entity_6h:"sensor.zambretti_forecast_6h",entity_12h:"sensor.zambretti_forecast_12h",entity_24h:"sensor.zambretti_forecast_24h",entity_precip:"sensor.precipitation_probability",entity_wind_speed:"",show_wind:!0,show_trend:!1,show_history:!1,language:"auto",wind_unit:"m/s",compact:!1,show_sager:!0,show_precip:!0,show_forecasts:!0,auto_theme:!0,theme_alpha:t.theme_alpha??100,custom_bg:"linear-gradient(135deg,#1565C0 0%,#1976D2 100%)",...t}}_resolveEntities(t){const i={entity_zambretti:["_zambretti_forecast","zambretti_forecast"],entity_sager:["_sager_forecast","sager_forecast"],entity_6h:["_zambretti_forecast_6h","zambretti_forecast_6h"],entity_12h:["_zambretti_forecast_12h","zambretti_forecast_12h"],entity_24h:["_zambretti_forecast_24h","zambretti_forecast_24h"],entity_precip:["_precipitation_probability","precipitation_probability"],entity_pressure:["_pressure","pressure","_barometric_pressure"]},a=t.states,g={};for(const[r,s]of Object.entries(i)){const d=this._config[r];if(d&&a[d]){g[r]=d;continue}const v=Object.keys(a).find(f=>{if(!f.startsWith("sensor."))return!1;const $=f.slice(7);return s.some(p=>$===p||$.endsWith(p))});v&&(g[r]=v)}return g}set hass(t){const i=this._hass;if(this._hass=t,!this._entitiesResolved){const d=this._resolveEntities(t);Object.keys(d).length>0&&(this._config={...this._config,...d}),this._entitiesResolved=!0}const a=this._config.entity_zambretti,g=i?.states?.[a]?.state,r=t?.states?.[a]?.state,s=(g==="unavailable"||g==="unknown"||!g)&&r&&r!=="unavailable"&&r!=="unknown";(this._config.show_history||this._config.show_trend)&&this._scheduleHistoryFetch(s),this._rendered?this._patch():this._render()}_scheduleHistoryFetch(t=!1){if(this._historyFetching)return;const i=this._config;if(!i.show_history&&!i.show_trend)return;if(typeof document<"u"&&document.hidden){this._historyFetchPending=!0;return}const a=Date.now(),r=Array.isArray(this._historyPoints)&&this._historyPoints.length>=2||Array.isArray(this._timelineSteps)&&this._timelineSteps.length>0?300*1e3:15*1e3;!t&&this._historyFetchedAt&&a-this._historyFetchedAt<r||(this._historyFetching=!0,this._doFetchHistory().then(()=>{this._historyFetching=!1,this._historyFetchedAt=Date.now(),this._rendered&&(typeof document>"u"||!document.hidden)&&(this._config.show_history&&this._patchChart(),this._config.show_trend&&this._patchTimeline())}).catch(()=>{this._historyFetching=!1}))}async _doFetchHistory(){if(!this._hass)return;const t=this._config,i=new Date,a=t.entity_zambretti,g=t.entity_precip,r=this._attr(a,"pressure_sensor",null)||t.entity_pressure||null;if(!a&&!g&&!r)return;const s=t.show_history!==!1&&!!t.show_history,d=t.show_trend!==!1&&!!t.show_trend;if(!s&&!d)return;const v=d||!r&&s,f=s&&t.show_precip!==!1&&!!g,$=s&&!!r;if(!v&&!f&&!$)return;const p=new Date(i.getTime()-1440*60*1e3),S=new Date(i.getTime()-2880*60*1e3);try{let x=function(e){return Math.round(e.getTime()/(300*1e3))},L=function(e){return e.lu!=null?new Date(e.lu*1e3):e.last_updated?new Date(e.last_updated):new Date},m=function(e){return e.state??e.s??null},E=function(e){return e.attributes??e.a??{}};const[M,I,C]=await Promise.all([v&&a?this._hass.callWS({type:"history/history_during_period",start_time:S.toISOString(),end_time:i.toISOString(),entity_ids:[a],minimal_response:!1,no_attributes:!1,significant_changes_only:!1}):Promise.resolve({}),f&&g?this._hass.callWS({type:"history/history_during_period",start_time:p.toISOString(),end_time:i.toISOString(),entity_ids:[g],minimal_response:!0,no_attributes:!0,significant_changes_only:!1}):Promise.resolve({}),$&&r?this._hass.callWS({type:"history/history_during_period",start_time:p.toISOString(),end_time:i.toISOString(),entity_ids:[r],minimal_response:!0,no_attributes:!0,significant_changes_only:!1}):Promise.resolve({})]),_=new Map,P=M[a]||[],A=p.getTime(),N=this._attr(a,"pressure_hpa",null),D=N!=null&&!isNaN(parseFloat(N))?parseFloat(N):NaN;if(r){const e=C[r]||[],n=this._attr(r,"unit_of_measurement","hPa"),l=this._state(r),c=ge(l,n);let w=0;!isNaN(D)&&c!=null&&!isNaN(c)&&(w=D-c);for(const O of e){const j=L(O);if(j.getTime()<A)continue;const H=x(j),q=m(O),U=ge(q,n);_.has(H)||_.set(H,{t:j,p:null,precip:null}),U!=null&&!isNaN(U)&&(_.get(H).p=U+w)}const V=isNaN(D)?c!=null?c+w:null:D;if(V!=null&&!isNaN(V)){const O=x(i);_.has(O)||_.set(O,{t:i,p:null,precip:null}),_.get(O).p=V}}else{for(const e of P){const n=L(e);if(n.getTime()<A)continue;const l=x(n),c=E(e),w=parseFloat(c.pressure_hpa);_.has(l)||_.set(l,{t:n,p:null,precip:null}),isNaN(w)||(_.get(l).p=w)}if(!isNaN(D)){const e=x(i);_.has(e)||_.set(e,{t:i,p:null,precip:null}),_.get(e).p=D}}let R=[..._.keys()].sort((e,n)=>e-n),y=null;for(const e of R){const n=_.get(e);n.p!=null?y=n.p:y!=null&&(n.p=y)}let F=null;for(const e of R)if(_.get(e).p!=null){F=_.get(e).p;break}if(F!=null)for(const e of R){const n=_.get(e);if(n.p!=null)break;n.p=F}const h=(I[g]||[]).map(e=>({t:L(e),v:parseFloat(m(e))})).filter(e=>!isNaN(e.v)).sort((e,n)=>e.t-n.t),u=parseFloat(this._hass?.states?.[g]?.state);if(!isNaN(u)){const e=x(i);_.has(e)||_.set(e,{t:i,p:null,precip:null}),_.get(e).precip=u,h.push({t:i,v:u}),h.sort((n,l)=>n.t-l.t)}if(h.length){for(const{t:l,v:c}of h){if(l.getTime()<A)continue;const w=x(l);_.has(w)||_.set(w,{t:l,p:null,precip:null}),_.get(w).precip=c}R.length=0,R.push(...[..._.keys()].sort((l,c)=>l-c)),y=null;for(const l of R){const c=_.get(l);c.p!=null?y=c.p:y!=null&&(c.p=y)}if(F!=null)for(const l of R){const c=_.get(l);if(c.p!=null)break;c.p=F}let e=0,n=h[0].v;for(const l of R){const c=_.get(l).t.getTime();for(;e+1<h.length&&h[e+1].t.getTime()<=c;)e++;h[e].t.getTime()<=c&&(n=h[e].v),_.get(l).precip==null&&(_.get(l).precip=n)}}this._historyPoints=R.map(e=>_.get(e));const z=P.map(e=>({t:L(e),state:m(e)})).filter(e=>e.state&&e.state!=="unknown"&&e.state!=="unavailable").sort((e,n)=>e.t-n.t),k=[];for(const e of z){const n=k[k.length-1];if(!(n&&n.state===e.state)){if(n&&e.t.getTime()-n.t.getTime()<1800*1e3){n.state=e.state,n.t=e.t;continue}k.push({t:e.t,state:e.state})}}const b=k.slice(-7),T=this._hass.states[a]?.state;if(T&&T!=="unknown"&&T!=="unavailable"){const e=b[b.length-1];!e||e.state!==T?b.push({t:new Date,state:T,isCurrent:!0}):(e.isCurrent=!0,e.t=new Date)}this._timelineSteps=b}catch{this._historyPoints=[],this._timelineSteps=[]}}_patchChart(){const t=this.shadowRoot?.querySelector(".history-chart-wrap");if(!t){this._rendered=!1,this._render();return}const i=!!this._config.compact;t.style.height=`${i?150:200}px`;const a=this._labels();t.innerHTML=de(this._historyPoints,a,i),this._setupHistoryScrubbing()}_setupHistoryScrubbing(){const t=this.shadowRoot?.querySelector(".history-chart-svg");if(!t||!Array.isArray(this._historyPoints)||this._historyPoints.length<2)return;let i=this._historyPoints.filter(h=>h.p!=null);if(i.length<2)return;const a=this._historyPoints.filter(h=>h.precip!=null),g=this.shadowRoot?.querySelector(".history-title"),r='<svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><polyline points="1,12 5,6 8,9 11,4 15,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>24h',s=t.querySelector(".hchart-scrub-cursor"),d=t.querySelector(".hchart-scrub-line"),v=t.querySelector(".hchart-scrub-dot"),f=t.querySelector(".hchart-scrub-dot-halo"),$=t.querySelector(".hchart-scrub-tip"),p=t.querySelector(".hchart-scrub-tip-txt");if(!s||!d||!v||!$)return;if(i.length>=4){const h=[...i].map(b=>b.p).sort((b,T)=>b-T),u=h[Math.floor(h.length*.25)],z=h[Math.floor(h.length*.75)],k=z-u;i=i.filter(b=>b.p>=u-3*k&&b.p<=z+3*k)}if(i.length<2)return;const S=!!this._config.compact,M=560,I=S?150:200,C={top:22,right:16,bottom:38,left:56},x=M-C.left-C.right,L=I-C.top-C.bottom,m=i.map(h=>h.p),E=Math.min(...m),_=Math.max(...m),P=Math.max(2,(_-E)*.15),A=Math.floor(E-P),N=Math.ceil(_+P),D=this._historyPoints[0].t.getTime(),R=this._historyPoints[this._historyPoints.length-1].t.getTime(),y=Math.max(R-D,1),F=h=>{const u=t.getBoundingClientRect(),z=h.touches?h.touches[0].clientX:h.clientX,b=Math.max(0,Math.min(1,(z-u.left)/u.width))*M,T=Math.max(C.left,Math.min(C.left+x,b)),e=D+(T-C.left)/x*y;let n=i[0],l=1/0;for(const G of i){const W=Math.abs(G.t.getTime()-e);W<l&&(l=W,n=G)}const c=C.top+(1-(n.p-A)/(N-A))*L,w=C.left+(n.t.getTime()-D)/y*x;s.style.opacity="1",d.setAttribute("x1",w.toFixed(1)),d.setAttribute("x2",w.toFixed(1)),v.setAttribute("cx",w.toFixed(1)),v.setAttribute("cy",c.toFixed(1)),f&&(f.setAttribute("cx",w.toFixed(1)),f.setAttribute("cy",c.toFixed(1)));const V=Math.max(C.left+40,Math.min(C.left+x-40,w)),O=Math.max(C.top+10,c-18);$.setAttribute("transform",`translate(${V.toFixed(1)}, ${O.toFixed(1)})`),p&&(p.textContent=`${n.p.toFixed(1)} hPa`);const H=((new Date().getTime()-n.t.getTime())/(3600*1e3)).toFixed(1),q=n.t.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});let U="";if(a.length){let G=a[0],W=1/0;for(const Z of a){const Q=Math.abs(Z.t.getTime()-e);Q<W&&(W=Q,G=Z)}G&&G.precip>0&&(U=` \xB7 \u{1F4A7} ${G.precip.toFixed(0)}%`)}g&&(g.innerHTML=`<span style="color:#FFD54F">\u23F1 ${q} (-${H}h): <b>${n.p.toFixed(1)} hPa</b>${U}</span>`)},B=()=>{s.style.opacity="0",g&&(g.innerHTML=r)};t.onmousemove=F,t.onmouseleave=B,t.ontouchmove=h=>{h.preventDefault(),F(h)},t.ontouchend=B}_patchTimeline(){const t=this.shadowRoot?.querySelector(".trend-timeline-wrap");if(!t){this._rendered=!1,this._render();return}const i=this._labels();t.innerHTML=ce(this._timelineSteps,i,!!this._config.compact)}connectedCallback(){this._bgHandler=t=>{if(this._config&&this._config.auto_theme===!1){this._config={...this._config,custom_bg:t.detail.bg};const i=this.shadowRoot.querySelector("ha-card");i&&(i.style.background=t.detail.bg)}},window.addEventListener("zambretti-bg-preview",this._bgHandler),this._visibilityHandler=()=>{typeof document<"u"&&!document.hidden&&this._historyFetchPending&&(this._historyFetchPending=!1,this._scheduleHistoryFetch())},typeof document<"u"&&document.addEventListener("visibilitychange",this._visibilityHandler)}disconnectedCallback(){window.removeEventListener("zambretti-bg-preview",this._bgHandler),this._visibilityHandler&&typeof document<"u"&&document.removeEventListener("visibilitychange",this._visibilityHandler)}_state(t){return this._hass?.states?.[t]?.state??null}_attr(t,i,a){return this._hass?.states?.[t]?.attributes?.[i]??a}_labels(){return pe(this._config.language||"auto",this._hass?.language||"en")}_vintageLabels(){return me(this._config.language||"auto",this._hass?.language||"en")}_precipLabel(){return he(this._config.language||"auto",this._hass?.language||"en")}_computeThemeBg(t,i){const a=this._config;if(i&&!a.custom_bg)return"radial-gradient(circle at 50% 25%, #2d1f14 0%, #19110a 55%, #0d0805 100%)";const g=a.auto_theme!==!1,r=g?ue(t).bg:a.custom_bg||se.bg;return g?ye(r,a.theme_alpha):r}_render(){if(!this._hass)return;const t=this._config,i=this._labels(),a=!!t.compact,g=t.card_style==="vintage",r=t.card_style==="tile",s=this._state(t.entity_zambretti),d=this._state(t.entity_sager),v=this._state(t.entity_6h),f=this._state(t.entity_12h),$=this._state(t.entity_24h),p=Math.max(0,Math.min(100,parseInt(this._state(t.entity_precip)||"0",10)||0)),S=this._attr(t.entity_zambretti,"is_night",!1),M=ae(s,S),I=S&&(s==="settled_fine"||s==="fine_weather")?"night_clear":X[s]||"partlycloudy",C=t.show_wind!==!1;let x="";if(C){const u=t.entity_wind_speed||t.entity_zambretti,z=t.entity_wind_speed?this._state(t.entity_wind_speed):this._attr(t.entity_zambretti,"wind_speed",null),k=this._attr(u,"unit_of_measurement","m/s"),b=this._attr(t.entity_zambretti,"wind_degrees",null),T=this._attr(t.entity_zambretti,"wind_direction",null)||oe(b),e=le(z,t.wind_unit||"m/s",k);x=e?T?`${T} ${e}`:e:T||""}const m={bg:this._computeThemeBg(I,g)},E=i[s]||s||"\u2014",_=i[d]||d||"\u2014",P=J(M,E),A=this._precipLabel(),N=t.show_precip!==!1,D=t.show_forecasts!==!1,R=t.show_sager!==!1,y=!!t.show_history,F=!!t.show_trend,B=[{label:"6h",key:v},{label:"12h",key:f},{label:"24h",key:$}].map(u=>{const z=i[u.key]||u.key||"\u2014",k=J(X[u.key]||"partlycloudy",`${u.label}: ${z}`);return`
+  </svg>`}function ge(o,t){if(o==null)return null;const i=typeof o=="number"?o:parseFloat(o);if(isNaN(i))return null;switch((t||"hpa").trim().toLowerCase()){case"hpa":case"mbar":return i;case"mmhg":return i*1.33322387415;case"inhg":return i*33.863886666667;case"psi":return i*68.947572932;case"pa":return i/100;case"kpa":return i*10;case"bar":return i*1e3;default:return i}}class ve extends HTMLElement{constructor(){super(),this.attachShadow({mode:"open"}),this._config={},this._historyPoints=null,this._historyFetching=!1}static async getConfigElement(){return await import(new URL("./zambretti-weather-card-editor.js",import.meta.url).href),document.createElement("zambretti-weather-card-editor")}static getStubConfig(t){let i="sensor.zambretti_forecast",a="sensor.sager_forecast",l="sensor.zambretti_forecast_6h",r="sensor.zambretti_forecast_12h",s="sensor.zambretti_forecast_24h",c="sensor.precipitation_probability";if(t&&t.states){const u=Object.keys(t.states),m=x=>u.find(p=>p.includes(x));i=m("zambretti_forecast")||m("zambretti")||i,a=m("sager_forecast")||m("sager")||a,l=m("zambretti_forecast_6h")||m("forecast_6h")||l,r=m("zambretti_forecast_12h")||m("forecast_12h")||r,s=m("zambretti_forecast_24h")||m("forecast_24h")||s,c=m("precip_probability")||m("precipitation_probability")||c}return{entity_zambretti:i,entity_sager:a,entity_6h:l,entity_12h:r,entity_24h:s,entity_precip:c,entity_wind_speed:"",card_style:"modern",show_wind:!0,show_sager:!0,show_precip:!0,show_forecasts:!0,show_trend:!1,show_history:!1,language:"auto",wind_unit:"m/s",compact:!1,auto_theme:!0,theme_alpha:100}}setConfig(t){this._rendered=!1,this._entitiesResolved=!1,(t.show_history!==this._config.show_history||t.show_trend!==this._config.show_trend)&&(this._historyPoints=null,this._timelineSteps=null),this._config={entity_zambretti:"sensor.zambretti_forecast",entity_sager:"sensor.sager_forecast",entity_6h:"sensor.zambretti_forecast_6h",entity_12h:"sensor.zambretti_forecast_12h",entity_24h:"sensor.zambretti_forecast_24h",entity_precip:"sensor.precipitation_probability",entity_wind_speed:"",show_wind:!0,show_trend:!1,show_history:!1,language:"auto",wind_unit:"m/s",compact:!1,show_sager:!0,show_precip:!0,show_forecasts:!0,auto_theme:!0,theme_alpha:t.theme_alpha??100,custom_bg:"linear-gradient(135deg,#1565C0 0%,#1976D2 100%)",...t}}_resolveEntities(t){const i=t?.states||{},a={};let l=this._config.entity_zambretti;(!l||!i[l])&&(l=Object.keys(i).find(c=>{if(!c.startsWith("sensor."))return!1;const u=c.slice(7);return u==="zambretti_forecast"||u.endsWith("_zambretti_forecast")||u.endsWith("_zambretti")})),l&&(a.entity_zambretti=l);let r="";l&&(l.endsWith("_zambretti_forecast")?r=l.slice(0,-18):l.endsWith("_zambretti")?r=l.slice(0,-9):(l==="sensor.zambretti_forecast"||l==="sensor.zambretti")&&(r="sensor."));const s={entity_sager:["sager_forecast","sager"],entity_6h:["zambretti_forecast_6h","forecast_6h"],entity_12h:["zambretti_forecast_12h","forecast_12h"],entity_24h:["zambretti_forecast_24h","forecast_24h"],entity_precip:["precipitation_probability","precip_probability"],entity_pressure:["pressure","barometric_pressure"]};for(const[c,u]of Object.entries(s)){const m=this._config[c];if(m&&i[m]&&(!r||m.startsWith(r))){a[c]=m;continue}let x=null;if(r)for(const p of u){const v=`${r}${p}`;if(i[v]){x=v;break}}x||(x=Object.keys(i).find(p=>{if(!p.startsWith("sensor."))return!1;const v=p.slice(7);return u.some(C=>v===C||v.endsWith(`_${C}`))})),x&&(a[c]=x)}return a}set hass(t){const i=this._hass;if(this._hass=t,!this._entitiesResolved){const c=this._resolveEntities(t);Object.keys(c).length>0&&(this._config={...this._config,...c}),this._entitiesResolved=!0}const a=this._config.entity_zambretti,l=i?.states?.[a]?.state,r=t?.states?.[a]?.state,s=(l==="unavailable"||l==="unknown"||!l)&&r&&r!=="unavailable"&&r!=="unknown";(this._config.show_history||this._config.show_trend)&&this._scheduleHistoryFetch(s),this._rendered?this._patch():this._render()}_scheduleHistoryFetch(t=!1){if(this._historyFetching)return;const i=this._config;if(!i.show_history&&!i.show_trend)return;if(typeof document<"u"&&document.hidden){this._historyFetchPending=!0;return}const a=Date.now(),r=Array.isArray(this._historyPoints)&&this._historyPoints.length>=2||Array.isArray(this._timelineSteps)&&this._timelineSteps.length>0?300*1e3:15*1e3;!t&&this._historyFetchedAt&&a-this._historyFetchedAt<r||(this._historyFetching=!0,this._doFetchHistory().then(()=>{this._historyFetching=!1,this._historyFetchedAt=Date.now(),this._rendered&&(typeof document>"u"||!document.hidden)&&(this._config.show_history&&this._patchChart(),this._config.show_trend&&this._patchTimeline())}).catch(()=>{this._historyFetching=!1}))}async _doFetchHistory(){if(!this._hass)return;const t=this._config,i=new Date,a=t.entity_zambretti,l=t.entity_precip,r=this._attr(a,"pressure_sensor",null)||t.entity_pressure||null;if(!a&&!l&&!r)return;const s=t.show_history!==!1&&!!t.show_history,c=t.show_trend!==!1&&!!t.show_trend;if(!s&&!c)return;const u=c||!r&&s,m=s&&t.show_precip!==!1&&!!l,x=s&&!!r;if(!u&&!m&&!x)return;const p=new Date(i.getTime()-1440*60*1e3),v=new Date(i.getTime()-2880*60*1e3);try{let $=function(e){return Math.round(e.getTime()/(300*1e3))},L=function(e){return e.lu!=null?new Date(e.lu*1e3):e.last_updated?new Date(e.last_updated):new Date},f=function(e){return e.state??e.s??null},E=function(e){return e.attributes??e.a??{}};const[C,I,M]=await Promise.all([u&&a?this._hass.callWS({type:"history/history_during_period",start_time:v.toISOString(),end_time:i.toISOString(),entity_ids:[a],minimal_response:!1,no_attributes:!1,significant_changes_only:!1}):Promise.resolve({}),m&&l?this._hass.callWS({type:"history/history_during_period",start_time:p.toISOString(),end_time:i.toISOString(),entity_ids:[l],minimal_response:!0,no_attributes:!0,significant_changes_only:!1}):Promise.resolve({}),x&&r?this._hass.callWS({type:"history/history_during_period",start_time:p.toISOString(),end_time:i.toISOString(),entity_ids:[r],minimal_response:!0,no_attributes:!0,significant_changes_only:!1}):Promise.resolve({})]),d=new Map,P=C[a]||[],N=p.getTime(),A=this._attr(a,"pressure_hpa",null),D=A!=null&&!isNaN(parseFloat(A))?parseFloat(A):NaN;if(r){const e=M[r]||[],n=this._attr(r,"unit_of_measurement","hPa"),_=this._state(r),g=ge(_,n);let k=0;!isNaN(D)&&g!=null&&!isNaN(g)&&(k=D-g);for(const O of e){const j=L(O);if(j.getTime()<N)continue;const H=$(j),q=f(O),G=ge(q,n);d.has(H)||d.set(H,{t:j,p:null,precip:null}),G!=null&&!isNaN(G)&&(d.get(H).p=G+k)}const V=isNaN(D)?g!=null?g+k:null:D;if(V!=null&&!isNaN(V)){const O=$(i);d.has(O)||d.set(O,{t:i,p:null,precip:null}),d.get(O).p=V}}else{for(const e of P){const n=L(e);if(n.getTime()<N)continue;const _=$(n),g=E(e),k=parseFloat(g.pressure_hpa);d.has(_)||d.set(_,{t:n,p:null,precip:null}),isNaN(k)||(d.get(_).p=k)}if(!isNaN(D)){const e=$(i);d.has(e)||d.set(e,{t:i,p:null,precip:null}),d.get(e).p=D}}let R=[...d.keys()].sort((e,n)=>e-n),b=null;for(const e of R){const n=d.get(e);n.p!=null?b=n.p:b!=null&&(n.p=b)}let F=null;for(const e of R)if(d.get(e).p!=null){F=d.get(e).p;break}if(F!=null)for(const e of R){const n=d.get(e);if(n.p!=null)break;n.p=F}const h=(I[l]||[]).map(e=>({t:L(e),v:parseFloat(f(e))})).filter(e=>!isNaN(e.v)).sort((e,n)=>e.t-n.t),y=parseFloat(this._hass?.states?.[l]?.state);if(!isNaN(y)){const e=$(i);d.has(e)||d.set(e,{t:i,p:null,precip:null}),d.get(e).precip=y,h.push({t:i,v:y}),h.sort((n,_)=>n.t-_.t)}if(h.length){for(const{t:_,v:g}of h){if(_.getTime()<N)continue;const k=$(_);d.has(k)||d.set(k,{t:_,p:null,precip:null}),d.get(k).precip=g}R.length=0,R.push(...[...d.keys()].sort((_,g)=>_-g)),b=null;for(const _ of R){const g=d.get(_);g.p!=null?b=g.p:b!=null&&(g.p=b)}if(F!=null)for(const _ of R){const g=d.get(_);if(g.p!=null)break;g.p=F}let e=0,n=h[0].v;for(const _ of R){const g=d.get(_).t.getTime();for(;e+1<h.length&&h[e+1].t.getTime()<=g;)e++;h[e].t.getTime()<=g&&(n=h[e].v),d.get(_).precip==null&&(d.get(_).precip=n)}}this._historyPoints=R.map(e=>d.get(e));const S=P.map(e=>({t:L(e),state:f(e)})).filter(e=>e.state&&e.state!=="unknown"&&e.state!=="unavailable").sort((e,n)=>e.t-n.t),z=[];for(const e of S){const n=z[z.length-1];if(!(n&&n.state===e.state)){if(n&&e.t.getTime()-n.t.getTime()<1800*1e3){n.state=e.state,n.t=e.t;continue}z.push({t:e.t,state:e.state})}}const w=z.slice(-7),T=this._hass.states[a]?.state;if(T&&T!=="unknown"&&T!=="unavailable"){const e=w[w.length-1];!e||e.state!==T?w.push({t:new Date,state:T,isCurrent:!0}):(e.isCurrent=!0,e.t=new Date)}this._timelineSteps=w}catch{this._historyPoints=[],this._timelineSteps=[]}}_patchChart(){const t=this.shadowRoot?.querySelector(".history-chart-wrap");if(!t){this._rendered=!1,this._render();return}const i=!!this._config.compact;t.style.height=`${i?150:200}px`;const a=this._labels();t.innerHTML=de(this._historyPoints,a,i),this._setupHistoryScrubbing()}_setupHistoryScrubbing(){const t=this.shadowRoot?.querySelector(".history-chart-svg");if(!t||!Array.isArray(this._historyPoints)||this._historyPoints.length<2)return;let i=this._historyPoints.filter(h=>h.p!=null);if(i.length<2)return;const a=this._historyPoints.filter(h=>h.precip!=null),l=this.shadowRoot?.querySelector(".history-title"),r='<svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><polyline points="1,12 5,6 8,9 11,4 15,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>24h',s=t.querySelector(".hchart-scrub-cursor"),c=t.querySelector(".hchart-scrub-line"),u=t.querySelector(".hchart-scrub-dot"),m=t.querySelector(".hchart-scrub-dot-halo"),x=t.querySelector(".hchart-scrub-tip"),p=t.querySelector(".hchart-scrub-tip-txt");if(!s||!c||!u||!x)return;if(i.length>=4){const h=[...i].map(w=>w.p).sort((w,T)=>w-T),y=h[Math.floor(h.length*.25)],S=h[Math.floor(h.length*.75)],z=S-y;i=i.filter(w=>w.p>=y-3*z&&w.p<=S+3*z)}if(i.length<2)return;const v=!!this._config.compact,C=560,I=v?150:200,M={top:22,right:16,bottom:38,left:56},$=C-M.left-M.right,L=I-M.top-M.bottom,f=i.map(h=>h.p),E=Math.min(...f),d=Math.max(...f),P=Math.max(2,(d-E)*.15),N=Math.floor(E-P),A=Math.ceil(d+P),D=this._historyPoints[0].t.getTime(),R=this._historyPoints[this._historyPoints.length-1].t.getTime(),b=Math.max(R-D,1),F=h=>{const y=t.getBoundingClientRect(),S=h.touches?h.touches[0].clientX:h.clientX,w=Math.max(0,Math.min(1,(S-y.left)/y.width))*C,T=Math.max(M.left,Math.min(M.left+$,w)),e=D+(T-M.left)/$*b;let n=i[0],_=1/0;for(const U of i){const W=Math.abs(U.t.getTime()-e);W<_&&(_=W,n=U)}const g=M.top+(1-(n.p-N)/(A-N))*L,k=M.left+(n.t.getTime()-D)/b*$;s.style.opacity="1",c.setAttribute("x1",k.toFixed(1)),c.setAttribute("x2",k.toFixed(1)),u.setAttribute("cx",k.toFixed(1)),u.setAttribute("cy",g.toFixed(1)),m&&(m.setAttribute("cx",k.toFixed(1)),m.setAttribute("cy",g.toFixed(1)));const V=Math.max(M.left+40,Math.min(M.left+$-40,k)),O=Math.max(M.top+10,g-18);x.setAttribute("transform",`translate(${V.toFixed(1)}, ${O.toFixed(1)})`),p&&(p.textContent=`${n.p.toFixed(1)} hPa`);const H=((new Date().getTime()-n.t.getTime())/(3600*1e3)).toFixed(1),q=n.t.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});let G="";if(a.length){let U=a[0],W=1/0;for(const Z of a){const Q=Math.abs(Z.t.getTime()-e);Q<W&&(W=Q,U=Z)}U&&U.precip>0&&(G=` \xB7 \u{1F4A7} ${U.precip.toFixed(0)}%`)}l&&(l.innerHTML=`<span style="color:#FFD54F">\u23F1 ${q} (-${H}h): <b>${n.p.toFixed(1)} hPa</b>${G}</span>`)},B=()=>{s.style.opacity="0",l&&(l.innerHTML=r)};t.onmousemove=F,t.onmouseleave=B,t.ontouchmove=h=>{h.preventDefault(),F(h)},t.ontouchend=B}_patchTimeline(){const t=this.shadowRoot?.querySelector(".trend-timeline-wrap");if(!t){this._rendered=!1,this._render();return}const i=this._labels();t.innerHTML=ce(this._timelineSteps,i,!!this._config.compact)}connectedCallback(){this._bgHandler=t=>{if(this._config&&this._config.auto_theme===!1){this._config={...this._config,custom_bg:t.detail.bg};const i=this.shadowRoot.querySelector("ha-card");i&&(i.style.background=t.detail.bg)}},window.addEventListener("zambretti-bg-preview",this._bgHandler),this._visibilityHandler=()=>{typeof document<"u"&&!document.hidden&&this._historyFetchPending&&(this._historyFetchPending=!1,this._scheduleHistoryFetch())},typeof document<"u"&&document.addEventListener("visibilitychange",this._visibilityHandler)}disconnectedCallback(){window.removeEventListener("zambretti-bg-preview",this._bgHandler),this._visibilityHandler&&typeof document<"u"&&document.removeEventListener("visibilitychange",this._visibilityHandler)}_state(t){return this._hass?.states?.[t]?.state??null}_attr(t,i,a){return this._hass?.states?.[t]?.attributes?.[i]??a}_labels(){return pe(this._config.language||"auto",this._hass?.language||"en")}_vintageLabels(){return me(this._config.language||"auto",this._hass?.language||"en")}_precipLabel(){return he(this._config.language||"auto",this._hass?.language||"en")}_computeThemeBg(t,i){const a=this._config;if(i&&!a.custom_bg)return"radial-gradient(circle at 50% 25%, #2d1f14 0%, #19110a 55%, #0d0805 100%)";const l=a.auto_theme!==!1,r=l?ue(t).bg:a.custom_bg||se.bg;return l?ye(r,a.theme_alpha):r}_render(){if(!this._hass)return;const t=this._config,i=this._labels(),a=!!t.compact,l=t.card_style==="vintage",r=t.card_style==="tile",s=this._state(t.entity_zambretti),c=this._state(t.entity_sager),u=this._state(t.entity_6h),m=this._state(t.entity_12h),x=this._state(t.entity_24h),p=Math.max(0,Math.min(100,parseInt(this._state(t.entity_precip)||"0",10)||0)),v=this._attr(t.entity_zambretti,"is_night",!1),C=ae(s,v),I=v&&(s==="settled_fine"||s==="fine_weather")?"night_clear":X[s]||"partlycloudy",M=t.show_wind!==!1;let $="";if(M){const y=t.entity_wind_speed||t.entity_zambretti,S=t.entity_wind_speed?this._state(t.entity_wind_speed):this._attr(t.entity_zambretti,"wind_speed",null),z=this._attr(y,"unit_of_measurement","m/s"),w=this._attr(t.entity_zambretti,"wind_degrees",null),T=this._attr(t.entity_zambretti,"wind_direction",null)||oe(w),e=le(S,t.wind_unit||"m/s",z);$=e?T?`${T} ${e}`:e:T||""}const f={bg:this._computeThemeBg(I,l)},E=i[s]||s||"\u2014",d=i[c]||c||"\u2014",P=J(C,E),N=this._precipLabel(),A=t.show_precip!==!1,D=t.show_forecasts!==!1,R=t.show_sager!==!1,b=!!t.show_history,F=!!t.show_trend,B=[{label:"6h",key:u},{label:"12h",key:m},{label:"24h",key:x}].map(y=>{const S=i[y.key]||y.key||"\u2014",z=J(X[y.key]||"partlycloudy",`${y.label}: ${S}`);return`
       <div class="fc">
-        <span class="fc-time">${u.label}</span>
-        <span class="fc-icon">${k}</span>
-        <span class="fc-lbl">${z}</span>
-      </div>`}).join("");let h="";if(r){const u=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),z=u!=null?parseFloat(u):1013.2,k=this._attr(t.entity_zambretti,"pressure_delta_3h",null),b=k!=null?parseFloat(k):0,T=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),e=b>=1.4?"#4ade80":b<=-1.4?"#f87171":"#facc15",n=b>=1.4?"#86efac":b<=-1.4?"#fca5a5":"#fef08a";h=`
+        <span class="fc-time">${y.label}</span>
+        <span class="fc-icon">${z}</span>
+        <span class="fc-lbl">${S}</span>
+      </div>`}).join("");let h="";if(r){const y=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),S=y!=null?parseFloat(y):1013.2,z=this._attr(t.entity_zambretti,"pressure_delta_3h",null),w=z!=null?parseFloat(z):0,T=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),e=w>=1.4?"#4ade80":w<=-1.4?"#f87171":"#facc15",n=w>=1.4?"#86efac":w<=-1.4?"#fca5a5":"#fef08a";h=`
         <div class="tile-container">
           <div class="tile-header-wrap">
             <div class="tile-icon-box">${P}</div>
             <div class="tile-text-group">
               <div class="tile-title">${E}</div>
-              ${R?`<div class="tile-subtitle">${_}</div>`:""}
+              ${R?`<div class="tile-subtitle">${d}</div>`:""}
             </div>
             <div class="tile-trend-pill">
               <span class="tile-trend-dot" style="background:${e}"></span>
@@ -432,41 +432,41 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
           </div>
           <div class="tile-bottom-chips">
             <div class="tile-chips-left">
-              ${N?`<span class="tile-chip tile-chip-precip">\u{1F4A7} ${p}%</span>`:""}
-              ${C&&x?`<span class="tile-chip tile-chip-wind">\u{1F4A8} ${x}</span>`:""}
+              ${A?`<span class="tile-chip tile-chip-precip">\u{1F4A7} ${p}%</span>`:""}
+              ${M&&$?`<span class="tile-chip tile-chip-wind">\u{1F4A8} ${$}</span>`:""}
             </div>
-            <span class="tile-chip tile-chip-pressure">\u23F1 ${z!=null&&!isNaN(z)?z.toFixed(1):"\u2014"} hPa</span>
+            <span class="tile-chip tile-chip-pressure">\u23F1 ${S!=null&&!isNaN(S)?S.toFixed(1):"\u2014"} hPa</span>
           </div>
         </div>
-      `}else if(g){const u=this._vintageLabels(),z=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),k=z!=null?parseFloat(z):1013.2,b=this._attr(t.entity_zambretti,"pressure_3h_ago",null),T=this._attr(t.entity_zambretti,"pressure_delta_3h",null),e=T!=null?parseFloat(T):0,n=b!=null?parseFloat(b):k-e,l=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),c=be(k,n,e,u,{showSubdial:t.show_subdial!==!1,compact:a}),w=e>=1.4?"#86efac":e<=-1.4?"#fca5a5":"#fef08a";h=`
+      `}else if(l){const y=this._vintageLabels(),S=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),z=S!=null?parseFloat(S):1013.2,w=this._attr(t.entity_zambretti,"pressure_3h_ago",null),T=this._attr(t.entity_zambretti,"pressure_delta_3h",null),e=T!=null?parseFloat(T):0,n=w!=null?parseFloat(w):z-e,_=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),g=be(z,n,e,y,{showSubdial:t.show_subdial!==!1,compact:a}),k=e>=1.4?"#86efac":e<=-1.4?"#fca5a5":"#fef08a";h=`
         <div class="vintage-container">
-          <div class="vintage-dial-wrap">${c}</div>
+          <div class="vintage-dial-wrap">${g}</div>
           <div class="vintage-readout">
             <div class="vintage-main-bar">
               <div class="vintage-forecast-title">${E}</div>
-              ${R?`<div class="vintage-sager-sub"><span class="vintage-badge">Sager</span> <span>${_}</span></div>`:""}
+              ${R?`<div class="vintage-sager-sub"><span class="vintage-badge">Sager</span> <span>${d}</span></div>`:""}
             </div>
             <div class="vintage-metrics-grid">
               <div class="vintage-metric-box">
-                <div class="vintage-metric-lbl">${u.current||"Current"}</div>
-                <div class="vintage-metric-val v-p-hpa">${k!=null&&!isNaN(k)?k.toFixed(1):"\u2014"} <span style="font-size:0.75em;font-weight:400;color:#d4af37">hPa</span></div>
-                <div class="vintage-metric-sub v-p-mm">${k!=null&&!isNaN(k)?(k*.750062).toFixed(1)+" mmHg":""}</div>
+                <div class="vintage-metric-lbl">${y.current||"Current"}</div>
+                <div class="vintage-metric-val v-p-hpa">${z!=null&&!isNaN(z)?z.toFixed(1):"\u2014"} <span style="font-size:0.75em;font-weight:400;color:#d4af37">hPa</span></div>
+                <div class="vintage-metric-sub v-p-mm">${z!=null&&!isNaN(z)?(z*.750062).toFixed(1)+" mmHg":""}</div>
               </div>
               <div class="vintage-metric-box">
-                <div class="vintage-metric-lbl">${u.trend||"Trend"} (3h)</div>
-                <div class="vintage-metric-val v-trend-delta" style="color:${w}">${e!=null&&!isNaN(e)?(e>=0?"+":"")+e.toFixed(1)+" hPa":"\u2014"}</div>
-                <div class="vintage-metric-sub v-trend-lbl">${l}</div>
+                <div class="vintage-metric-lbl">${y.trend||"Trend"} (3h)</div>
+                <div class="vintage-metric-val v-trend-delta" style="color:${k}">${e!=null&&!isNaN(e)?(e>=0?"+":"")+e.toFixed(1)+" hPa":"\u2014"}</div>
+                <div class="vintage-metric-sub v-trend-lbl">${_}</div>
               </div>
             </div>
           </div>
         </div>
         ${D?`<div class="cell forecast-row" style="border-top:1px solid rgba(212,175,55,0.20)">${B}</div>`:""}
         <div class="footer" style="border-top:1px solid rgba(212,175,55,0.20)">
-          ${x?`<span class="footer-wind">\u{1F4A8} ${x}</span>`:""}
-          ${N?`<span class="footer-precip">\u{1F4A7} ${A}: ${p}%</span>`:""}
+          ${$?`<span class="footer-wind">\u{1F4A8} ${$}</span>`:""}
+          ${A?`<span class="footer-precip">\u{1F4A7} ${N}: ${p}%</span>`:""}
         </div>
       `}else h=`
-        <div class="grid" style="grid-template-columns:${N?"1fr 1fr":"1fr"}">
+        <div class="grid" style="grid-template-columns:${A?"1fr 1fr":"1fr"}">
           <div class="cell main-cell">
             <div class="main-icon">${P}</div>
             <div class="main-info">
@@ -474,35 +474,35 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
               <div class="main-sub">Zambretti</div>
             </div>
           </div>
-          ${N?`
+          ${A?`
           <div class="cell precip-cell">
-            <div class="precip-title">${A}</div>
-            <div class="precip-widget">${_e(p,A)}</div>
+            <div class="precip-title">${N}</div>
+            <div class="precip-widget">${_e(p,N)}</div>
           </div>`:""}
           ${D?`
           <div class="cell forecast-row">${B}</div>`:""}
         </div>
         <div class="footer">
-          ${x?`<span class="footer-wind">\u{1F4A8} ${x}</span>`:""}
+          ${$?`<span class="footer-wind">\u{1F4A8} ${$}</span>`:""}
           ${R?`
           <span class="footer-badge">Sager</span>
-          <span class="footer-text">${_}</span>`:""}
+          <span class="footer-text">${d}</span>`:""}
         </div>
       `;this.shadowRoot.innerHTML=`
-      <style>${this._css(m,a,N,g,r)}</style>
-      <ha-card style="background:${m.bg}">
+      <style>${this._css(f,a,A,l,r)}</style>
+      <ha-card style="background:${f.bg}">
         ${h}
         ${F?`
         <div class="trend-section">
           <div class="trend-title"><svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="4" x2="8" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="8.5" x2="11" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Trend</div>
           <div class="trend-timeline-wrap">${ce(this._timelineSteps,i,a)}</div>
         </div>`:""}
-        ${y?`
+        ${b?`
         <div class="history-section">
           <div class="history-title"><svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><polyline points="1,12 5,6 8,9 11,4 15,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>24h</div>
           <div class="history-chart-wrap" style="height:${a?150:200}px">${de(this._historyPoints,i,a)}</div>
         </div>`:""}
-      </ha-card>`,y&&this._setupHistoryScrubbing(),this._lastIconKey=M,this._lastThemeBg=m.bg,this._lastPrecip=p,this._lastStyle=t.card_style,this._rendered=!0}_patch(){if(!this._hass||!this._rendered)return;const t=this._config,i=this._labels(),a=this.shadowRoot,g=t.card_style==="vintage",r=t.card_style==="tile",s=this._state(t.entity_zambretti),d=this._state(t.entity_sager),v=this._state(t.entity_6h),f=this._state(t.entity_12h),$=this._state(t.entity_24h),p=Math.max(0,Math.min(100,parseInt(this._state(t.entity_precip)||"0",10)||0)),S=this._attr(t.entity_zambretti,"is_night",!1),M=ae(s,S),I=S&&(s==="settled_fine"||s==="fine_weather")?"night_clear":X[s]||"partlycloudy",C=this._computeThemeBg(I,g);if(M!==this._lastIconKey||C!==this._lastThemeBg||t.card_style!==this._lastStyle){this._rendered=!1,this._render();return}const x=i[s]||s||"\u2014",L=i[d]||d||"\u2014",m=a.querySelector(".main-label");m&&m.textContent!==x&&(m.textContent=x);const E=a.querySelector(".main-icon svg, .tile-icon-box svg");E&&E.getAttribute("aria-label")!==x&&E.setAttribute("aria-label",x);const _=a.querySelector(".footer-text");_&&_.textContent!==L&&(_.textContent=L);const P=t.show_wind!==!1;let A="";if(P){const y=t.entity_wind_speed||t.entity_zambretti,F=t.entity_wind_speed?this._state(t.entity_wind_speed):this._attr(t.entity_zambretti,"wind_speed",null),B=this._attr(y,"unit_of_measurement","m/s"),h=this._attr(t.entity_zambretti,"wind_degrees",null),u=this._attr(t.entity_zambretti,"wind_direction",null)||oe(h),z=le(F,t.wind_unit||"m/s",B);A=z?u?`${u} ${z}`:z:u||""}const N=a.querySelector(".footer-wind");if(N){const y=A?`\u{1F4A8} ${A}`:"";N.textContent!==y&&(N.textContent=y),N.style.display=P?"":"none"}if(r){const y=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),F=y!=null?parseFloat(y):1013.2,B=this._attr(t.entity_zambretti,"pressure_delta_3h",null),h=B!=null?parseFloat(B):0,u=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),z=h>=1.4?"#4ade80":h<=-1.4?"#f87171":"#facc15",k=h>=1.4?"#86efac":h<=-1.4?"#fca5a5":"#fef08a",b=a.querySelector(".tile-title");b&&b.textContent!==x&&(b.textContent=x);const T=a.querySelector(".tile-subtitle");T&&T.textContent!==L&&(T.textContent=L);const e=a.querySelector(".tile-trend-dot");e&&(e.style.background=z);const n=a.querySelector(".tile-trend-text");n&&(n.textContent!==u&&(n.textContent=u),n.style.color=k);const l=a.querySelector(".tile-chip-precip");l&&(l.textContent=`\u{1F4A7} ${p}%`);const c=a.querySelector(".tile-chip-pressure");c&&(c.textContent=`\u23F1 ${F.toFixed(1)} hPa`)}if(g){const y=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),F=y!=null?parseFloat(y):1013.2,B=this._attr(t.entity_zambretti,"pressure_3h_ago",null),h=this._attr(t.entity_zambretti,"pressure_delta_3h",null),u=h!=null?parseFloat(h):0,z=B!=null?parseFloat(B):F-u,k=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),b=F!=null&&!isNaN(F)?F:1013.25,T=z!=null&&!isNaN(z)?z:b,e=u!=null&&!isNaN(u)?u:b-T,n=-120+(Math.max(960,Math.min(1060,b))-960)/100*240,l=-120+(Math.max(960,Math.min(1060,T))-960)/100*240,c=Math.max(-4,Math.min(4,e))/4*45,w=a.querySelector(".v-needle-main");w&&(w.style.transform=`rotate(${n.toFixed(1)}deg)`);const V=a.querySelector(".v-needle-ref");V&&(V.style.transform=`rotate(${l.toFixed(1)}deg)`);const O=a.querySelector(".v-needle-trend");O&&(O.style.transform=`rotate(${c.toFixed(1)}deg)`);const j=a.querySelector(".vintage-forecast-title");j&&j.textContent!==x&&(j.textContent=x);const H=a.querySelector(".v-p-hpa");H&&(H.innerHTML=`${b.toFixed(1)} <span style="font-size:0.7em;font-weight:400;opacity:0.7">hPa</span>`);const q=a.querySelector(".v-p-mm");q&&(q.textContent=`${(b*.750062).toFixed(1)} mmHg`);const U=a.querySelector(".v-trend-delta");U&&(U.textContent=`${e>=0?"+":""}${e.toFixed(1)} hPa`,U.style.color=e>=1.4?"#4ade80":e<=-1.4?"#f87171":"#fef08a");const G=a.querySelector(".v-trend-lbl");G&&(G.textContent=k);const W=this._precipLabel(),Z=a.querySelector(".footer-precip");Z&&(Z.textContent=`\u{1F4A7} ${W}: ${p}%`)}const D=a.querySelectorAll(".fc-lbl"),R=[v,f,$];if(D.forEach((y,F)=>{const B=i[R[F]]||R[F]||"\u2014";y.textContent!==B&&(y.textContent=B)}),p!==this._lastPrecip){const y=a.querySelector(".precip-widget");y&&(y.innerHTML=_e(p)),this._lastPrecip=p}if(t.show_trend&&this._timelineSteps){const y=this._timelineSteps[this._timelineSteps.length-1];s&&s!=="unknown"&&s!=="unavailable"&&y&&y.state!==s&&(this._timelineSteps.forEach(F=>{F.isCurrent=!1}),this._timelineSteps.push({t:new Date,state:s,isCurrent:!0}),this._timelineSteps.length>8&&this._timelineSteps.shift(),this._patchTimeline())}t.show_history&&this._historyPoints&&this._historyPoints.length>=2&&a.querySelector(".hchart-empty")&&this._patchChart(),t.show_trend&&this._timelineSteps&&this._timelineSteps.length>0&&a.querySelector(".tl-empty")&&this._patchTimeline()}_css(t,i,a=!0,g=!1,r=!1){const s=i?.82:1,d=Math.round(72*s),v=(1.15*s).toFixed(2),f=(.72*s).toFixed(2),$=Math.round(42*s),p=(.8*s).toFixed(2),S=Math.round(118*s),M=(.75*s).toFixed(2);return`
+      </ha-card>`,b&&this._setupHistoryScrubbing(),this._lastIconKey=C,this._lastThemeBg=f.bg,this._lastPrecip=p,this._lastStyle=t.card_style,this._rendered=!0}_patch(){if(!this._hass||!this._rendered)return;const t=this._config,i=this._labels(),a=this.shadowRoot,l=t.card_style==="vintage",r=t.card_style==="tile",s=this._state(t.entity_zambretti),c=this._state(t.entity_sager),u=this._state(t.entity_6h),m=this._state(t.entity_12h),x=this._state(t.entity_24h),p=Math.max(0,Math.min(100,parseInt(this._state(t.entity_precip)||"0",10)||0)),v=this._attr(t.entity_zambretti,"is_night",!1),C=ae(s,v),I=v&&(s==="settled_fine"||s==="fine_weather")?"night_clear":X[s]||"partlycloudy",M=this._computeThemeBg(I,l);if(C!==this._lastIconKey||M!==this._lastThemeBg||t.card_style!==this._lastStyle){this._rendered=!1,this._render();return}const $=i[s]||s||"\u2014",L=i[c]||c||"\u2014",f=a.querySelector(".main-label");f&&f.textContent!==$&&(f.textContent=$);const E=a.querySelector(".main-icon svg, .tile-icon-box svg");E&&E.getAttribute("aria-label")!==$&&E.setAttribute("aria-label",$);const d=a.querySelector(".footer-text");d&&d.textContent!==L&&(d.textContent=L);const P=t.show_wind!==!1;let N="";if(P){const b=t.entity_wind_speed||t.entity_zambretti,F=t.entity_wind_speed?this._state(t.entity_wind_speed):this._attr(t.entity_zambretti,"wind_speed",null),B=this._attr(b,"unit_of_measurement","m/s"),h=this._attr(t.entity_zambretti,"wind_degrees",null),y=this._attr(t.entity_zambretti,"wind_direction",null)||oe(h),S=le(F,t.wind_unit||"m/s",B);N=S?y?`${y} ${S}`:S:y||""}const A=a.querySelector(".footer-wind");if(A){const b=N?`\u{1F4A8} ${N}`:"";A.textContent!==b&&(A.textContent=b),A.style.display=P?"":"none"}if(r){const b=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),F=b!=null?parseFloat(b):1013.2,B=this._attr(t.entity_zambretti,"pressure_delta_3h",null),h=B!=null?parseFloat(B):0,y=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),S=h>=1.4?"#4ade80":h<=-1.4?"#f87171":"#facc15",z=h>=1.4?"#86efac":h<=-1.4?"#fca5a5":"#fef08a",w=a.querySelector(".tile-title");w&&w.textContent!==$&&(w.textContent=$);const T=a.querySelector(".tile-subtitle");T&&T.textContent!==L&&(T.textContent=L);const e=a.querySelector(".tile-trend-dot");e&&(e.style.background=S);const n=a.querySelector(".tile-trend-text");n&&(n.textContent!==y&&(n.textContent=y),n.style.color=z);const _=a.querySelector(".tile-chip-precip");_&&(_.textContent=`\u{1F4A7} ${p}%`);const g=a.querySelector(".tile-chip-pressure");g&&(g.textContent=`\u23F1 ${F.toFixed(1)} hPa`)}if(l){const b=this._attr(t.entity_zambretti,"pressure_hpa",null)??this._state(t.entity_pressure),F=b!=null?parseFloat(b):1013.2,B=this._attr(t.entity_zambretti,"pressure_3h_ago",null),h=this._attr(t.entity_zambretti,"pressure_delta_3h",null),y=h!=null?parseFloat(h):0,S=B!=null?parseFloat(B):F-y,z=this._attr(t.entity_zambretti,"trend","\u2192 Steady"),w=F!=null&&!isNaN(F)?F:1013.25,T=S!=null&&!isNaN(S)?S:w,e=y!=null&&!isNaN(y)?y:w-T,n=-120+(Math.max(960,Math.min(1060,w))-960)/100*240,_=-120+(Math.max(960,Math.min(1060,T))-960)/100*240,g=Math.max(-4,Math.min(4,e))/4*45,k=a.querySelector(".v-needle-main");k&&(k.style.transform=`rotate(${n.toFixed(1)}deg)`);const V=a.querySelector(".v-needle-ref");V&&(V.style.transform=`rotate(${_.toFixed(1)}deg)`);const O=a.querySelector(".v-needle-trend");O&&(O.style.transform=`rotate(${g.toFixed(1)}deg)`);const j=a.querySelector(".vintage-forecast-title");j&&j.textContent!==$&&(j.textContent=$);const H=a.querySelector(".v-p-hpa");H&&(H.innerHTML=`${w.toFixed(1)} <span style="font-size:0.7em;font-weight:400;opacity:0.7">hPa</span>`);const q=a.querySelector(".v-p-mm");q&&(q.textContent=`${(w*.750062).toFixed(1)} mmHg`);const G=a.querySelector(".v-trend-delta");G&&(G.textContent=`${e>=0?"+":""}${e.toFixed(1)} hPa`,G.style.color=e>=1.4?"#4ade80":e<=-1.4?"#f87171":"#fef08a");const U=a.querySelector(".v-trend-lbl");U&&(U.textContent=z);const W=this._precipLabel(),Z=a.querySelector(".footer-precip");Z&&(Z.textContent=`\u{1F4A7} ${W}: ${p}%`)}const D=a.querySelectorAll(".fc-lbl"),R=[u,m,x];if(D.forEach((b,F)=>{const B=i[R[F]]||R[F]||"\u2014";b.textContent!==B&&(b.textContent=B)}),p!==this._lastPrecip){const b=a.querySelector(".precip-widget");b&&(b.innerHTML=_e(p)),this._lastPrecip=p}if(t.show_trend&&this._timelineSteps){const b=this._timelineSteps[this._timelineSteps.length-1];s&&s!=="unknown"&&s!=="unavailable"&&b&&b.state!==s&&(this._timelineSteps.forEach(F=>{F.isCurrent=!1}),this._timelineSteps.push({t:new Date,state:s,isCurrent:!0}),this._timelineSteps.length>8&&this._timelineSteps.shift(),this._patchTimeline())}t.show_history&&this._historyPoints&&this._historyPoints.length>=2&&a.querySelector(".hchart-empty")&&this._patchChart(),t.show_trend&&this._timelineSteps&&this._timelineSteps.length>0&&a.querySelector(".tl-empty")&&this._patchTimeline()}_css(t,i,a=!0,l=!1,r=!1){const s=i?.82:1,c=Math.round(72*s),u=(1.15*s).toFixed(2),m=(.72*s).toFixed(2),x=Math.round(42*s),p=(.8*s).toFixed(2),v=Math.round(118*s),C=(.75*s).toFixed(2);return`
       :host { display:block; }
       ha-card {
         border-radius:22px; overflow:hidden;
@@ -525,17 +525,17 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
         border-bottom:1px solid rgba(255,255,255,0.12);
       }
       .main-icon {
-        flex:0 0 ${d}px; width:${d}px; height:${d}px;
+        flex:0 0 ${c}px; width:${c}px; height:${c}px;
         filter:drop-shadow(0 2px 8px rgba(0,0,0,0.35));
       }
       .main-icon svg { width:100%; height:100%; }
       .main-info { flex:1; min-width:0; }
       .main-label {
-        font-size:${v}rem; font-weight:700; line-height:1.25;
+        font-size:${u}rem; font-weight:700; line-height:1.25;
         letter-spacing:-0.01em; text-shadow:0 1px 6px rgba(0,0,0,0.35);
       }
       .main-sub {
-        font-size:${f}rem; font-weight:600;
+        font-size:${m}rem; font-weight:600;
         letter-spacing:0.08em; text-transform:uppercase;
         opacity:0.58; margin-top:4px;
       }
@@ -548,11 +548,11 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
         padding:${i?"10px 6px":"12px 8px"};
       }
       .precip-title {
-        font-size:${M}rem; font-weight:800;
+        font-size:${C}rem; font-weight:800;
         letter-spacing:0.12em; text-transform:uppercase;
         text-shadow:0 1px 4px rgba(0,0,0,0.35);
       }
-      .precip-widget { width:${S}px; height:${S}px; }
+      .precip-widget { width:${v}px; height:${v}px; }
 
       /* \u2500\u2500 Tile / Mushroom View Mode \u2500\u2500 */
       .tile-container {
@@ -736,7 +736,7 @@ console.info("%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 ","color: white; back
         background:rgba(255,255,255,0.15); border-radius:5px; padding:1px 7px;
       }
       .fc-icon {
-        width:${$}px; height:${$}px;
+        width:${x}px; height:${x}px;
         display:flex; align-items:center; justify-content:center; opacity:0.90;
       }
       .fc-icon svg { width:100%; height:100%; }

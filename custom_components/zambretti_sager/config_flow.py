@@ -90,6 +90,66 @@ def _apply_location(data: dict) -> dict:
     return normalized
 
 
+def _build_options_schema(
+    entry: config_entries.ConfigEntry,
+    default_lat: float,
+    default_lon: float,
+) -> vol.Schema:
+    """Build unified schema for reconfigure and options flow."""
+    current_pressure = _get_entry_value(entry, CONF_PRESSURE_SENSOR)
+    current_wind = _get_entry_value(entry, CONF_WIND_SENSOR)
+    current_wind_speed = _get_entry_value(entry, CONF_WIND_SPEED_SENSOR)
+    current_temp = _get_entry_value(entry, CONF_TEMPERATURE_SENSOR)
+    current_humidity = _get_entry_value(entry, CONF_HUMIDITY_SENSOR)
+    current_use_sea_level = _get_entry_value(entry, CONF_USE_SEA_LEVEL, False)
+    current_lat = _get_entry_value(entry, CONF_LATITUDE)
+    current_lon = _get_entry_value(entry, CONF_LONGITUDE)
+
+    default_location = {
+        "latitude": current_lat if current_lat is not None else default_lat,
+        "longitude": current_lon if current_lon is not None else default_lon,
+    }
+
+    schema_dict = {
+        vol.Required(CONF_PRESSURE_SENSOR, default=current_pressure): PRESSURE_SENSOR_SELECTOR,
+    }
+    if current_wind:
+        schema_dict[vol.Optional(CONF_WIND_SENSOR, default=current_wind)] = WIND_SENSOR_SELECTOR
+    else:
+        schema_dict[vol.Optional(CONF_WIND_SENSOR)] = WIND_SENSOR_SELECTOR
+
+    if current_wind_speed:
+        schema_dict[vol.Optional(CONF_WIND_SPEED_SENSOR, default=current_wind_speed)] = (
+            WIND_SPEED_SENSOR_SELECTOR
+        )
+    else:
+        schema_dict[vol.Optional(CONF_WIND_SPEED_SENSOR)] = WIND_SPEED_SENSOR_SELECTOR
+
+    if current_temp:
+        schema_dict[vol.Optional(CONF_TEMPERATURE_SENSOR, default=current_temp)] = (
+            TEMPERATURE_SENSOR_SELECTOR
+        )
+    else:
+        schema_dict[vol.Optional(CONF_TEMPERATURE_SENSOR)] = TEMPERATURE_SENSOR_SELECTOR
+
+    if current_humidity:
+        schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR, default=current_humidity)] = (
+            HUMIDITY_SENSOR_SELECTOR
+        )
+    else:
+        schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR)] = HUMIDITY_SENSOR_SELECTOR
+
+    schema_dict[vol.Optional(CONF_USE_SEA_LEVEL, default=current_use_sea_level)] = (
+        selector.BooleanSelector()
+    )
+    schema_dict[vol.Optional(CONF_LOCATION, default=default_location)] = (
+        selector.LocationSelector(
+            selector.LocationSelectorConfig(radius=False, icon="mdi:map-marker")
+        )
+    )
+    return vol.Schema(schema_dict)
+
+
 class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for setting up a new Zambretti & Sager entry."""
 
@@ -147,77 +207,25 @@ class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 reason="reconfigure_successful",
             )
 
-        current_pressure = _get_entry_value(entry, CONF_PRESSURE_SENSOR)
-        current_wind = _get_entry_value(entry, CONF_WIND_SENSOR)
-        current_wind_speed = _get_entry_value(entry, CONF_WIND_SPEED_SENSOR)
-        current_temp = _get_entry_value(entry, CONF_TEMPERATURE_SENSOR)
-        current_humidity = _get_entry_value(entry, CONF_HUMIDITY_SENSOR)
-        current_use_sea_level = _get_entry_value(entry, CONF_USE_SEA_LEVEL, False)
-        current_lat = _get_entry_value(entry, CONF_LATITUDE)
-        current_lon = _get_entry_value(entry, CONF_LONGITUDE)
-
-        default_location = {
-            "latitude": current_lat if current_lat is not None else self.hass.config.latitude,
-            "longitude": current_lon if current_lon is not None else self.hass.config.longitude,
-        }
-
-        schema_dict = {
-            vol.Required(CONF_PRESSURE_SENSOR, default=current_pressure): PRESSURE_SENSOR_SELECTOR,
-        }
-        if current_wind:
-            schema_dict[vol.Optional(CONF_WIND_SENSOR, default=current_wind)] = WIND_SENSOR_SELECTOR
-        else:
-            schema_dict[vol.Optional(CONF_WIND_SENSOR)] = WIND_SENSOR_SELECTOR
-
-        if current_wind_speed:
-            schema_dict[vol.Optional(CONF_WIND_SPEED_SENSOR, default=current_wind_speed)] = (
-                WIND_SPEED_SENSOR_SELECTOR
-            )
-        else:
-            schema_dict[vol.Optional(CONF_WIND_SPEED_SENSOR)] = WIND_SPEED_SENSOR_SELECTOR
-
-        if current_temp:
-            schema_dict[vol.Optional(CONF_TEMPERATURE_SENSOR, default=current_temp)] = (
-                TEMPERATURE_SENSOR_SELECTOR
-            )
-        else:
-            schema_dict[vol.Optional(CONF_TEMPERATURE_SENSOR)] = TEMPERATURE_SENSOR_SELECTOR
-
-        if current_humidity:
-            schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR, default=current_humidity)] = (
-                HUMIDITY_SENSOR_SELECTOR
-            )
-        else:
-            schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR)] = HUMIDITY_SENSOR_SELECTOR
-
-        schema_dict[vol.Optional(CONF_USE_SEA_LEVEL, default=current_use_sea_level)] = (
-            selector.BooleanSelector()
+        schema = _build_options_schema(
+            entry, self.hass.config.latitude, self.hass.config.longitude
         )
-        schema_dict[vol.Optional(CONF_LOCATION, default=default_location)] = (
-            selector.LocationSelector(
-                selector.LocationSelectorConfig(radius=False, icon="mdi:map-marker")
-            )
-        )
-
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=vol.Schema(schema_dict),
+            data_schema=schema,
         )
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> ZambrettiSagerOptionsFlowHandler:
         """Return the options flow handler for this entry."""
-        return ZambrettiSagerOptionsFlowHandler(config_entry)
+        return ZambrettiSagerOptionsFlowHandler()
 
 
 class ZambrettiSagerOptionsFlowHandler(config_entries.OptionsFlow):
     """Options flow for updating an existing Zambretti & Sager entry."""
-
-    def __init__(self, config_entry) -> None:
-        """Store the config entry being reconfigured."""
-        super().__init__()
-        self._config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Handle the options form, pre-populated with current settings."""
@@ -225,70 +233,11 @@ class ZambrettiSagerOptionsFlowHandler(config_entries.OptionsFlow):
             user_input = _normalize_optional_entities(_apply_location(user_input))
             return self.async_create_entry(title="", data=user_input)
 
-        entry = self._config_entry
-        # Read current values from options first, fall back to data
-        current_pressure = _get_entry_value(entry, CONF_PRESSURE_SENSOR)
-        current_wind = _get_entry_value(entry, CONF_WIND_SENSOR)
-        current_wind_speed = _get_entry_value(entry, CONF_WIND_SPEED_SENSOR)
-        current_temp = _get_entry_value(entry, CONF_TEMPERATURE_SENSOR)
-        current_humidity = _get_entry_value(entry, CONF_HUMIDITY_SENSOR)
-        current_use_sea_level = _get_entry_value(entry, CONF_USE_SEA_LEVEL, False)
-        current_lat = _get_entry_value(entry, CONF_LATITUDE)
-        current_lon = _get_entry_value(entry, CONF_LONGITUDE)
-
-        if current_lat is not None and current_lon is not None:
-            default_location = {
-                "latitude": current_lat,
-                "longitude": current_lon,
-            }
-        else:
-            default_location = {
-                "latitude": self.hass.config.latitude,
-                "longitude": self.hass.config.longitude,
-            }
-
-        # Build schema — optional fields with None default are omitted
-        # to avoid voluptuous validation errors on invalid entity_id
-        schema_dict = {
-            vol.Required(CONF_PRESSURE_SENSOR, default=current_pressure): PRESSURE_SENSOR_SELECTOR,
-        }
-
-        if current_wind:
-            schema_dict[vol.Optional(CONF_WIND_SENSOR, default=current_wind)] = WIND_SENSOR_SELECTOR
-        else:
-            schema_dict[vol.Optional(CONF_WIND_SENSOR)] = WIND_SENSOR_SELECTOR
-
-        if current_wind_speed:
-            schema_dict[vol.Optional(CONF_WIND_SPEED_SENSOR, default=current_wind_speed)] = (
-                WIND_SPEED_SENSOR_SELECTOR
-            )
-        else:
-            schema_dict[vol.Optional(CONF_WIND_SPEED_SENSOR)] = WIND_SPEED_SENSOR_SELECTOR
-
-        if current_temp:
-            schema_dict[vol.Optional(CONF_TEMPERATURE_SENSOR, default=current_temp)] = (
-                TEMPERATURE_SENSOR_SELECTOR
-            )
-        else:
-            schema_dict[vol.Optional(CONF_TEMPERATURE_SENSOR)] = TEMPERATURE_SENSOR_SELECTOR
-
-        if current_humidity:
-            schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR, default=current_humidity)] = (
-                HUMIDITY_SENSOR_SELECTOR
-            )
-        else:
-            schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR)] = HUMIDITY_SENSOR_SELECTOR
-
-        schema_dict[vol.Optional(CONF_USE_SEA_LEVEL, default=current_use_sea_level)] = (
-            selector.BooleanSelector()
+        entry = self.config_entry
+        schema = _build_options_schema(
+            entry, self.hass.config.latitude, self.hass.config.longitude
         )
-        schema_dict[vol.Optional(CONF_LOCATION, default=default_location)] = (
-            selector.LocationSelector(
-                selector.LocationSelectorConfig(radius=False, icon="mdi:map-marker")
-            )
-        )
-
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(schema_dict),
+            data_schema=schema,
         )

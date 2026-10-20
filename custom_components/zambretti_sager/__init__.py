@@ -92,3 +92,18 @@ async def _update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ZambrettiConfigEntry) -> bool:
     """Unload a config entry (called when entry is removed)."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ZambrettiConfigEntry) -> None:
+    """Handle removal of a config entry and clean up Lovelace card resources if no entries remain."""
+    current_entries = [
+        e for e in hass.config_entries.async_entries(DOMAIN)
+        if e.entry_id != entry.entry_id
+    ]
+    if not current_entries:
+        _LOGGER.info("Last Zambretti & Sager entry removed — cleaning up Lovelace resources")
+        try:
+            registrar = JSModuleRegistration(hass)
+            await registrar.async_unregister()
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.warning("Failed to unregister Zambretti card resources: %s", err)

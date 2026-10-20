@@ -114,6 +114,20 @@ if "homeassistant" not in sys.modules:
                 self.state = state
                 self.attributes = attributes or {}
 
+        from dataclasses import dataclass
+
+        @dataclass(frozen=True, kw_only=True)
+        class MockSensorEntityDescription:
+            key: str
+            device_class: Any = None
+            native_unit_of_measurement: str | None = None
+            state_class: Any = None
+            options: list[str] | None = None
+            translation_key: str | None = None
+            icon: str | None = None
+            entity_category: Any = None
+            has_entity_name: bool = False
+
         class MockEntity:
             _attr_translation_key = None
             _attr_unique_id = None
@@ -126,6 +140,7 @@ if "homeassistant" not in sys.modules:
             _attr_device_info = None
             _attr_has_entity_name = False
             _unrecorded_attributes = frozenset()
+            entity_description = None
 
             def __init__(self, coordinator=None) -> None:
                 self.coordinator = coordinator
@@ -135,7 +150,11 @@ if "homeassistant" not in sys.modules:
 
             @property
             def translation_key(self):
-                return getattr(self, "_attr_translation_key", None)
+                if getattr(self, "_attr_translation_key", None) is not None:
+                    return self._attr_translation_key
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "translation_key", None)
+                return None
 
             @property
             def unique_id(self):
@@ -147,11 +166,51 @@ if "homeassistant" not in sys.modules:
 
             @property
             def device_class(self):
-                return getattr(self, "_attr_device_class", None)
+                if getattr(self, "_attr_device_class", None) is not None:
+                    return self._attr_device_class
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "device_class", None)
+                return None
 
             @property
             def options(self):
-                return getattr(self, "_attr_options", None)
+                if getattr(self, "_attr_options", None) is not None:
+                    return self._attr_options
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "options", None)
+                return None
+
+            @property
+            def icon(self):
+                if getattr(self, "_attr_icon", None) is not None:
+                    return self._attr_icon
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "icon", None)
+                return None
+
+            @property
+            def native_unit_of_measurement(self):
+                if getattr(self, "_attr_native_unit_of_measurement", None) is not None:
+                    return self._attr_native_unit_of_measurement
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "native_unit_of_measurement", None)
+                return None
+
+            @property
+            def state_class(self):
+                if getattr(self, "_attr_state_class", None) is not None:
+                    return self._attr_state_class
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "state_class", None)
+                return None
+
+            @property
+            def entity_category(self):
+                if getattr(self, "_attr_entity_category", None) is not None:
+                    return self._attr_entity_category
+                if getattr(self, "entity_description", None) is not None:
+                    return getattr(self.entity_description, "entity_category", None)
+                return None
 
         class MockCoordinatorEntity(MockEntity):
             pass
@@ -227,6 +286,15 @@ if "homeassistant" not in sys.modules:
         import homeassistant.components.sensor
 
         homeassistant.components.sensor.SensorEntity = MockSensorEntity
+        homeassistant.components.sensor.SensorEntityDescription = MockSensorEntityDescription
+
+        import homeassistant.config_entries
+
+        class MockOptionsFlow:
+            def __init__(self, *args, **kwargs) -> None:
+                self.config_entry = args[0] if args else None
+
+        homeassistant.config_entries.OptionsFlow = MockOptionsFlow
 
         import homeassistant.components.weather
 

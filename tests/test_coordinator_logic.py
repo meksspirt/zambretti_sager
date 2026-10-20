@@ -474,3 +474,45 @@ async def test_coordinator_precomputes_temperature_and_sea_level_for_buffer_warm
         assert mock_is_sea.call_count == 1
         # Buffer has 5 warmed states + 1 current state = 6 states
         assert len(coord._history_buffer) == 6
+
+
+@pytest.mark.asyncio
+async def test_async_remove_entry_cleans_resources_when_last_entry():
+    """Test async_remove_entry calls unregister when last entry is deleted."""
+    from unittest.mock import AsyncMock, patch
+    from custom_components.zambretti_sager import async_remove_entry
+
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "entry_1"
+
+    # No other entries exist
+    mock_hass.config_entries.async_entries.return_value = [mock_entry]
+
+    with patch("custom_components.zambretti_sager.JSModuleRegistration") as mock_reg_cls:
+        mock_reg = mock_reg_cls.return_value
+        mock_reg.async_unregister = AsyncMock()
+
+        await async_remove_entry(mock_hass, mock_entry)
+        mock_reg.async_unregister.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_async_remove_entry_preserves_resources_when_other_entries_exist():
+    """Test async_remove_entry does not call unregister if another entry remains."""
+    from unittest.mock import AsyncMock, patch
+    from custom_components.zambretti_sager import async_remove_entry
+
+    mock_hass = MagicMock()
+    mock_entry1 = MagicMock(entry_id="entry_1")
+    mock_entry2 = MagicMock(entry_id="entry_2")
+
+    mock_hass.config_entries.async_entries.return_value = [mock_entry1, mock_entry2]
+
+    with patch("custom_components.zambretti_sager.JSModuleRegistration") as mock_reg_cls:
+        mock_reg = mock_reg_cls.return_value
+        mock_reg.async_unregister = AsyncMock()
+
+        await async_remove_entry(mock_hass, mock_entry1)
+        mock_reg.async_unregister.assert_not_called()
+

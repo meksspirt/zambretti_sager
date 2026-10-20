@@ -1198,27 +1198,69 @@ class ZambrettiWeatherCard extends HTMLElement {
    * @returns {object}
    */
   _resolveEntities(h) {
-    const SUFFIX_MAP = {
-      entity_zambretti: ["_zambretti_forecast", "zambretti_forecast"],
-      entity_sager:     ["_sager_forecast",     "sager_forecast"],
-      entity_6h:        ["_zambretti_forecast_6h",  "zambretti_forecast_6h"],
-      entity_12h:       ["_zambretti_forecast_12h", "zambretti_forecast_12h"],
-      entity_24h:       ["_zambretti_forecast_24h", "zambretti_forecast_24h"],
-      entity_precip:    ["_precipitation_probability", "precipitation_probability"],
-      entity_pressure:  ["_pressure", "pressure", "_barometric_pressure"],
-    };
-    const states = h.states;
+    const states = h?.states || {};
     const resolved = {};
-    for (const [key, suffixes] of Object.entries(SUFFIX_MAP)) {
-      // Already configured and entity exists — keep it
-      const cur = this._config[key];
-      if (cur && states[cur]) { resolved[key] = cur; continue; }
-      // Search all sensor entities for a matching suffix
-      const found = Object.keys(states).find(id => {
+
+    // 1. Resolve or validate entity_zambretti
+    let zId = this._config.entity_zambretti;
+    if (!zId || !states[zId]) {
+      zId = Object.keys(states).find(id => {
         if (!id.startsWith("sensor.")) return false;
-        const slug = id.slice(7); // strip "sensor."
-        return suffixes.some(s => slug === s || slug.endsWith(s));
+        const slug = id.slice(7);
+        return slug === "zambretti_forecast" || slug.endsWith("_zambretti_forecast") || slug.endsWith("_zambretti");
       });
+    }
+    if (zId) {
+      resolved.entity_zambretti = zId;
+    }
+
+    // Determine station prefix from zId, e.g. "sensor.dacha_zambretti_forecast" -> "sensor.dacha_"
+    let prefix = "";
+    if (zId) {
+      if (zId.endsWith("_zambretti_forecast")) {
+        prefix = zId.slice(0, -"_zambretti_forecast".length + 1);
+      } else if (zId.endsWith("_zambretti")) {
+        prefix = zId.slice(0, -"_zambretti".length + 1);
+      } else if (zId === "sensor.zambretti_forecast" || zId === "sensor.zambretti") {
+        prefix = "sensor.";
+      }
+    }
+
+    const SIBLINGS = {
+      entity_sager:     ["sager_forecast", "sager"],
+      entity_6h:        ["zambretti_forecast_6h", "forecast_6h"],
+      entity_12h:       ["zambretti_forecast_12h", "forecast_12h"],
+      entity_24h:       ["zambretti_forecast_24h", "forecast_24h"],
+      entity_precip:    ["precipitation_probability", "precip_probability"],
+      entity_pressure:  ["pressure", "barometric_pressure"],
+    };
+
+    for (const [key, suffixes] of Object.entries(SIBLINGS)) {
+      const cur = this._config[key];
+      // If already configured and belongs to same prefix, keep it
+      if (cur && states[cur] && (!prefix || cur.startsWith(prefix))) {
+        resolved[key] = cur;
+        continue;
+      }
+      // Look for sibling matching the station prefix
+      let found = null;
+      if (prefix) {
+        for (const s of suffixes) {
+          const candidate = `${prefix}${s}`;
+          if (states[candidate]) {
+            found = candidate;
+            break;
+          }
+        }
+      }
+      // Fallback: search all sensors matching any suffix
+      if (!found) {
+        found = Object.keys(states).find(id => {
+          if (!id.startsWith("sensor.")) return false;
+          const slug = id.slice(7);
+          return suffixes.some(s => slug === s || slug.endsWith(`_${s}`));
+        });
+      }
       if (found) resolved[key] = found;
     }
     return resolved;
