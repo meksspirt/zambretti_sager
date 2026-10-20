@@ -5,9 +5,8 @@ from __future__ import annotations
 import datetime
 from unittest.mock import MagicMock
 
-import pytest
-
 from homeassistant.components.sensor import SensorDeviceClass
+import pytest
 
 from custom_components.zambretti_sager.algorithms import SAGER_OPTIONS, ZAMBRETTI_OPTIONS
 from custom_components.zambretti_sager.coordinator import ForecastData

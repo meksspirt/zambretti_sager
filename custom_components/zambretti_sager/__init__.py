@@ -97,8 +97,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ZambrettiConfigEntry) -
 async def async_remove_entry(hass: HomeAssistant, entry: ZambrettiConfigEntry) -> None:
     """Handle removal of a config entry and clean up Lovelace card resources if no entries remain."""
     current_entries = [
-        e for e in hass.config_entries.async_entries(DOMAIN)
-        if e.entry_id != entry.entry_id
+        e for e in hass.config_entries.async_entries(DOMAIN) if e.entry_id != entry.entry_id
     ]
     if not current_entries:
         _LOGGER.info("Last Zambretti & Sager entry removed — cleaning up Lovelace resources")

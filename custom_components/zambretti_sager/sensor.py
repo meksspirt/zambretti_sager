@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -84,9 +83,7 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         options=ZAMBRETTI_OPTIONS,
         value_fn=lambda d: d.zambretti_6h if d.p_now is not None else None,
         attrs_fn=lambda d, _: (
-            {"predicted_pressure_hpa": d.predicted_p_6h}
-            if d.predicted_p_6h is not None
-            else {}
+            {"predicted_pressure_hpa": d.predicted_p_6h} if d.predicted_p_6h is not None else {}
         ),
     ),
     ZambrettiSensorEntityDescription(
@@ -97,9 +94,7 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         options=ZAMBRETTI_OPTIONS,
         value_fn=lambda d: d.zambretti_12h if d.p_now is not None else None,
         attrs_fn=lambda d, _: (
-            {"predicted_pressure_hpa": d.predicted_p_12h}
-            if d.predicted_p_12h is not None
-            else {}
+            {"predicted_pressure_hpa": d.predicted_p_12h} if d.predicted_p_12h is not None else {}
         ),
     ),
     ZambrettiSensorEntityDescription(
@@ -110,9 +105,7 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         options=ZAMBRETTI_OPTIONS,
         value_fn=lambda d: d.zambretti_24h if d.p_now is not None else None,
         attrs_fn=lambda d, _: (
-            {"predicted_pressure_hpa": d.predicted_p_24h}
-            if d.predicted_p_24h is not None
-            else {}
+            {"predicted_pressure_hpa": d.predicted_p_24h} if d.predicted_p_24h is not None else {}
         ),
     ),
     ZambrettiSensorEntityDescription(
@@ -145,8 +138,7 @@ async def async_setup_entry(
     """Set up the Zambretti & Sager sensors."""
     coordinator = entry.runtime_data
     async_add_entities(
-        WeatherSensor(coordinator, description)
-        for description in SENSOR_DESCRIPTIONS
+        WeatherSensor(coordinator, description) for description in SENSOR_DESCRIPTIONS
     )
 
 

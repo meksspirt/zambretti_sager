@@ -142,10 +142,8 @@ def _build_options_schema(
     schema_dict[vol.Optional(CONF_USE_SEA_LEVEL, default=current_use_sea_level)] = (
         selector.BooleanSelector()
     )
-    schema_dict[vol.Optional(CONF_LOCATION, default=default_location)] = (
-        selector.LocationSelector(
-            selector.LocationSelectorConfig(radius=False, icon="mdi:map-marker")
-        )
+    schema_dict[vol.Optional(CONF_LOCATION, default=default_location)] = selector.LocationSelector(
+        selector.LocationSelectorConfig(radius=False, icon="mdi:map-marker")
     )
     return vol.Schema(schema_dict)
 
@@ -207,9 +205,7 @@ class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 reason="reconfigure_successful",
             )
 
-        schema = _build_options_schema(
-            entry, self.hass.config.latitude, self.hass.config.longitude
-        )
+        schema = _build_options_schema(entry, self.hass.config.latitude, self.hass.config.longitude)
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=schema,
@@ -234,9 +230,7 @@ class ZambrettiSagerOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         entry = self.config_entry
-        schema = _build_options_schema(
-            entry, self.hass.config.latitude, self.hass.config.longitude
-        )
+        schema = _build_options_schema(entry, self.hass.config.latitude, self.hass.config.longitude)
         return self.async_show_form(
             step_id="init",
             data_schema=schema,

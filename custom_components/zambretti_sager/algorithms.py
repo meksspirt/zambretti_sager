@@ -56,6 +56,7 @@ def _clamp_pressure(pressure: float) -> float:
     """Clamp pressure within physical atmospheric limits at sea level."""
     return max(MIN_PHYSICAL_PRESSURE, min(MAX_PHYSICAL_PRESSURE, pressure))
 
+
 # Sager algorithm pressure trend thresholds (hPa over ~3 hours)
 SAGER_TREND_RAPID: Final[float] = 1.4
 SAGER_TREND_SLOW: Final[float] = 0.7
@@ -349,9 +350,7 @@ def wind_degrees_to_compass(degrees: float | None) -> str | None:
     return WIND_COMPASS[index]
 
 
-def _get_wind_modifier(
-    wind_degrees: float | None, latitude: float | None = None
-) -> str | None:
+def _get_wind_modifier(wind_degrees: float | None, latitude: float | None = None) -> str | None:
     """Convert wind direction to a Sager wind quadrant modifier, accounting for hemisphere."""
     if wind_degrees is None:
         return None
@@ -425,7 +424,7 @@ def calculate_extrapolations(
     """
     # 6h extrapolation: (6/3)^0.65 ≈ 1.569
     rate_3h = p_now - p_3h
-    delta_6h = rate_3h * (2.0 ** DAMPING_EXPONENT)
+    delta_6h = rate_3h * (2.0**DAMPING_EXPONENT)
     predicted_p_6h = round(_clamp_pressure(p_now + delta_6h), 1)
     zambretti_6h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(
@@ -442,7 +441,7 @@ def calculate_extrapolations(
     p_ref_12 = p_6h if p_6h is not None else p_3h
     h_12 = 6 if p_6h is not None else 3
     rate_12_3h = (p_now - p_ref_12) / h_12 * 3
-    delta_12h = rate_12_3h * (4.0 ** DAMPING_EXPONENT)
+    delta_12h = rate_12_3h * (4.0**DAMPING_EXPONENT)
     predicted_p_12h = round(_clamp_pressure(p_now + delta_12h), 1)
     zambretti_12h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(
@@ -467,7 +466,7 @@ def calculate_extrapolations(
         h_24 = 3
 
     rate_24_3h = (p_now - p_ref_24) / h_24 * 3
-    delta_24h = rate_24_3h * (8.0 ** DAMPING_EXPONENT)
+    delta_24h = rate_24_3h * (8.0**DAMPING_EXPONENT)
     predicted_p_24h = round(_clamp_pressure(p_now + delta_24h), 1)
     zambretti_24h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(

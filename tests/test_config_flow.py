@@ -82,4 +82,3 @@ def test_build_options_schema():
 
     schema = _build_options_schema(mock_entry, default_lat=50.0, default_lon=20.0)
     assert schema is not None
-

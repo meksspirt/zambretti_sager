@@ -448,23 +448,31 @@ async def test_coordinator_precomputes_temperature_and_sea_level_for_buffer_warm
     )
 
     mock_hass.states.get.side_effect = lambda eid: (
-        pressure_state if eid == "sensor.pressure" else
-        temp_state if eid == "sensor.temp" else None
+        pressure_state if eid == "sensor.pressure" else temp_state if eid == "sensor.temp" else None
     )
 
     # Mock recorder returning 5 historical states for buffer warming
     now = datetime.datetime.now(datetime.UTC)
     mock_recorder = MagicMock()
     history_states = [
-        MagicMock(state=str(995.0 + i), last_changed=now - datetime.timedelta(hours=i), attributes={"unit_of_measurement": "hPa"})
+        MagicMock(
+            state=str(995.0 + i),
+            last_changed=now - datetime.timedelta(hours=i),
+            attributes={"unit_of_measurement": "hPa"},
+        )
         for i in range(1, 6)
     ]
-    mock_recorder.async_add_executor_job = AsyncMock(return_value={"sensor.pressure": history_states})
+    mock_recorder.async_add_executor_job = AsyncMock(
+        return_value={"sensor.pressure": history_states}
+    )
 
-    with patch("custom_components.zambretti_sager.history.get_instance", return_value=mock_recorder), \
-         patch.object(coord, "_get_temperature", wraps=coord._get_temperature) as mock_get_temp, \
-         patch.object(coord, "_is_likely_sea_level_sensor", wraps=coord._is_likely_sea_level_sensor) as mock_is_sea:
-
+    with (
+        patch("custom_components.zambretti_sager.history.get_instance", return_value=mock_recorder),
+        patch.object(coord, "_get_temperature", wraps=coord._get_temperature) as mock_get_temp,
+        patch.object(
+            coord, "_is_likely_sea_level_sensor", wraps=coord._is_likely_sea_level_sensor
+        ) as mock_is_sea,
+    ):
         data = await coord._async_update_data()
 
         assert data.available is True
@@ -480,6 +488,7 @@ async def test_coordinator_precomputes_temperature_and_sea_level_for_buffer_warm
 async def test_async_remove_entry_cleans_resources_when_last_entry():
     """Test async_remove_entry calls unregister when last entry is deleted."""
     from unittest.mock import AsyncMock, patch
+
     from custom_components.zambretti_sager import async_remove_entry
 
     mock_hass = MagicMock()
@@ -501,6 +510,7 @@ async def test_async_remove_entry_cleans_resources_when_last_entry():
 async def test_async_remove_entry_preserves_resources_when_other_entries_exist():
     """Test async_remove_entry does not call unregister if another entry remains."""
     from unittest.mock import AsyncMock, patch
+
     from custom_components.zambretti_sager import async_remove_entry
 
     mock_hass = MagicMock()
@@ -515,4 +525,3 @@ async def test_async_remove_entry_preserves_resources_when_other_entries_exist()
 
         await async_remove_entry(mock_hass, mock_entry1)
         mock_reg.async_unregister.assert_not_called()
-
