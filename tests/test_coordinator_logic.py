@@ -416,3 +416,61 @@ def test_coordinator_clearing_optional_sensors():
     assert coord.wind_speed_id == "sensor.speed"
     assert coord.temp_id == "sensor.temp"
     assert coord.humidity_id is None
+
+
+@pytest.mark.asyncio
+async def test_coordinator_precomputes_temperature_and_sea_level_for_buffer_warming():
+    """Test that temperature lookup and sea-level detection are precomputed once during warming."""
+    from unittest.mock import AsyncMock, patch
+
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {
+        "pressure_sensor": "sensor.pressure",
+        "temperature_sensor": "sensor.temp",
+        "use_sea_level_correction": True,
+    }
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=200.0)
+    coord._history_warmed = False
+
+    pressure_state = MagicMock(
+        entity_id="sensor.pressure",
+        state="1000.0",
+        attributes={"unit_of_measurement": "hPa"},
+    )
+    temp_state = MagicMock(
+        entity_id="sensor.temp",
+        state="20.0",
+        attributes={"unit_of_measurement": "°C"},
+    )
+
+    mock_hass.states.get.side_effect = lambda eid: (
+        pressure_state if eid == "sensor.pressure" else
+        temp_state if eid == "sensor.temp" else None
+    )
+
+    # Mock recorder returning 5 historical states for buffer warming
+    now = datetime.datetime.now(datetime.UTC)
+    mock_recorder = MagicMock()
+    history_states = [
+        MagicMock(state=str(995.0 + i), last_changed=now - datetime.timedelta(hours=i), attributes={"unit_of_measurement": "hPa"})
+        for i in range(1, 6)
+    ]
+    mock_recorder.async_add_executor_job = AsyncMock(return_value={"sensor.pressure": history_states})
+
+    with patch("custom_components.zambretti_sager.history.get_instance", return_value=mock_recorder), \
+         patch.object(coord, "_get_temperature", wraps=coord._get_temperature) as mock_get_temp, \
+         patch.object(coord, "_is_likely_sea_level_sensor", wraps=coord._is_likely_sea_level_sensor) as mock_is_sea:
+
+        data = await coord._async_update_data()
+
+        assert data.available is True
+        assert coord._history_warmed is True
+        # Both methods must be called only ONCE during update and warming, NOT once per history state
+        assert mock_get_temp.call_count == 1
+        assert mock_is_sea.call_count == 1
+        # Buffer has 5 warmed states + 1 current state = 6 states
+        assert len(coord._history_buffer) == 6

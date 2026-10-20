@@ -41,6 +41,18 @@ class WeatherSensorBase(CoordinatorEntity[ZambrettiSagerCoordinator], SensorEnti
     """Base class for all forecast sensors."""
 
     _attr_has_entity_name = True
+    _unrecorded_attributes = frozenset(
+        {
+            "pressure_hpa",
+            "pressure_3h_ago",
+            "pressure_delta_3h",
+            "wind_degrees",
+            "wind_speed",
+            "humidity_%",
+            "altitude_m",
+            "is_night",
+        }
+    )
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
         """Initialize the sensor and set shared device info."""
@@ -140,7 +152,7 @@ class SagerSensor(WeatherSensorBase):
     @property
     def extra_state_attributes(self) -> dict:
         """Return extra attributes for the Sager forecast."""
-        return self._base_attrs()
+        return {}
 
 
 class ZambrettiForecast6h(WeatherSensorBase):
@@ -167,11 +179,10 @@ class ZambrettiForecast6h(WeatherSensorBase):
     @property
     def extra_state_attributes(self) -> dict:
         """Return extra attributes including predicted pressure for 6 hours ahead."""
-        attrs = self._base_attrs()
         d = self.data
         if d and d.predicted_p_6h is not None:
-            attrs["predicted_pressure_hpa"] = d.predicted_p_6h
-        return attrs
+            return {"predicted_pressure_hpa": d.predicted_p_6h}
+        return {}
 
 
 class ZambrettiForecast12h(WeatherSensorBase):
@@ -198,11 +209,10 @@ class ZambrettiForecast12h(WeatherSensorBase):
     @property
     def extra_state_attributes(self) -> dict:
         """Return extra attributes including predicted pressure for 12 hours ahead."""
-        attrs = self._base_attrs()
         d = self.data
         if d and d.predicted_p_12h is not None:
-            attrs["predicted_pressure_hpa"] = d.predicted_p_12h
-        return attrs
+            return {"predicted_pressure_hpa": d.predicted_p_12h}
+        return {}
 
 
 class ZambrettiForecast24h(WeatherSensorBase):
@@ -229,11 +239,10 @@ class ZambrettiForecast24h(WeatherSensorBase):
     @property
     def extra_state_attributes(self) -> dict:
         """Return extra attributes including predicted pressure for 24 hours ahead."""
-        attrs = self._base_attrs()
         d = self.data
         if d and d.predicted_p_24h is not None:
-            attrs["predicted_pressure_hpa"] = d.predicted_p_24h
-        return attrs
+            return {"predicted_pressure_hpa": d.predicted_p_24h}
+        return {}
 
 
 class PrecipitationProbability(WeatherSensorBase):
@@ -260,7 +269,7 @@ class PrecipitationProbability(WeatherSensorBase):
     @property
     def extra_state_attributes(self) -> dict:
         """Return extra attributes for the precipitation probability sensor."""
-        return self._base_attrs()
+        return {}
 
 
 class LastUpdateSensor(WeatherSensorBase):
@@ -270,7 +279,6 @@ class LastUpdateSensor(WeatherSensorBase):
     _attr_icon = "mdi:clock-time-four"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_force_update = True
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
         """Initialize the last update sensor."""

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from collections.abc import Callable
 import datetime
 import logging
 
@@ -183,10 +184,19 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             _LOGGER.error("Invalid pressure value for %s: %s", self.pressure_id, err)
             raise UpdateFailed(f"Invalid pressure state for {self.pressure_id}") from None
 
-        # Apply sea-level correction if enabled
-        p_now = self._correct_pressure(p_now_raw)
+        # Precompute temperature and sea level classification once per update cycle
         temperature = self._get_temperature()
+        is_sea_level = self._is_likely_sea_level_sensor()
+
+        # Apply sea-level correction if enabled
+        p_now = self._correct_pressure(
+            p_now_raw, temperature=temperature, is_sea_level=is_sea_level
+        )
         now_dt = dt_util.utcnow()
+
+        corrector = self._create_pressure_corrector(
+            temperature=temperature, is_sea_level=is_sea_level
+        )
 
         # Warm history buffer on first run with a single recorder query
         if not self._history_warmed:
@@ -195,14 +205,16 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                 self.pressure_id,
                 self._history_buffer,
                 hours=13,
-                pressure_corrector=self._correct_pressure,
+                pressure_corrector=corrector,
             )
             self._history_warmed = True
 
         # Append current reading and prune buffer
         self._history_buffer.append(now_dt, p_now)
 
-        history_pressures = await self._fetch_history_pressures(now_dt)
+        history_pressures = await self._fetch_history_pressures(
+            now_dt, pressure_corrector=corrector
+        )
         wind = self._get_wind_direction()
         wind_speed = self._get_wind_speed()
         humidity = self._get_humidity()
@@ -280,11 +292,41 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                 return True
         return False
 
-    def _correct_pressure(self, raw_pressure: float) -> float:
+    def _create_pressure_corrector(
+        self,
+        temperature: float | None = None,
+        is_sea_level: bool | None = None,
+    ) -> Callable[[float], float]:
+        """Return a pressure corrector closure with precomputed temperature and sea-level detection."""
+        if not self.use_sea_level or self.altitude is None:
+            return lambda raw_p: raw_p
+
+        is_sea = self._is_likely_sea_level_sensor() if is_sea_level is None else is_sea_level
+        if is_sea:
+            if not self._sea_level_warning_logged:
+                _LOGGER.warning(
+                    "Pressure sensor %s appears to report sea level pressure; "
+                    "skipping altitude correction to avoid double conversion",
+                    self.pressure_id,
+                )
+                self._sea_level_warning_logged = True
+            return lambda raw_p: raw_p
+
+        temp = self._get_temperature() if temperature is None else temperature
+        alt = self.altitude
+        return lambda raw_p: calculate_sea_level_pressure(raw_p, temp, alt)
+
+    def _correct_pressure(
+        self,
+        raw_pressure: float,
+        temperature: float | None = None,
+        is_sea_level: bool | None = None,
+    ) -> float:
         """Apply sea-level pressure correction if enabled and sensor is absolute."""
         if not self.use_sea_level or self.altitude is None:
             return raw_pressure
-        if self._is_likely_sea_level_sensor():
+        is_sea = self._is_likely_sea_level_sensor() if is_sea_level is None else is_sea_level
+        if is_sea:
             if not self._sea_level_warning_logged:
                 _LOGGER.warning(
                     "Pressure sensor %s appears to report sea level pressure; "
@@ -293,7 +335,8 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                 )
                 self._sea_level_warning_logged = True
             return raw_pressure
-        return calculate_sea_level_pressure(raw_pressure, self._get_temperature(), self.altitude)
+        temp = self._get_temperature() if temperature is None else temperature
+        return calculate_sea_level_pressure(raw_pressure, temp, self.altitude)
 
     def _correct_history_pressure(self, history_pressure: float | None, fallback: float) -> float:
         """Resolve historical pressure reading, or return fallback if unavailable.
@@ -405,7 +448,9 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             return None
 
     async def _fetch_history_pressures(
-        self, now: datetime.datetime | None = None
+        self,
+        now: datetime.datetime | None = None,
+        pressure_corrector: Callable[[float], float] | None = None,
     ) -> dict[int, float | None]:
         """Fetch pressure at 3, 6, and 12 hours ago (memory buffer first, single batch fallback to recorder)."""
         if now is None:
@@ -426,7 +471,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                 self.pressure_id,
                 missing_hours,
                 now,
-                pressure_corrector=self._correct_pressure,
+                pressure_corrector=pressure_corrector or self._create_pressure_corrector(),
                 buffer=self._history_buffer,
             )
             for h, p in batch_results.items():

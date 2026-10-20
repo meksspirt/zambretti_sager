@@ -70,6 +70,7 @@ def test_zambretti_sensor(mock_coordinator):
     assert sensor.unique_id == "test_entry_id_zambretti"
     assert sensor.native_value == "settled_fine"
     assert sensor.available is True
+    assert "pressure_hpa" in sensor._unrecorded_attributes
 
     attrs = sensor.extra_state_attributes
     assert attrs["pressure_sensor"] == "sensor.barometer"
@@ -87,6 +88,7 @@ def test_sager_sensor(mock_coordinator):
     assert sensor.options == SAGER_OPTIONS
     assert sensor.unique_id == "test_entry_id_sager"
     assert sensor.native_value == "sager_fair_improving"
+    assert sensor.extra_state_attributes == {}
 
 
 def test_forecast_horizon_sensors(mock_coordinator):
@@ -96,21 +98,21 @@ def test_forecast_horizon_sensors(mock_coordinator):
     assert s6.device_class == SensorDeviceClass.ENUM
     assert s6.options == ZAMBRETTI_OPTIONS
     assert s6.native_value == "fairly_fine_improving"
-    assert s6.extra_state_attributes["predicted_pressure_hpa"] == 1020.8
+    assert s6.extra_state_attributes == {"predicted_pressure_hpa": 1020.8}
 
     s12 = ZambrettiForecast12h(mock_coordinator)
     assert s12.translation_key == "zambretti_forecast_12h"
     assert s12.device_class == SensorDeviceClass.ENUM
     assert s12.options == ZAMBRETTI_OPTIONS
     assert s12.native_value == "fine_weather"
-    assert s12.extra_state_attributes["predicted_pressure_hpa"] == 1025.2
+    assert s12.extra_state_attributes == {"predicted_pressure_hpa": 1025.2}
 
     s24 = ZambrettiForecast24h(mock_coordinator)
     assert s24.translation_key == "zambretti_forecast_24h"
     assert s24.device_class == SensorDeviceClass.ENUM
     assert s24.options == ZAMBRETTI_OPTIONS
     assert s24.native_value == "settled_fine"
-    assert s24.extra_state_attributes["predicted_pressure_hpa"] == 1032.2
+    assert s24.extra_state_attributes == {"predicted_pressure_hpa": 1032.2}
 
 
 def test_precipitation_probability_sensor(mock_coordinator):
@@ -118,6 +120,7 @@ def test_precipitation_probability_sensor(mock_coordinator):
     sensor = PrecipitationProbability(mock_coordinator)
     assert sensor.translation_key == "precipitation_probability"
     assert sensor.native_value == 10
+    assert sensor.extra_state_attributes == {}
 
 
 def test_last_update_sensor(mock_coordinator):
@@ -126,7 +129,7 @@ def test_last_update_sensor(mock_coordinator):
     assert sensor.translation_key == "last_update"
     assert sensor.available is True
     assert sensor.native_value == datetime.datetime(2026, 8, 22, 16, 0, tzinfo=datetime.UTC)
-    assert sensor.force_update is True
+    assert sensor.force_update is False
 
 
 def test_weather_entity(mock_coordinator):

@@ -125,6 +125,7 @@ if "homeassistant" not in sys.modules:
             _attr_force_update = False
             _attr_device_info = None
             _attr_has_entity_name = False
+            _unrecorded_attributes = frozenset()
 
             def __init__(self, coordinator=None) -> None:
                 self.coordinator = coordinator
