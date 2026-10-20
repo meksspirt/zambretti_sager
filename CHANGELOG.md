@@ -1,5 +1,13 @@
 # Changelog
- 
+
+## [1.9.94] — 2026-10-20
+
+### Changed
+- **Migration & HACS Inclusions**:
+  - Transferred official repository and code ownership to `@meksspirt` ([meksspirt/zambretti_sager](https://github.com/meksspirt/zambretti_sager)).
+  - Updated manifest metadata, documentation URLs, and HACS action validation categories.
+  - Added repository topics and description for official HACS store inclusion.
+
 ## [1.9.93] — 2026-09-29
 
 ### Fixed

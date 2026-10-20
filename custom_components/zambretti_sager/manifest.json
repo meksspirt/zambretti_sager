@@ -1,12 +1,23 @@
 {
   "domain": "zambretti_sager",
   "name": "Zambretti and Sager",
-  "codeowners": ["@meksspirt"],
+  "codeowners": [
+    "@meksspirt"
+  ],
   "config_flow": true,
-  "dependencies": ["recorder", "frontend", "http", "lovelace"],
+  "dependencies": [
+    "recorder",
+    "frontend",
+    "http",
+    "lovelace"
+  ],
   "documentation": "https://github.com/meksspirt/zambretti_sager",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/meksspirt/zambretti_sager/issues",
   "requirements": [],
-  "version": "1.9.93"
+  "version": "1.9.94",
+  "categories": [
+    "weather",
+    "sensor"
+  ]
 }
