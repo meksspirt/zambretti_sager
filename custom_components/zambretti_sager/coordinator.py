@@ -536,7 +536,7 @@ async def async_create_coordinator(
         hass,
         latitude=latitude,
         longitude=longitude,
-        configured_elevation=getattr(getattr(hass, "config", None), "elevation", None),
+        fallback_elevation=getattr(getattr(hass, "config", None), "elevation", None),
     )
 
     coordinator = ZambrettiSagerCoordinator(hass, entry, altitude)

@@ -75,34 +75,46 @@ async def async_resolve_elevation(
     latitude: float | None = None,
     longitude: float | None = None,
     configured_elevation: float | None = None,
+    fallback_elevation: float | None = None,
 ) -> float | None:
-    """Resolve station elevation using a Local-First strategy.
+    """Resolve station elevation using map coordinates with fallback to HA elevation.
 
-    1. Checks explicitly configured elevation or Home Assistant's configured elevation.
-    2. Only if local elevation is unavailable and GPS coordinates are provided,
-       queries public elevation APIs.
+    1. If GPS coordinates (latitude, longitude) are provided, query external elevation
+       APIs (Open-Elevation with Open-Meteo fallback) as documented.
+    2. If external API lookup fails or coordinates are missing, fallback to Home Assistant's
+       configured elevation or explicitly provided fallback elevation.
     """
-    # 1. Check explicitly passed or HA-configured elevation (Local-First)
-    if configured_elevation is not None:
-        _LOGGER.debug("Using explicitly configured elevation: %.1f m", configured_elevation)
-        return float(configured_elevation)
-
-    ha_elevation = getattr(getattr(hass, "config", None), "elevation", None)
-    if ha_elevation is not None:
-        try:
-            elevation_val = float(ha_elevation)
-            _LOGGER.info("Using Home Assistant configured elevation: %.1f m", elevation_val)
-            return elevation_val
-        except (ValueError, TypeError):
-            pass
-
-    # 2. Fallback to external API lookup if coordinates are available
+    # 1. External API lookup using map coordinates (Primary / Documented)
     if latitude is not None and longitude is not None:
-        _LOGGER.debug("Looking up elevation for coordinates (%.4f, %.4f)", latitude, longitude)
-        elevation = await get_elevation_from_api(hass, latitude, longitude)
-        if elevation is not None:
-            _LOGGER.info("Retrieved altitude from external API: %.1f m", elevation)
-            return elevation
+        try:
+            lat_f = float(latitude)
+            lon_f = float(longitude)
+            _LOGGER.debug("Looking up elevation for coordinates (%.4f, %.4f)", lat_f, lon_f)
+            elevation = await get_elevation_from_api(hass, lat_f, lon_f)
+            if elevation is not None:
+                _LOGGER.info("Retrieved altitude from external API: %.1f m", elevation)
+                return elevation
+            _LOGGER.warning(
+                "External elevation lookup failed for (%.4f, %.4f), checking fallback elevation",
+                lat_f,
+                lon_f,
+            )
+        except (ValueError, TypeError) as err:
+            _LOGGER.warning("Invalid coordinates (%s, %s): %s", latitude, longitude, err)
+
+    # 2. Fallback to explicitly passed configured/fallback elevation or HA config elevation
+    for candidate in (
+        configured_elevation,
+        fallback_elevation,
+        getattr(getattr(hass, "config", None), "elevation", None),
+    ):
+        if candidate is not None:
+            try:
+                val = float(candidate)
+                _LOGGER.info("Using fallback elevation: %.1f m", val)
+                return val
+            except (ValueError, TypeError):
+                pass
 
     _LOGGER.warning("Could not determine altitude, sea level correction will use raw pressure")
     return None

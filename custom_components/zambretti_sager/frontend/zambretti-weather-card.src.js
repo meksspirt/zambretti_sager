@@ -1,10 +1,10 @@
 /**
- * Zambretti & Sager Weather Card  v1.9.94
+ * Zambretti & Sager Weather Card  v2.0.1
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v1.9.94 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.0.1 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
@@ -382,6 +382,21 @@ function getWeatherIconKey(zambrettiState, isNight) {
 }
 
 /**
+ * Safely escapes HTML special characters in any value to prevent XSS.
+ * @param {*} str
+ * @returns {string}
+ */
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
  * Returns an accessible inline SVG weather icon string with role="img" and aria-label.
  * @param {string} iconKey
  * @param {string} [label]
@@ -392,7 +407,7 @@ function renderWeatherIconSvg(iconKey, label = "") {
   if (!label) {
     return rawSvg.replace('<svg ', '<svg role="img" ');
   }
-  const safeLabel = String(label).replace(/"/g, '&quot;');
+  const safeLabel = escapeHtml(label);
   return rawSvg.replace('<svg ', `<svg role="img" aria-label="${safeLabel}" `);
 }
 
@@ -588,18 +603,18 @@ function vintageBarometerDial(pNow, p3h, delta3h, vLabels = {}, options = {}) {
     }
   }
 
-  const stormLbl = vLabels.storm || "STORMY";
-  const rainLbl = vLabels.rain || "RAIN";
-  const changeLbl = vLabels.change || "CHANGE";
-  const fairLbl = vLabels.fair || "FAIR";
-  const dryLbl = vLabels.very_dry || "VERY DRY";
-  const fallingLbl = vLabels.falling || "FALLING";
-  const steadyLbl = vLabels.steady || "STEADY";
-  const risingLbl = vLabels.rising || "RISING";
-  const deltaLbl = vLabels.delta_3h || "Δ 3 HOURS";
-  const aneroidLbl = vLabels.aneroid || "ANEROID BAROMETER";
-  const compLbl = vLabels.compensated || "Compensated for Temperature";
-  const dialAria = `${aneroidLbl}: ${pVal.toFixed(1)} hPa, Δ3h ${deltaVal >= 0 ? '+' : ''}${deltaVal.toFixed(1)} hPa`;
+  const stormLbl = escapeHtml(vLabels.storm || "STORMY");
+  const rainLbl = escapeHtml(vLabels.rain || "RAIN");
+  const changeLbl = escapeHtml(vLabels.change || "CHANGE");
+  const fairLbl = escapeHtml(vLabels.fair || "FAIR");
+  const dryLbl = escapeHtml(vLabels.very_dry || "VERY DRY");
+  const fallingLbl = escapeHtml(vLabels.falling || "FALLING");
+  const steadyLbl = escapeHtml(vLabels.steady || "STEADY");
+  const risingLbl = escapeHtml(vLabels.rising || "RISING");
+  const deltaLbl = escapeHtml(vLabels.delta_3h || "Δ 3 HOURS");
+  const aneroidLbl = escapeHtml(vLabels.aneroid || "ANEROID BAROMETER");
+  const compLbl = escapeHtml(vLabels.compensated || "Compensated for Temperature");
+  const dialAria = escapeHtml(`${vLabels.aneroid || "ANEROID BAROMETER"}: ${pVal.toFixed(1)} hPa, Δ3h ${deltaVal >= 0 ? '+' : ''}${deltaVal.toFixed(1)} hPa`);
 
   return `<svg role="img" aria-label="${dialAria}" viewBox="0 0 400 400" class="vintage-dial-svg" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -747,7 +762,7 @@ function precipWidget(pct, label = "") {
   const fillColor = pct < 30 ? "#90CAF9" : pct < 60 ? "#42A5F5" : "#1565C0";
   const gid = "pw" + (++_gradientIdCounter);
   const aria = label ? `${label}: ${pct}%` : `Precipitation: ${pct}%`;
-  return `<svg role="img" aria-label="${aria}" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  return `<svg role="img" aria-label="${escapeHtml(aria)}" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
     <defs>
       <linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="${fillColor}" stop-opacity="0.75"/>
@@ -809,8 +824,8 @@ function forecastTimeline(steps, labels, compact) {
     return `
       <div class="tl-step${curClass}">
         <div class="tl-icon" style="width:${iconSz}px;height:${iconSz}px">${svg}</div>
-        <div class="tl-lbl">${shortLbl}</div>
-        <div class="tl-time">${timeStr}</div>
+        <div class="tl-lbl">${escapeHtml(shortLbl)}</div>
+        <div class="tl-time">${escapeHtml(timeStr)}</div>
       </div>
       ${arrow}`;
   }).join("");
@@ -958,7 +973,7 @@ function historyChart(points, labels, compact) {
     chartAria = `24-hour pressure and precipitation chart: pressure from ${Math.min(...pVals).toFixed(1)} to ${Math.max(...pVals).toFixed(1)} hPa`;
   }
 
-  return `<svg role="img" aria-label="${chartAria}" viewBox="0 0 ${W} ${H}" class="history-chart-svg" xmlns="http://www.w3.org/2000/svg"
+  return `<svg role="img" aria-label="${escapeHtml(chartAria)}" viewBox="0 0 ${W} ${H}" class="history-chart-svg" xmlns="http://www.w3.org/2000/svg"
     style="width:100%;height:100%;display:block;overflow:visible;cursor:crosshair">
     <defs>
       <linearGradient id="${gid}_p" x1="0" y1="0" x2="0" y2="1">
@@ -1863,9 +1878,9 @@ class ZambrettiWeatherCard extends HTMLElement {
       const fIcon = renderWeatherIconSvg(ZAMBRETTI_CONDITION[f.key] || "partlycloudy", `${f.label}: ${fLabel}`);
       return `
       <div class="fc">
-        <span class="fc-time">${f.label}</span>
+        <span class="fc-time">${escapeHtml(f.label)}</span>
         <span class="fc-icon">${fIcon}</span>
-        <span class="fc-lbl">${fLabel}</span>
+        <span class="fc-lbl">${escapeHtml(fLabel)}</span>
       </div>`;
     }).join("");
 
@@ -1884,18 +1899,18 @@ class ZambrettiWeatherCard extends HTMLElement {
           <div class="tile-header-wrap">
             <div class="tile-icon-box">${icon}</div>
             <div class="tile-text-group">
-              <div class="tile-title">${zLabel}</div>
-              ${showSager ? `<div class="tile-subtitle">${sLabel}</div>` : ""}
+              <div class="tile-title">${escapeHtml(zLabel)}</div>
+              ${showSager ? `<div class="tile-subtitle">${escapeHtml(sLabel)}</div>` : ""}
             </div>
             <div class="tile-trend-pill">
               <span class="tile-trend-dot" style="background:${trendDotColor}"></span>
-              <span class="tile-trend-text" style="color:${trendBadgeColor}">${trendLabel}</span>
+              <span class="tile-trend-text" style="color:${trendBadgeColor}">${escapeHtml(trendLabel)}</span>
             </div>
           </div>
           <div class="tile-bottom-chips">
             <div class="tile-chips-left">
-              ${showPrecip ? `<span class="tile-chip tile-chip-precip">💧 ${precip}%</span>` : ""}
-              ${showWind && windStr ? `<span class="tile-chip tile-chip-wind">💨 ${windStr}</span>` : ""}
+              ${showPrecip ? `<span class="tile-chip tile-chip-precip">💧 ${escapeHtml(precip)}%</span>` : ""}
+              ${showWind && windStr ? `<span class="tile-chip tile-chip-wind">💨 ${escapeHtml(windStr)}</span>` : ""}
             </div>
             <span class="tile-chip tile-chip-pressure">⏱ ${pNow != null && !isNaN(pNow) ? pNow.toFixed(1) : "—"} hPa</span>
           </div>
@@ -1923,27 +1938,27 @@ class ZambrettiWeatherCard extends HTMLElement {
           <div class="vintage-dial-wrap">${dialSvg}</div>
           <div class="vintage-readout">
             <div class="vintage-main-bar">
-              <div class="vintage-forecast-title">${zLabel}</div>
-              ${showSager ? `<div class="vintage-sager-sub"><span class="vintage-badge">Sager</span> <span>${sLabel}</span></div>` : ""}
+              <div class="vintage-forecast-title">${escapeHtml(zLabel)}</div>
+              ${showSager ? `<div class="vintage-sager-sub"><span class="vintage-badge">Sager</span> <span>${escapeHtml(sLabel)}</span></div>` : ""}
             </div>
             <div class="vintage-metrics-grid">
               <div class="vintage-metric-box">
-                <div class="vintage-metric-lbl">${VL.current || "Current"}</div>
+                <div class="vintage-metric-lbl">${escapeHtml(VL.current || "Current")}</div>
                 <div class="vintage-metric-val v-p-hpa">${pNow != null && !isNaN(pNow) ? pNow.toFixed(1) : "—"} <span style="font-size:0.75em;font-weight:400;color:#d4af37">hPa</span></div>
                 <div class="vintage-metric-sub v-p-mm">${pNow != null && !isNaN(pNow) ? (pNow * 0.750062).toFixed(1) + " mmHg" : ""}</div>
               </div>
               <div class="vintage-metric-box">
-                <div class="vintage-metric-lbl">${VL.trend || "Trend"} (3h)</div>
+                <div class="vintage-metric-lbl">${escapeHtml(VL.trend || "Trend")} (3h)</div>
                 <div class="vintage-metric-val v-trend-delta" style="color:${trendColor}">${delta3h != null && !isNaN(delta3h) ? (delta3h >= 0 ? '+' : '') + delta3h.toFixed(1) + ' hPa' : "—"}</div>
-                <div class="vintage-metric-sub v-trend-lbl">${trendLabel}</div>
+                <div class="vintage-metric-sub v-trend-lbl">${escapeHtml(trendLabel)}</div>
               </div>
             </div>
           </div>
         </div>
         ${showForecasts ? `<div class="cell forecast-row" style="border-top:1px solid rgba(212,175,55,0.20)">${fCells}</div>` : ""}
         <div class="footer" style="border-top:1px solid rgba(212,175,55,0.20)">
-          ${windStr ? `<span class="footer-wind">💨 ${windStr}</span>` : ""}
-          ${showPrecip ? `<span class="footer-precip">💧 ${precipLabel}: ${precip}%</span>` : ""}
+          ${windStr ? `<span class="footer-wind">💨 ${escapeHtml(windStr)}</span>` : ""}
+          ${showPrecip ? `<span class="footer-precip">💧 ${escapeHtml(precipLabel)}: ${escapeHtml(precip)}%</span>` : ""}
         </div>
       `;
     } else {
@@ -1953,23 +1968,23 @@ class ZambrettiWeatherCard extends HTMLElement {
           <div class="cell main-cell">
             <div class="main-icon">${icon}</div>
             <div class="main-info">
-              <div class="main-label">${zLabel}</div>
+              <div class="main-label">${escapeHtml(zLabel)}</div>
               <div class="main-sub">Zambretti</div>
             </div>
           </div>
           ${showPrecip ? `
           <div class="cell precip-cell">
-            <div class="precip-title">${precipLabel}</div>
+            <div class="precip-title">${escapeHtml(precipLabel)}</div>
             <div class="precip-widget">${precipWidget(precip, precipLabel)}</div>
           </div>` : ""}
           ${showForecasts ? `
           <div class="cell forecast-row">${fCells}</div>` : ""}
         </div>
         <div class="footer">
-          ${windStr ? `<span class="footer-wind">💨 ${windStr}</span>` : ""}
+          ${windStr ? `<span class="footer-wind">💨 ${escapeHtml(windStr)}</span>` : ""}
           ${showSager ? `
           <span class="footer-badge">Sager</span>
-          <span class="footer-text">${sLabel}</span>` : ""}
+          <span class="footer-text">${escapeHtml(sLabel)}</span>` : ""}
         </div>
       `;
     }
@@ -1977,7 +1992,7 @@ class ZambrettiWeatherCard extends HTMLElement {
     // Full rebuild
     this.shadowRoot.innerHTML = `
       <style>${this._css(theme, compact, showPrecip, isVintage, isTile)}</style>
-      <ha-card style="background:${theme.bg}">
+      <ha-card>
         ${mainCardBody}
         ${showTrend ? `
         <div class="trend-section">
@@ -1990,6 +2005,11 @@ class ZambrettiWeatherCard extends HTMLElement {
           <div class="history-chart-wrap" style="height:${compact ? 150 : 200}px">${historyChart(this._historyPoints, L, compact)}</div>
         </div>` : ""}
       </ha-card>`;
+
+    const cardEl = this.shadowRoot.querySelector("ha-card");
+    if (cardEl) {
+      cardEl.style.background = theme.bg;
+    }
 
     if (showHistory) {
       this._setupHistoryScrubbing();

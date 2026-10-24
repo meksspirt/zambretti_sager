@@ -50,6 +50,16 @@ const LANG_OPTIONS = [
   ["tr", "Türkçe"]
 ];
 
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function resolveLang(lang) {
   if (!lang) return 'en';
   if (lang === 'auto') return 'auto';
@@ -148,19 +158,19 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
       </style>
 
       <div class="field-row">
-        <label>${t.entityZambretti || "Zambretti sensor"}</label>
+        <label>${escapeHtml(t.entityZambretti || "Zambretti sensor")}</label>
         <div id="zambretti-entity-picker"></div>
-        <div class="field-hint">${t.entityZambrettiH || "Main forecast sensor (e.g. sensor.zambretti_forecast)"}</div>
+        <div class="field-hint">${escapeHtml(t.entityZambrettiH || "Main forecast sensor (e.g. sensor.zambretti_forecast)")}</div>
       </div>
 
-      <div class="section-title">${t.appearance}</div>
+      <div class="section-title">${escapeHtml(t.appearance)}</div>
 
       <div class="field-row">
-        <label>${t.cardStyle || "Card Style"}</label>
+        <label>${escapeHtml(t.cardStyle || "Card Style")}</label>
         <select id="sel-card-style">
-          <option value="modern" ${c.card_style !== "vintage" && c.card_style !== "tile" ? "selected" : ""}>${t.styleModern || "Modern iOS Style"}</option>
-          <option value="vintage" ${c.card_style === "vintage" ? "selected" : ""}>${t.styleVintage || "Vintage Nautical Barometer"}</option>
-          <option value="tile" ${c.card_style === "tile" ? "selected" : ""}>${t.styleTile || "Compact Tile (Mushroom style)"}</option>
+          <option value="modern" ${c.card_style !== "vintage" && c.card_style !== "tile" ? "selected" : ""}>${escapeHtml(t.styleModern || "Modern iOS Style")}</option>
+          <option value="vintage" ${c.card_style === "vintage" ? "selected" : ""}>${escapeHtml(t.styleVintage || "Vintage Nautical Barometer")}</option>
+          <option value="tile" ${c.card_style === "tile" ? "selected" : ""}>${escapeHtml(t.styleTile || "Compact Tile (Mushroom style)")}</option>
         </select>
       </div>
 
@@ -169,12 +179,12 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
       ` : ""}
 
       <div class="field-row">
-        <label>${t.language}</label>
+        <label>${escapeHtml(t.language)}</label>
         <select id="sel-lang">
           ${LANG_OPTIONS.map(([value, label]) => {
             const text = value === "auto" ? t.langAuto : label;
             const selected = lang === value ? "selected" : "";
-            return `<option value="${value}" ${selected}>${text}</option>`;
+            return `<option value="${escapeHtml(value)}" ${selected}>${escapeHtml(text)}</option>`;
           }).join("")}
         </select>
       </div>
@@ -183,13 +193,13 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
 
       ${showWindOn ? `
       <div class="field-row">
-        <label>${t.windEntity}</label>
+        <label>${escapeHtml(t.windEntity)}</label>
         <div id="wind-entity-picker"></div>
-        <div class="field-hint">${t.windEntityH}</div>
+        <div class="field-hint">${escapeHtml(t.windEntityH)}</div>
       </div>
 
       <div class="field-row">
-        <label>${t.windUnit}</label>
+        <label>${escapeHtml(t.windUnit)}</label>
         <select id="sel-wind-unit">
           <option value="m/s"  ${windUnit==="m/s" ?"selected":""}>m/s</option>
           <option value="km/h" ${windUnit==="km/h"?"selected":""}>km/h</option>
@@ -201,24 +211,24 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
       ${this._toggle("sw-auto-theme", t.autoTheme, t.autoThemeH, autoThemeOn)}
       ${autoThemeOn ? `
       <div class="custom-bg-row">
-        <div class="row-label">${t.themeAlpha || "Background opacity (Alpha)"}</div>
-        <div class="row-hint">${t.themeAlphaH || "Adjust the transparency of the auto theme background (0–100%)"}</div>
+        <div class="row-label">${escapeHtml(t.themeAlpha || "Background opacity (Alpha)")}</div>
+        <div class="row-hint">${escapeHtml(t.themeAlphaH || "Adjust the transparency of the auto theme background (0–100%)")}</div>
         <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-          <input type="range" id="theme-alpha-slider" min="0" max="100" value="${themeAlpha}" style="flex:1; cursor:pointer;">
-          <span id="theme-alpha-lbl" style="font-size:0.85rem; font-family:monospace; width:40px; text-align:right;">${themeAlpha}%</span>
+          <input type="range" id="theme-alpha-slider" min="0" max="100" value="${escapeHtml(themeAlpha)}" style="flex:1; cursor:pointer;">
+          <span id="theme-alpha-lbl" style="font-size:0.85rem; font-family:monospace; width:40px; text-align:right;">${escapeHtml(themeAlpha)}%</span>
         </div>
       </div>` : ""}
       ${!autoThemeOn ? `
       <div class="custom-bg-row">
-        <div class="row-label">${t.customBg}</div>
-        <div class="row-hint">${t.customBgH}</div>
+        <div class="row-label">${escapeHtml(t.customBg)}</div>
+        <div class="row-hint">${escapeHtml(t.customBgH)}</div>
         <div class="bg-inputs">
           <div class="bg-color-swatch">
-            <div class="bg-color-preview" id="bg-preview" style="background:${customBg}"></div>
-            <input type="color" id="bg-color-picker" value="${colorInputVal}">
+            <div class="bg-color-preview" id="bg-preview"></div>
+            <input type="color" id="bg-color-picker" value="${escapeHtml(colorInputVal)}">
           </div>
           <input type="text" class="bg-text-input" id="bg-text"
-            value="${customBg.replace(/"/g,'&quot;')}"
+            value="${escapeHtml(customBg)}"
             placeholder="linear-gradient(...) or #hex" spellcheck="false">
         </div>
       </div>` : ""}
@@ -228,6 +238,11 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
       ${this._toggle("sw-trend",     t.showTrend    || "Show forecast trend timeline", t.showTrendH    || "Horizontal strip of past Zambretti states with icons and times", !!c.show_trend)}
       ${this._toggle("sw-history",   t.showHistory  || "Show 24h history chart",      t.showHistoryH  || "Pressure & precipitation chart for the last 24 hours",            !!c.show_history)}
     `;
+
+    const bgPreviewEl = this.shadowRoot.querySelector("#bg-preview");
+    if (bgPreviewEl) {
+      bgPreviewEl.style.background = customBg;
+    }
 
     // Event listeners
     const cardStyleSel = this.shadowRoot.querySelector("#sel-card-style");
@@ -353,10 +368,10 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
     };
     return `<div class="row">
       <div>
-        <div class="row-label">${label}</div>
-        <div class="row-hint">${hint}</div>
+        <div class="row-label">${escapeHtml(label)}</div>
+        <div class="row-hint">${escapeHtml(hint)}</div>
       </div>
-      <ha-switch data-key="${keyMap[id]}" ${checked?"checked":""}></ha-switch>
+      <ha-switch data-key="${escapeHtml(keyMap[id])}" ${checked?"checked":""}></ha-switch>
     </div>`;
   }
 }

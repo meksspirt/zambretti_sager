@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.1] — 2026-10-24
+
+### Security & Elevation Refinements (HACS Default Review)
+
+#### 🛡️ Frontend Security & HTML Sanitization
+- **Strict HTML Escaping**: Added `escapeHtml()` utility to both `zambretti-weather-card.js` and `zambretti-weather-card-editor.js`.
+- **Escaped Template String Interpolations**: Sanitized all dynamic entity states, forecast labels, 3h trend labels, wind direction/speeds, precipitation indicators, and historical timeline labels before embedding into markup.
+- **Safe CSSOM Background Assignment**: Replaced unescaped inline style interpolation for card backgrounds (`ha-card style="background:..."`) and editor preview swatches with direct CSSOM property assignments (`style.background`), eliminating XSS / markup injection risks.
+
+#### 📍 Elevation Resolution via Coordinates
+- **Documented Coordinates Lookup**: Updated `async_resolve_elevation()` to prioritize external Open-Elevation / Open-Meteo API lookup using map coordinates (`latitude`, `longitude`).
+- **Graceful Fallback**: Home Assistant configured elevation (`hass.config.elevation`) is now utilized strictly as a fallback when coordinates are missing or external APIs are unreachable, ensuring users with default HA elevation (0 m) receive accurate elevation corrections for their physical station coordinates.
+
 ## [2.0.0] — 2026-10-20
 
 ### Major Release & Architectural Optimization
