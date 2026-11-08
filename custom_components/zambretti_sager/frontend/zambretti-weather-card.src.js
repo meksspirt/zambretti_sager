@@ -1,10 +1,10 @@
 /**
- * Zambretti & Sager Weather Card  v2.0.1
+ * Zambretti & Sager Weather Card  v2.1.0
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.0.1 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.1.0 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
@@ -1063,7 +1063,7 @@ class ZambrettiWeatherCard extends HTMLElement {
 
   /** Returns the editor element used by the Lovelace card picker (lazy-loaded on demand). */
   static async getConfigElement() {
-    await import(new URL("./zambretti-weather-card-editor.js?v=2.0.1", import.meta.url).href);
+    await import(new URL("./zambretti-weather-card-editor.js?v=2.1.0", import.meta.url).href);
     return document.createElement("zambretti-weather-card-editor");
   }
 
