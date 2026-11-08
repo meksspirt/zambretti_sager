@@ -90,4 +90,4 @@ def test_compiled_frontend_bundles_exist():
     assert card_bundle.is_file() and card_bundle.stat().st_size > 10_000
     assert editor_bundle.is_file() and editor_bundle.stat().st_size > 5_000
     card_src = card_bundle.read_text(encoding="utf-8")
-    assert "zambretti-weather-card-editor.js?v=2.1.0" in card_src
+    assert "zambretti-weather-card-editor.js?v=2.1.1" in card_src

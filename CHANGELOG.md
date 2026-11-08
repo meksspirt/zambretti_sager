@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1] — 2026-11-08
+
+### Fixes & Distribution
+
+#### 📦 HACS & Marketplace Direct Installation
+- **Resolved Asset Download Timeouts**: Removed `zip_release` requirement from `hacs.json`. Reverted to standard Home Assistant / HACS git repository extraction to avoid download timeouts caused by ISP/firewall throttling and blocking of GitHub Releases CDN storage (`objects.githubusercontent.com`).
+
 ## [2.1.0] — 2026-11-08
 
 ### Home Assistant Integration Quality Scale & Lovelace Card Overhaul

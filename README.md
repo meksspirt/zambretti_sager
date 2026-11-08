@@ -1,7 +1,7 @@
 # Zambretti & Sager Weather Forecaster
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.1-blue.svg)
 
 A Home Assistant custom integration that provides local weather forecasting using the classic Zambretti and Sager barometric algorithms — no cloud weather API subscription required.
 
