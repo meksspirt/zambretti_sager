@@ -22,6 +22,28 @@
           "use_sea_level_correction": "Activer si vous utilisez un capteur de pression absolue au-dessus du niveau de la mer",
           "location": "Cliquez sur la carte pour définir votre emplacement afin de calculer l'altitude"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer la station météo",
+        "description": "Mettez à jour les capteurs de votre modèle de prévision.",
+        "data": {
+          "pressure_sensor": "Capteur de pression",
+          "wind_sensor": "Capteur de direction du vent (en option)",
+          "wind_speed_sensor": "Capteur de vitesse du vent (en option)",
+          "temperature_sensor": "Capteur de température (en option)",
+          "humidity_sensor": "Capteur d'humidité (en option)",
+          "use_sea_level_correction": "Activer la correction de la pression au niveau de la mer",
+          "location": "Emplacement"
+        },
+        "data_description": {
+          "pressure_sensor": "Sélectionnez votre capteur de pression barométrique",
+          "wind_sensor": "En option : capteur de direction du vent (en degrés)",
+          "wind_speed_sensor": "En option : capteur dédié à la vitesse du vent",
+          "temperature_sensor": "En option : utilisé pour la correction de la pression au niveau de la mer",
+          "humidity_sensor": "Facultatif : améliore la précision de la probabilité de précipitations",
+          "use_sea_level_correction": "Activer si vous utilisez un capteur de pression absolue au-dessus du niveau de la mer",
+          "location": "Cliquez sur la carte pour définir votre emplacement afin de calculer l'altitude"
+        }
       }
     },
     "error": {
@@ -29,7 +51,8 @@
       "unknown": "Erreur inattendue"
     },
     "abort": {
-      "already_configured": "Cette station météo est déjà configurée"
+      "already_configured": "Cette station météo est déjà configurée",
+      "reconfigure_successful": "Station météo reconfigurée avec succès"
     }
   },
   "options": {
@@ -61,6 +84,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
+        "name": "Prévision Zambretti",
         "state": {
           "settled_fine": "Temps stable et beau",
           "fine_weather": "Beau temps",
@@ -92,6 +116,7 @@
         }
       },
       "sager_forecast": {
+        "name": "Prévision Sager",
         "state": {
           "sager_fair_improving": "Temps clair, s'améliorant",
           "sager_fair_tending_to_deteriorate": "Temps clair actuellement, tendance à la détérioration",
@@ -107,6 +132,7 @@
         }
       },
       "zambretti_forecast_6h": {
+        "name": "Prévision Zambretti 6h",
         "state": {
           "settled_fine": "Temps stable et beau",
           "fine_weather": "Beau temps",
@@ -138,6 +164,7 @@
         }
       },
       "zambretti_forecast_12h": {
+        "name": "Prévision Zambretti 12h",
         "state": {
           "settled_fine": "Temps stable et beau",
           "fine_weather": "Beau temps",
@@ -169,6 +196,7 @@
         }
       },
       "zambretti_forecast_24h": {
+        "name": "Prévision Zambretti 24h",
         "state": {
           "settled_fine": "Temps stable et beau",
           "fine_weather": "Beau temps",
@@ -198,7 +226,23 @@
           "stormy_possibly_improving": "Orageux, s'améliorant peut-être",
           "stable": "Stable"
         }
+      },
+      "precipitation_probability": {
+        "name": "Probabilité de précipitations"
+      },
+      "last_update": {
+        "name": "Dernière mise à jour"
       }
+    },
+    "weather": {
+      "weather_station": {
+        "name": "Station météo"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_pressure": {
+      "message": "État de pression invalide pour {entity_id}"
     }
   }
 }

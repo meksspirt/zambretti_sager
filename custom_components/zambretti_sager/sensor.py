@@ -14,13 +14,13 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .algorithms import SAGER_OPTIONS, ZAMBRETTI_OPTIONS
-from .const import DOMAIN, VERSION
 from .coordinator import ForecastData, ZambrettiConfigEntry, ZambrettiSagerCoordinator
+from .entity import ZambrettiEntity
+
+PARALLEL_UPDATES = 0
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -78,7 +78,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="zambretti_6h",
         translation_key="zambretti_forecast_6h",
-        icon="mdi:weather-partly-cloudy",
         device_class=SensorDeviceClass.ENUM,
         options=ZAMBRETTI_OPTIONS,
         value_fn=lambda d: d.zambretti_6h if d.p_now is not None else None,
@@ -89,7 +88,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="zambretti_12h",
         translation_key="zambretti_forecast_12h",
-        icon="mdi:weather-cloudy",
         device_class=SensorDeviceClass.ENUM,
         options=ZAMBRETTI_OPTIONS,
         value_fn=lambda d: d.zambretti_12h if d.p_now is not None else None,
@@ -100,7 +98,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="zambretti_24h",
         translation_key="zambretti_forecast_24h",
-        icon="mdi:weather-sunset",
         device_class=SensorDeviceClass.ENUM,
         options=ZAMBRETTI_OPTIONS,
         value_fn=lambda d: d.zambretti_24h if d.p_now is not None else None,
@@ -111,7 +108,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="precipitation_probability",
         translation_key="precipitation_probability",
-        icon="mdi:water-percent",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: d.precip_probability if d.p_now is not None else None,
@@ -119,7 +115,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="last_update",
         translation_key="last_update",
-        icon="mdi:clock-time-four",
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.last_updated,
@@ -142,11 +137,10 @@ async def async_setup_entry(
     )
 
 
-class WeatherSensor(CoordinatorEntity[ZambrettiSagerCoordinator], SensorEntity):
+class WeatherSensor(ZambrettiEntity, SensorEntity):
     """Declarative sensor entity for Zambretti & Sager forecast metrics."""
 
     entity_description: ZambrettiSensorEntityDescription
-    _attr_has_entity_name = True
     _unrecorded_attributes = frozenset(
         {
             "pressure_hpa",
@@ -166,21 +160,8 @@ class WeatherSensor(CoordinatorEntity[ZambrettiSagerCoordinator], SensorEntity):
         description: ZambrettiSensorEntityDescription,
     ) -> None:
         """Initialize the sensor and set shared device info."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, description.key)
         self.entity_description = description
-        self._attr_unique_id = f"{coordinator.entry.entry_id}_{description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.entry.entry_id)},
-            name="Weather Station",
-            manufacturer="Zambretti & Sager",
-            model="Software Forecaster",
-            sw_version=VERSION,
-        )
-
-    @property
-    def data(self) -> ForecastData | None:
-        """Return the latest forecast data snapshot from the coordinator."""
-        return self.coordinator.data
 
     @property
     def available(self) -> bool:
@@ -190,7 +171,7 @@ class WeatherSensor(CoordinatorEntity[ZambrettiSagerCoordinator], SensorEntity):
             return False
         if self.entity_description.available_fn is not None:
             return self.entity_description.available_fn(d)
-        return d.available
+        return super().available
 
     @property
     def native_value(self) -> Any:

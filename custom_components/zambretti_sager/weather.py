@@ -11,13 +11,11 @@ from homeassistant.components.weather import (
 )
 from homeassistant.const import UnitOfPressure, UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, VERSION
 from .coordinator import ZambrettiConfigEntry, ZambrettiSagerCoordinator
+from .entity import ZambrettiEntity
 
 ZAMBRETTI_TO_CONDITION: dict[str, str] = {
     "settled_fine": "sunny",
@@ -50,6 +48,9 @@ ZAMBRETTI_TO_CONDITION: dict[str, str] = {
 }
 
 
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ZambrettiConfigEntry,
@@ -60,36 +61,25 @@ async def async_setup_entry(
     async_add_entities([ZambrettiWeather(coordinator)])
 
 
-class ZambrettiWeather(CoordinatorEntity, WeatherEntity):
+class ZambrettiWeather(ZambrettiEntity, WeatherEntity):
     """Weather entity that exposes Zambretti forecasts to HA's native weather card."""
 
-    _attr_name = "Weather Station"
+    _attr_translation_key = "weather_station"
+    _attr_name = None
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_native_pressure_unit = UnitOfPressure.HPA
     _attr_native_wind_speed_unit = UnitOfSpeed.METERS_PER_SECOND
     _attr_supported_features = (
         WeatherEntityFeature.FORECAST_HOURLY | WeatherEntityFeature.FORECAST_DAILY
     )
-    _attr_has_entity_name = True
 
     def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
         """Initialize the weather entity."""
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{coordinator.entry.entry_id}_weather"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.entry.entry_id)},
-            name="Weather Station",
-            manufacturer="Zambretti & Sager",
-            model="Software Forecaster",
-            sw_version=VERSION,
-        )
-
-    @property
-    def data(self):
-        return self.coordinator.data
+        super().__init__(coordinator, "weather")
 
     @property
     def condition(self) -> str | None:
+        """Return the current weather condition."""
         d = self.data
         if not d or not d.available or not d.zambretti_state:
             return None
@@ -100,11 +90,13 @@ class ZambrettiWeather(CoordinatorEntity, WeatherEntity):
 
     @property
     def native_temperature(self) -> float | None:
+        """Return the current temperature."""
         d = self.data
         return d.temperature if d else None
 
     @property
     def native_pressure(self) -> float | None:
+        """Return the current sea-level corrected pressure."""
         d = self.data
         if not d or d.p_now is None:
             return None
@@ -112,41 +104,56 @@ class ZambrettiWeather(CoordinatorEntity, WeatherEntity):
 
     @property
     def native_humidity(self) -> float | None:
+        """Return the current relative humidity."""
         d = self.data
         return d.humidity if d else None
 
     @property
     def native_wind_speed(self) -> float | None:
+        """Return the current wind speed."""
         d = self.data
         return d.wind_speed if d else None
 
     @property
     def wind_bearing(self) -> float | None:
+        """Return the current wind bearing in degrees."""
         d = self.data
         return d.wind_degrees if d else None
 
     async def async_forecast_hourly(self) -> list[Forecast] | None:
-        """Return the hourly forecast."""
-        return self.forecast
+        """Return the short-term hourly forecast (+6h, +12h, +24h)."""
+        d = self.data
+        if not d or not d.available or d.p_now is None:
+            return None
+        return self._build_forecast(
+            [
+                (6, d.zambretti_6h, d.predicted_p_6h),
+                (12, d.zambretti_12h, d.predicted_p_12h),
+                (24, d.zambretti_24h, d.predicted_p_24h),
+            ]
+        )
 
     async def async_forecast_daily(self) -> list[Forecast] | None:
-        """Return the daily forecast."""
-        return self.forecast
+        """Return the 24-hour ahead daily forecast."""
+        d = self.data
+        if not d or not d.available or d.p_now is None:
+            return None
+        return self._build_forecast(
+            [
+                (24, d.zambretti_24h, d.predicted_p_24h),
+            ]
+        )
 
-    @property
-    def forecast(self) -> list[Forecast] | None:
+    def _build_forecast(
+        self, forecast_defs: list[tuple[int, str | None, float | None]]
+    ) -> list[Forecast] | None:
+        """Build Forecast objects for the requested horizons."""
         d = self.data
         if not d or not d.available or d.p_now is None:
             return None
 
         now = dt_util.utcnow()
         items: list[Forecast] = []
-
-        forecast_defs = [
-            (6, d.zambretti_6h, d.predicted_p_6h),
-            (12, d.zambretti_12h, d.predicted_p_12h),
-            (24, d.zambretti_24h, d.predicted_p_24h),
-        ]
 
         for hours, state, p_pred in forecast_defs:
             cond = ZAMBRETTI_TO_CONDITION.get(state) if state else None
@@ -156,9 +163,7 @@ class ZambrettiWeather(CoordinatorEntity, WeatherEntity):
                 "datetime": forecast_time,
                 "condition": cond,
                 "native_temperature": d.temperature,
-                "native_temperature_unit": self._attr_native_temperature_unit,
                 "native_pressure": p_pred,
-                "native_pressure_unit": self._attr_native_pressure_unit,
             }
             if d.precip_probability is not None:
                 forecast_dict["precipitation_probability"] = d.precip_probability

@@ -77,14 +77,49 @@ async def async_resolve_elevation(
     configured_elevation: float | None = None,
     fallback_elevation: float | None = None,
 ) -> float | None:
-    """Resolve station elevation using map coordinates with fallback to HA elevation.
+    """Resolve station elevation using local-first strategy with external API fallback.
 
-    1. If GPS coordinates (latitude, longitude) are provided, query external elevation
-       APIs (Open-Elevation with Open-Meteo fallback) as documented.
-    2. If external API lookup fails or coordinates are missing, fallback to Home Assistant's
-       configured elevation or explicitly provided fallback elevation.
+    1. If a configured elevation is already stored, return it immediately without network I/O.
+    2. If coordinates match Home Assistant's home location and HA elevation is configured,
+       use the local HA elevation immediately without external HTTP requests.
+    3. If custom coordinates are provided, query external elevation APIs (cached in-memory).
+    4. Fall back to Home Assistant's configured elevation or explicitly provided fallback.
     """
-    # 1. External API lookup using map coordinates (Primary / Documented)
+    # 1. Configured / persisted elevation from entry
+    if configured_elevation is not None:
+        try:
+            val = float(configured_elevation)
+            _LOGGER.debug("Using configured elevation from entry: %.1f m", val)
+            return val
+        except (ValueError, TypeError):
+            pass
+
+    # 2. Local-First: Check if coordinates match Home Assistant's home location
+    ha_lat = getattr(getattr(hass, "config", None), "latitude", None)
+    ha_lon = getattr(getattr(hass, "config", None), "longitude", None)
+    ha_elevation = getattr(getattr(hass, "config", None), "elevation", None)
+
+    if (
+        latitude is not None
+        and longitude is not None
+        and ha_lat is not None
+        and ha_lon is not None
+        and ha_elevation is not None
+    ):
+        try:
+            lat_f = float(latitude)
+            lon_f = float(longitude)
+            if abs(lat_f - float(ha_lat)) < 0.005 and abs(lon_f - float(ha_lon)) < 0.005:
+                elev_val = float(ha_elevation)
+                _LOGGER.info(
+                    "Coordinates match Home Assistant home location, using local elevation: %.1f m",
+                    elev_val,
+                )
+                return elev_val
+        except (ValueError, TypeError):
+            pass
+
+    # 3. External API lookup using map coordinates
     if latitude is not None and longitude is not None:
         try:
             lat_f = float(latitude)
@@ -102,11 +137,10 @@ async def async_resolve_elevation(
         except (ValueError, TypeError) as err:
             _LOGGER.warning("Invalid coordinates (%s, %s): %s", latitude, longitude, err)
 
-    # 2. Fallback to explicitly passed configured/fallback elevation or HA config elevation
+    # 4. Fallback to explicitly passed fallback elevation or HA config elevation
     for candidate in (
-        configured_elevation,
         fallback_elevation,
-        getattr(getattr(hass, "config", None), "elevation", None),
+        ha_elevation,
     ):
         if candidate is not None:
             try:

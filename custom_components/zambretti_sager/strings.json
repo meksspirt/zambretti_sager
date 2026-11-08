@@ -233,6 +233,16 @@
       "last_update": {
         "name": "Last Update"
       }
+    },
+    "weather": {
+      "weather_station": {
+        "name": "Weather Station"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_pressure": {
+      "message": "Invalid pressure state for {entity_id}"
     }
   }
 }

@@ -131,9 +131,13 @@ def test_last_update_sensor(mock_coordinator):
     assert sensor.force_update is False
 
 
-def test_weather_entity(mock_coordinator):
+@pytest.mark.asyncio
+async def test_weather_entity(mock_coordinator):
     """Test ZambrettiWeather entity condition, night mode, and enriched forecast properties."""
     weather = ZambrettiWeather(mock_coordinator)
+    assert weather._attr_name is None
+    assert weather.available is True
+
     # Daytime fine weather -> sunny
     assert weather.condition == "sunny"
     assert weather.native_temperature == 21.5
@@ -142,7 +146,7 @@ def test_weather_entity(mock_coordinator):
     assert weather.native_wind_speed == 3.5
     assert weather.wind_bearing == 270.0
 
-    forecast = weather.forecast
+    forecast = await weather.async_forecast_hourly()
     assert forecast is not None
     assert len(forecast) == 3
     assert forecast[0]["condition"] is not None
@@ -162,3 +166,95 @@ def test_weather_entity(mock_coordinator):
     assert weather.condition == "sunny"
     mock_coordinator.data.is_night = True
     assert weather.condition == "clear-night"
+
+    # Availability when coordinator data is unavailable or None
+    mock_coordinator.data.available = False
+    assert weather.available is False
+    mock_coordinator.data = None
+    assert weather.available is False
+
+
+@pytest.mark.asyncio
+async def test_sensor_async_setup_entry(mock_coordinator):
+    """Test async_setup_entry in sensor platform registers all sensor entities."""
+    from custom_components.zambretti_sager import sensor
+
+    entry = MagicMock()
+    entry.runtime_data = mock_coordinator
+    added = []
+
+    def mock_add(entities):
+        added.extend(entities)
+
+    await sensor.async_setup_entry(MagicMock(), entry, mock_add)
+    assert len(added) == 7
+
+
+@pytest.mark.asyncio
+async def test_weather_async_setup_entry_and_methods(mock_coordinator):
+    """Test weather platform async_setup_entry, hourly and daily forecast methods."""
+    from custom_components.zambretti_sager import weather
+
+    entry = MagicMock()
+    entry.runtime_data = mock_coordinator
+    added = []
+
+    def mock_add(entities):
+        added.extend(entities)
+
+    await weather.async_setup_entry(MagicMock(), entry, mock_add)
+    assert len(added) == 1
+    w = added[0]
+
+    hourly = await w.async_forecast_hourly()
+    daily = await w.async_forecast_daily()
+    assert hourly is not None and len(hourly) == 3
+    assert daily is not None and len(daily) == 1
+    assert daily[0]["native_pressure"] == 1032.2
+
+    # Empty forecast when data is unavailable or p_now is None
+    mock_coordinator.data.available = False
+    assert await w.async_forecast_hourly() is None
+    assert await w.async_forecast_daily() is None
+    mock_coordinator.data.available = True
+    mock_coordinator.data.p_now = None
+    assert await w.async_forecast_hourly() is None
+    assert await w.async_forecast_daily() is None
+
+
+def test_zambretti_entity_device_naming(mock_coordinator):
+    """Test ZambrettiEntity device naming for default and custom entry titles."""
+    from homeassistant.helpers.device_registry import DeviceEntryType
+
+    from custom_components.zambretti_sager.entity import ZambrettiEntity
+
+    mock_coordinator.entry.title = "Weather Forecaster"
+    e_default = ZambrettiEntity(mock_coordinator, "test_default")
+    assert e_default._attr_device_info["name"] == "Weather Station"
+    assert e_default._attr_device_info["entry_type"] == DeviceEntryType.SERVICE
+
+    mock_coordinator.entry.title = None
+    e_none = ZambrettiEntity(mock_coordinator, "test_none")
+    assert e_none._attr_device_info["name"] == "Weather Station"
+
+    mock_coordinator.entry.title = "Dacha Barometer"
+    e_custom = ZambrettiEntity(mock_coordinator, "test_custom")
+    assert e_custom._attr_device_info["name"] == "Dacha Barometer"
+
+
+def test_sensor_helpers_and_base_class(mock_coordinator):
+    """Test _get_base_attrs and WeatherSensorBase fallback."""
+    from custom_components.zambretti_sager.sensor import (
+        WeatherSensorBase,
+        _get_base_attrs,
+    )
+
+    assert _get_base_attrs(None) == {}
+
+    base = WeatherSensorBase(mock_coordinator)
+    assert base.translation_key == "zambretti_forecast"
+
+    # Base attributes with night mode
+    mock_coordinator.data.is_night = True
+    attrs = _get_base_attrs(mock_coordinator.data)
+    assert attrs["is_night"] is True

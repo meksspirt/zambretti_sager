@@ -10,6 +10,7 @@ from homeassistant.helpers import selector
 import voluptuous as vol
 
 from .const import (
+    CONF_ELEVATION,
     CONF_HUMIDITY_SENSOR,
     CONF_LATITUDE,
     CONF_LONGITUDE,
@@ -163,7 +164,18 @@ class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(f"{DOMAIN}_{user_input[CONF_PRESSURE_SENSOR]}")
             self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(title="Weather Forecaster", data=user_input)
+            title = "Weather Forecaster"
+            if getattr(self, "hass", None) is not None:
+                state = self.hass.states.get(user_input[CONF_PRESSURE_SENSOR])
+                friendly_name = (
+                    state.attributes.get("friendly_name")
+                    if state is not None and getattr(state, "attributes", None)
+                    else None
+                )
+                if isinstance(friendly_name, str) and friendly_name.strip():
+                    title = friendly_name.strip()
+
+            return self.async_create_entry(title=title, data=user_input)
 
         default_location = {
             "latitude": self.hass.config.latitude,
@@ -196,12 +208,20 @@ class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             user_input = _normalize_optional_entities(_apply_location(user_input))
             new_unique_id = f"{DOMAIN}_{user_input[CONF_PRESSURE_SENSOR]}"
-            await self.async_set_unique_id(new_unique_id)
-            self._abort_if_unique_id_mismatch(reason="already_configured")
+            if new_unique_id != entry.unique_id:
+                await self.async_set_unique_id(new_unique_id)
+                self._abort_if_unique_id_configured()
+                self.hass.config_entries.async_update_entry(entry, unique_id=new_unique_id)
+
+            new_data = {**entry.data, **user_input}
+            if user_input.get(CONF_LATITUDE) != entry.data.get(CONF_LATITUDE) or user_input.get(
+                CONF_LONGITUDE
+            ) != entry.data.get(CONF_LONGITUDE):
+                new_data.pop(CONF_ELEVATION, None)
 
             return self.async_update_reload_and_abort(
                 entry,
-                data={**entry.data, **user_input},
+                data=new_data,
                 reason="reconfigure_successful",
             )
 
@@ -227,7 +247,20 @@ class ZambrettiSagerOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle the options form, pre-populated with current settings."""
         if user_input is not None:
             user_input = _normalize_optional_entities(_apply_location(user_input))
-            return self.async_create_entry(title="", data=user_input)
+            new_options = dict(user_input)
+            if user_input.get(CONF_LATITUDE) != _get_entry_value(
+                self.config_entry, CONF_LATITUDE
+            ) or user_input.get(CONF_LONGITUDE) != _get_entry_value(
+                self.config_entry, CONF_LONGITUDE
+            ):
+                new_options.pop(CONF_ELEVATION, None)
+                if CONF_ELEVATION in self.config_entry.data:
+                    updated_data = dict(self.config_entry.data)
+                    updated_data.pop(CONF_ELEVATION, None)
+                    self.hass.config_entries.async_update_entry(
+                        self.config_entry, data=updated_data
+                    )
+            return self.async_create_entry(title="", data=new_options)
 
         entry = self.config_entry
         schema = _build_options_schema(entry, self.hass.config.latitude, self.hass.config.longitude)

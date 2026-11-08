@@ -1,17 +1,27 @@
 # Changelog
 
-## [2.0.1] — 2026-10-24
+## [2.0.1] — 2026-11-08
 
-### Security & Elevation Refinements (HACS Default Review)
+### Home Assistant Integration Quality Scale & Lovelace Card Overhaul
 
-#### 🛡️ Frontend Security & HTML Sanitization
-- **Strict HTML Escaping**: Added `escapeHtml()` utility to both `zambretti-weather-card.js` and `zambretti-weather-card-editor.js`.
-- **Escaped Template String Interpolations**: Sanitized all dynamic entity states, forecast labels, 3h trend labels, wind direction/speeds, precipitation indicators, and historical timeline labels before embedding into markup.
-- **Safe CSSOM Background Assignment**: Replaced unescaped inline style interpolation for card backgrounds (`ha-card style="background:..."`) and editor preview swatches with direct CSSOM property assignments (`style.background`), eliminating XSS / markup injection risks.
+#### 🏛️ Home Assistant Architecture & Quality Scale (Bronze → Platinum)
+- **Hassfest & Manifest Compliance**: Strict alphabetical key ordering in `manifest.json`, defined `"integration_type": "service"`, `"iot_class": "calculated"`, and integration logger declarations.
+- **Unified Entity Architecture (`entity.py`)**: Introduced `ZambrettiEntity` base class using `DeviceEntryType.SERVICE` with dynamic device naming derived from the configuration entry title or falling back to "Weather Station".
+- **Modernized Weather Platform (`weather.py`)**: Removed deprecated public `forecast` property in compliance with Home Assistant 2024.x/2025.x+ deprecation notices; `async_forecast_hourly()` now provides 3 forecast horizons (+6h, +12h, +24h), while `async_forecast_daily()` returns a dedicated 24h daily summary to avoid duplicate date rows in standard Lovelace weather cards.
+- **Enhanced Config & Options Flow**: Configuration entry titles are automatically derived from the pressure sensor's `friendly_name` attribute; updating coordinates via the options flow now cleanly clears and re-resolves cached elevation.
+- **Resilient Coordinator & Translated Exceptions**: Explicit `config_entry` association with backward-compatible fallback for older HA cores; invalid non-numeric pressure states now raise translated `UpdateFailed(..., translation_key="invalid_pressure")` exceptions.
+- **Robust Frontend Resource Management**: Idempotent frontend resource setup, enabled static path caching headers (`cache_headers=True`), and proper cancellation of pending Lovelace resource retry timers when entries are removed.
+- **Full Icon System (`icons.json`)**: Added complete state-based MDI icons for all 27 Zambretti states, 11 Sager states, precipitation probability brackets (`0`, `1`, `40`, `75`), last update timestamp, and weather station entities.
+- **Complete 21-Locale Localization**: Achieved 100% key parity between `strings.json` and all 21 translated language files in `translations/*.json`.
+- **Test Suite & CI Coverage**: Expanded unit test suite to 117 tests covering integration lifecycle, translation parity, and coordinator fallbacks with ≥95% test coverage gate (`95.95%` total coverage) and clean `ruff` linting/formatting.
 
-#### 📍 Elevation Resolution via Coordinates
-- **Documented Coordinates Lookup**: Updated `async_resolve_elevation()` to prioritize external Open-Elevation / Open-Meteo API lookup using map coordinates (`latitude`, `longitude`).
-- **Graceful Fallback**: Home Assistant configured elevation (`hass.config.elevation`) is now utilized strictly as a fallback when coordinates are missing or external APIs are unreachable, ensuring users with default HA elevation (0 m) receive accurate elevation corrections for their physical station coordinates.
+#### 🎨 Lovelace Card & Visual Editor Overhaul (`zambretti-weather-card`)
+- **Interactive Entity Details (`hass-more-info`)**: Clicking or pressing `Enter`/`Space` on the main forecast, Sager badge, 6h/12h/24h extrapolation cells, precipitation gauge, wind chip, or barometer dial opens the native Home Assistant entity details dialog.
+- **Unified Localization & Tree-Shaking**: Unified card and editor localization into a shared 21-language ESM module (`zambretti-card-i18n.js`) with tree-shaking support via `esbuild`.
+- **Entity Registry Auto-Discovery**: Cards dynamically resolve sibling sensors using Home Assistant's `hass.entities` registry (matching platform, device ID, and translation keys) before falling back to entity ID slug prefixes.
+- **Graceful Unavailable / Unknown States**: Cards and gauges cleanly display em dashes (`"—"`) and dim visual elements (`.is-unavailable`) when sensors are unavailable, eliminating erroneous defaults (e.g., fake 1013.2 hPa or 0% precipitation).
+- **Editor Polish & Accessibility**: Replaced global preview window events with scoped `requestAnimationFrame`-throttled updates, added explicit form labeling, theme contrast variables, and a new `compact` layout toggle.
+- **Optimized HACS Releases**: GitHub release workflow excludes intermediate sources (`*.src.js`) and generator scripts from release archives.
 
 ## [2.0.0] — 2026-10-20
 

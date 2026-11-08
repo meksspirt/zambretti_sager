@@ -39,7 +39,7 @@ jobs:
       - name: Build zip
         run: |
           cd custom_components
-          zip -r ../zambretti_sager.zip zambretti_sager/
+          zip -r ../zambretti_sager.zip zambretti_sager/ -x "*.src.js" "*zambretti-card-i18n.js" "*__pycache__*" "*.pyc"
           echo "Built zambretti_sager.zip"
           ls -lh ../zambretti_sager.zip
 

@@ -1,19 +1,23 @@
 {
   "domain": "zambretti_sager",
   "name": "Zambretti and Sager",
-  "codeowners": [
-    "@meksspirt"
-  ],
-  "config_flow": true,
-  "dependencies": [
+  "after_dependencies": [
     "recorder",
     "frontend",
     "http",
     "lovelace"
   ],
+  "codeowners": [
+    "@meksspirt"
+  ],
+  "config_flow": true,
   "documentation": "https://github.com/meksspirt/zambretti_sager",
-  "iot_class": "local_polling",
+  "integration_type": "service",
+  "iot_class": "calculated",
   "issue_tracker": "https://github.com/meksspirt/zambretti_sager/issues",
+  "loggers": [
+    "custom_components.zambretti_sager"
+  ],
   "requirements": [],
   "version": "2.0.1"
 }

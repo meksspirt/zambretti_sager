@@ -265,12 +265,20 @@ if "homeassistant" not in sys.modules:
                 return ms
 
         class MockDataUpdateCoordinator:
-            def __init__(self, hass=None, logger=None, name=None, update_interval=None) -> None:
+            def __init__(
+                self, hass=None, logger=None, name=None, update_interval=None, **kwargs
+            ) -> None:
                 self.hass = hass
                 self.logger = logger
                 self.name = name
                 self.update_interval = update_interval
                 self.data = None
+
+            async def async_config_entry_first_refresh(self) -> None:
+                pass
+
+            async def async_request_refresh(self) -> None:
+                pass
 
             def __class_getitem__(cls, item):
                 return cls
@@ -278,23 +286,159 @@ if "homeassistant" not in sys.modules:
         import homeassistant.core
 
         homeassistant.core.State = MockState
+        homeassistant.core.callback = lambda fn: fn
+
+        import homeassistant.components.websocket_api
+
+        homeassistant.components.websocket_api.async_response = lambda fn: fn
+        homeassistant.components.websocket_api.websocket_command = lambda schema: lambda fn: fn
+
+        class MockUpdateFailed(Exception):
+            def __init__(
+                self,
+                *args,
+                translation_domain: str | None = None,
+                translation_key: str | None = None,
+                translation_placeholders: dict[str, Any] | None = None,
+                **kwargs,
+            ) -> None:
+                super().__init__(*args)
+                self.translation_domain = translation_domain
+                self.translation_key = translation_key
+                self.translation_placeholders = translation_placeholders
+
+        class MockDeviceInfo(dict):
+            def __init__(self, **kwargs) -> None:
+                super().__init__(kwargs)
+
+        class MockDeviceEntryType:
+            SERVICE = "service"
+
+        import homeassistant.helpers.device_registry
+
+        homeassistant.helpers.device_registry.DeviceInfo = MockDeviceInfo
+        homeassistant.helpers.device_registry.DeviceEntryType = MockDeviceEntryType
 
         import homeassistant.helpers.update_coordinator
 
         homeassistant.helpers.update_coordinator.CoordinatorEntity = MockCoordinatorEntity
         homeassistant.helpers.update_coordinator.DataUpdateCoordinator = MockDataUpdateCoordinator
+        homeassistant.helpers.update_coordinator.UpdateFailed = MockUpdateFailed
 
         import homeassistant.components.sensor
 
         homeassistant.components.sensor.SensorEntity = MockSensorEntity
         homeassistant.components.sensor.SensorEntityDescription = MockSensorEntityDescription
 
+        import homeassistant.data_entry_flow
+
+        class MockAbortFlow(Exception):
+            def __init__(self, reason: str, description_placeholders: dict | None = None) -> None:
+                super().__init__(reason)
+                self.reason = reason
+                self.description_placeholders = description_placeholders
+
+        homeassistant.data_entry_flow.AbortFlow = MockAbortFlow
+
         import homeassistant.config_entries
+
+        class MockConfigFlow:
+            def __init_subclass__(cls, domain=None, **kwargs):
+                super().__init_subclass__(**kwargs)
+                cls.domain = domain
+
+            def __init__(self) -> None:
+                self.hass = MagicMock()
+                self.hass.config.latitude = 50.0
+                self.hass.config.longitude = 10.0
+                self.context = {}
+                self.unique_id = None
+                self._reconfigure_entry = None
+                self._existing_unique_ids = set()
+
+            async def async_set_unique_id(
+                self, unique_id: str | None = None, *, raise_on_progress: bool = True
+            ):
+                self.unique_id = unique_id
+                return None
+
+            def _abort_if_unique_id_configured(self, updates=None, reload_on_update=True):
+                if self.unique_id in self._existing_unique_ids:
+                    raise MockAbortFlow("already_configured")
+
+            def _abort_if_unique_id_mismatch(self, reason="already_configured"):
+                if (
+                    self._reconfigure_entry
+                    and getattr(self._reconfigure_entry, "unique_id", None) != self.unique_id
+                ):
+                    raise MockAbortFlow(reason)
+
+            def _get_reconfigure_entry(self):
+                return self._reconfigure_entry
+
+            def async_show_form(
+                self,
+                *,
+                step_id: str,
+                data_schema=None,
+                errors=None,
+                description_placeholders=None,
+                last_step=None,
+            ):
+                return {
+                    "type": "form",
+                    "step_id": step_id,
+                    "data_schema": data_schema,
+                    "errors": errors or {},
+                    "description_placeholders": description_placeholders,
+                }
+
+            def async_create_entry(
+                self, *, title: str, data: dict, description=None, description_placeholders=None
+            ):
+                return {"type": "create_entry", "title": title, "data": data}
+
+            def async_update_reload_and_abort(
+                self,
+                entry,
+                *,
+                data=None,
+                reason="reconfigure_successful",
+                reload_even_if_entry_is_unchanged=True,
+            ):
+                return {"type": "abort", "reason": reason, "data": data}
+
+            def async_abort(self, *, reason: str, description_placeholders=None):
+                raise MockAbortFlow(reason, description_placeholders)
 
         class MockOptionsFlow:
             def __init__(self, *args, **kwargs) -> None:
-                self.config_entry = args[0] if args else None
+                self.config_entry = args[0] if args else MagicMock()
+                self.hass = MagicMock()
+                self.hass.config.latitude = 50.0
+                self.hass.config.longitude = 10.0
 
+            def async_show_form(
+                self,
+                *,
+                step_id: str,
+                data_schema=None,
+                errors=None,
+                description_placeholders=None,
+                last_step=None,
+            ):
+                return {
+                    "type": "form",
+                    "step_id": step_id,
+                    "data_schema": data_schema,
+                    "errors": errors or {},
+                    "description_placeholders": description_placeholders,
+                }
+
+            def async_create_entry(self, *, title: str, data: dict):
+                return {"type": "create_entry", "title": title, "data": data}
+
+        homeassistant.config_entries.ConfigFlow = MockConfigFlow
         homeassistant.config_entries.OptionsFlow = MockOptionsFlow
 
         import homeassistant.components.weather
@@ -307,10 +451,16 @@ if "homeassistant" not in sys.modules:
         homeassistant.const.UnitOfTemperature.CELSIUS = "°C"
         homeassistant.const.UnitOfSpeed.METERS_PER_SECOND = "m/s"
 
+        class MockPressureConverter:
+            @staticmethod
+            def convert(val: float, from_unit: str, to_unit: str) -> float:
+                raise ValueError(f"Unknown pressure conversion from {from_unit}")
+
         import homeassistant.util.unit_conversion
 
         homeassistant.util.unit_conversion.TemperatureConverter = MockTemperatureConverter
         homeassistant.util.unit_conversion.SpeedConverter = MockSpeedConverter
+        homeassistant.util.unit_conversion.PressureConverter = MockPressureConverter
 
         import datetime as real_datetime
 

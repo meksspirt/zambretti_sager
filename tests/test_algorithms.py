@@ -195,3 +195,29 @@ def test_southern_hemisphere_adjustments():
     idx_sh_jan = calculate_zambretti_index(1014.0, 0.0, month=1, latitude=-35.0)
     # Summer effective pressure is higher, resulting in a lower/finer Zambretti index
     assert idx_sh_jan <= idx_nh_jan
+
+    # Zambretti wind quadrant in SH
+    idx_sh_n_wind = calculate_zambretti_index(1011.0, 0.0, wind_degrees=0.0, latitude=-35.0)
+    idx_sh_s_wind = calculate_zambretti_index(1011.0, 0.0, wind_degrees=180.0, latitude=-35.0)
+    assert idx_sh_n_wind != idx_sh_s_wind
+
+
+def test_precipitation_probability_additional_brackets():
+    """Test precipitation probability humidity and pressure bracket boundaries."""
+    # Pressure 1008 hPa (bracket 1005 <= p < 1010)
+    prob = calculate_precipitation_probability(1008.0, 0.0, humidity=85.0)
+    assert 50 <= prob <= 70
+
+    # Humidity 75%
+    prob_75 = calculate_precipitation_probability(1025.0, 0.0, humidity=75.0)
+    assert prob_75 == 10
+
+    # Humidity 35%
+    prob_35 = calculate_precipitation_probability(1025.0, 0.0, humidity=35.0)
+    assert prob_35 == 0
+
+
+def test_extrapolations_fallback_to_6h():
+    """Test 24h extrapolation uses p_6h when p_12h is None."""
+    res = calculate_extrapolations(p_now=1010.0, p_3h=1012.0, p_6h=1014.0, p_12h=None)
+    assert res[24].predicted_pressure < 1010.0

@@ -233,6 +233,16 @@
       "last_update": {
         "name": "Последнее обновление"
       }
+    },
+    "weather": {
+      "weather_station": {
+        "name": "Метеостанция"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_pressure": {
+      "message": "Недопустимое значение давления для {entity_id}"
     }
   }
 }

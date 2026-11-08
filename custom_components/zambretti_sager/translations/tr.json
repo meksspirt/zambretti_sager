@@ -51,7 +51,8 @@
       "unknown": "Beklenmeyen hata"
     },
     "abort": {
-      "already_configured": "Bu hava istasyonu zaten yapılandırılmış"
+      "already_configured": "Bu hava istasyonu zaten yapılandırılmış",
+      "reconfigure_successful": "Weather station reconfigured successfully"
     }
   },
   "options": {
@@ -232,6 +233,16 @@
       "last_update": {
         "name": "Last Update"
       }
+    },
+    "weather": {
+      "weather_station": {
+        "name": "Weather Station"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_pressure": {
+      "message": "Invalid pressure state for {entity_id}"
     }
   }
 }

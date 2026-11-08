@@ -167,3 +167,54 @@ async def test_get_elevation_from_api_all_fail():
     ):
         val = await get_elevation_from_api(mock_hass, 52.0, 13.0)
         assert val is None
+
+
+@pytest.mark.asyncio
+async def test_resolve_elevation_invalid_inputs():
+    """Test handling of invalid coordinate strings and non-numeric candidates."""
+    mock_hass = AsyncMock()
+    mock_hass.config.elevation = None
+
+    # Invalid latitude/longitude strings
+    res = await async_resolve_elevation(
+        mock_hass,
+        latitude="invalid_lat",
+        longitude="invalid_lon",
+        fallback_elevation="also_invalid",
+    )
+    assert res is None
+
+
+@pytest.mark.asyncio
+async def test_resolve_elevation_configured_elevation():
+    """Test configured_elevation is returned immediately without external API lookup."""
+    mock_hass = AsyncMock()
+
+    with patch("custom_components.zambretti_sager.elevation.get_elevation_from_api") as mock_api:
+        val = await async_resolve_elevation(
+            mock_hass,
+            latitude=55.0,
+            longitude=37.0,
+            configured_elevation=210.0,
+        )
+        assert val == 210.0
+        mock_api.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_resolve_elevation_matches_ha_home_location():
+    """Test coordinates matching Home Assistant home location use local elevation without API call."""
+    mock_hass = AsyncMock()
+    mock_hass.config.latitude = 55.7558
+    mock_hass.config.longitude = 37.6173
+    mock_hass.config.elevation = 156.0
+
+    with patch("custom_components.zambretti_sager.elevation.get_elevation_from_api") as mock_api:
+        # Same coordinates within tolerance
+        val = await async_resolve_elevation(
+            mock_hass,
+            latitude=55.7559,
+            longitude=37.6172,
+        )
+        assert val == 156.0
+        mock_api.assert_not_called()

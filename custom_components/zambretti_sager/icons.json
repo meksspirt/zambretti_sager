@@ -1,0 +1,167 @@
+{
+  "entity": {
+    "sensor": {
+      "zambretti_forecast": {
+        "default": "mdi:weather-partly-cloudy",
+        "state": {
+          "settled_fine": "mdi:weather-sunny",
+          "fine_weather": "mdi:weather-sunny",
+          "fine_becoming_less_settled": "mdi:weather-partly-cloudy",
+          "fairly_fine_showery_later": "mdi:weather-partly-rainy",
+          "showery_becoming_more_unsettled": "mdi:weather-partly-rainy",
+          "unsettled_rain_later": "mdi:weather-rainy",
+          "rain_at_times_worse_later": "mdi:weather-rainy",
+          "rain_at_times_becoming_very_unsettled": "mdi:weather-pouring",
+          "very_unsettled_rain": "mdi:weather-pouring",
+          "fine_possibly_showers": "mdi:weather-partly-rainy",
+          "fairly_fine_showers_likely": "mdi:weather-partly-rainy",
+          "showery_bright_intervals": "mdi:weather-partly-rainy",
+          "changeable_some_rain": "mdi:weather-rainy",
+          "unsettled_rain_at_times": "mdi:weather-rainy",
+          "rain_at_frequent_intervals": "mdi:weather-pouring",
+          "stormy_much_rain": "mdi:weather-lightning-rainy",
+          "becoming_fine": "mdi:weather-partly-cloudy",
+          "fairly_fine_improving": "mdi:weather-partly-cloudy",
+          "fairly_fine_possibly_showers_early": "mdi:weather-partly-rainy",
+          "showery_early_improving": "mdi:weather-partly-rainy",
+          "changeable_mending": "mdi:weather-cloudy",
+          "rather_unsettled_clearing_later": "mdi:weather-cloudy",
+          "unsettled_probably_improving": "mdi:weather-cloudy",
+          "unsettled_short_fine_intervals": "mdi:weather-partly-cloudy",
+          "very_unsettled_finer_at_times": "mdi:weather-partly-rainy",
+          "stormy_possibly_improving": "mdi:weather-windy-variant",
+          "stable": "mdi:weather-partly-cloudy"
+        }
+      },
+      "sager_forecast": {
+        "default": "mdi:weather-cloudy",
+        "state": {
+          "sager_fair_improving": "mdi:weather-sunny",
+          "sager_fair_tending_to_deteriorate": "mdi:weather-partly-cloudy",
+          "sager_fair_no_change": "mdi:weather-sunny",
+          "sager_unsettled_rain_likely": "mdi:weather-rainy",
+          "sager_unsettled_probably_improving": "mdi:weather-partly-cloudy",
+          "sager_unsettled_rain_at_times": "mdi:weather-pouring",
+          "sager_changeable_becoming_fairer": "mdi:weather-partly-cloudy",
+          "sager_changeable_becoming_more_unsettled": "mdi:weather-partly-rainy",
+          "sager_variable_slowly_improving": "mdi:weather-partly-cloudy",
+          "sager_variable_slowly_deteriorating": "mdi:weather-cloudy",
+          "sager_variable_some_change": "mdi:weather-cloudy"
+        }
+      },
+      "zambretti_forecast_6h": {
+        "default": "mdi:weather-partly-cloudy",
+        "state": {
+          "settled_fine": "mdi:weather-sunny",
+          "fine_weather": "mdi:weather-sunny",
+          "fine_becoming_less_settled": "mdi:weather-partly-cloudy",
+          "fairly_fine_showery_later": "mdi:weather-partly-rainy",
+          "showery_becoming_more_unsettled": "mdi:weather-partly-rainy",
+          "unsettled_rain_later": "mdi:weather-rainy",
+          "rain_at_times_worse_later": "mdi:weather-rainy",
+          "rain_at_times_becoming_very_unsettled": "mdi:weather-pouring",
+          "very_unsettled_rain": "mdi:weather-pouring",
+          "fine_possibly_showers": "mdi:weather-partly-rainy",
+          "fairly_fine_showers_likely": "mdi:weather-partly-rainy",
+          "showery_bright_intervals": "mdi:weather-partly-rainy",
+          "changeable_some_rain": "mdi:weather-rainy",
+          "unsettled_rain_at_times": "mdi:weather-rainy",
+          "rain_at_frequent_intervals": "mdi:weather-pouring",
+          "stormy_much_rain": "mdi:weather-lightning-rainy",
+          "becoming_fine": "mdi:weather-partly-cloudy",
+          "fairly_fine_improving": "mdi:weather-partly-cloudy",
+          "fairly_fine_possibly_showers_early": "mdi:weather-partly-rainy",
+          "showery_early_improving": "mdi:weather-partly-rainy",
+          "changeable_mending": "mdi:weather-cloudy",
+          "rather_unsettled_clearing_later": "mdi:weather-cloudy",
+          "unsettled_probably_improving": "mdi:weather-cloudy",
+          "unsettled_short_fine_intervals": "mdi:weather-partly-cloudy",
+          "very_unsettled_finer_at_times": "mdi:weather-partly-rainy",
+          "stormy_possibly_improving": "mdi:weather-windy-variant",
+          "stable": "mdi:weather-partly-cloudy"
+        }
+      },
+      "zambretti_forecast_12h": {
+        "default": "mdi:weather-cloudy",
+        "state": {
+          "settled_fine": "mdi:weather-sunny",
+          "fine_weather": "mdi:weather-sunny",
+          "fine_becoming_less_settled": "mdi:weather-partly-cloudy",
+          "fairly_fine_showery_later": "mdi:weather-partly-rainy",
+          "showery_becoming_more_unsettled": "mdi:weather-partly-rainy",
+          "unsettled_rain_later": "mdi:weather-rainy",
+          "rain_at_times_worse_later": "mdi:weather-rainy",
+          "rain_at_times_becoming_very_unsettled": "mdi:weather-pouring",
+          "very_unsettled_rain": "mdi:weather-pouring",
+          "fine_possibly_showers": "mdi:weather-partly-rainy",
+          "fairly_fine_showers_likely": "mdi:weather-partly-rainy",
+          "showery_bright_intervals": "mdi:weather-partly-rainy",
+          "changeable_some_rain": "mdi:weather-rainy",
+          "unsettled_rain_at_times": "mdi:weather-rainy",
+          "rain_at_frequent_intervals": "mdi:weather-pouring",
+          "stormy_much_rain": "mdi:weather-lightning-rainy",
+          "becoming_fine": "mdi:weather-partly-cloudy",
+          "fairly_fine_improving": "mdi:weather-partly-cloudy",
+          "fairly_fine_possibly_showers_early": "mdi:weather-partly-rainy",
+          "showery_early_improving": "mdi:weather-partly-rainy",
+          "changeable_mending": "mdi:weather-cloudy",
+          "rather_unsettled_clearing_later": "mdi:weather-cloudy",
+          "unsettled_probably_improving": "mdi:weather-cloudy",
+          "unsettled_short_fine_intervals": "mdi:weather-partly-cloudy",
+          "very_unsettled_finer_at_times": "mdi:weather-partly-rainy",
+          "stormy_possibly_improving": "mdi:weather-windy-variant",
+          "stable": "mdi:weather-partly-cloudy"
+        }
+      },
+      "zambretti_forecast_24h": {
+        "default": "mdi:weather-sunset",
+        "state": {
+          "settled_fine": "mdi:weather-sunny",
+          "fine_weather": "mdi:weather-sunny",
+          "fine_becoming_less_settled": "mdi:weather-partly-cloudy",
+          "fairly_fine_showery_later": "mdi:weather-partly-rainy",
+          "showery_becoming_more_unsettled": "mdi:weather-partly-rainy",
+          "unsettled_rain_later": "mdi:weather-rainy",
+          "rain_at_times_worse_later": "mdi:weather-rainy",
+          "rain_at_times_becoming_very_unsettled": "mdi:weather-pouring",
+          "very_unsettled_rain": "mdi:weather-pouring",
+          "fine_possibly_showers": "mdi:weather-partly-rainy",
+          "fairly_fine_showers_likely": "mdi:weather-partly-rainy",
+          "showery_bright_intervals": "mdi:weather-partly-rainy",
+          "changeable_some_rain": "mdi:weather-rainy",
+          "unsettled_rain_at_times": "mdi:weather-rainy",
+          "rain_at_frequent_intervals": "mdi:weather-pouring",
+          "stormy_much_rain": "mdi:weather-lightning-rainy",
+          "becoming_fine": "mdi:weather-partly-cloudy",
+          "fairly_fine_improving": "mdi:weather-partly-cloudy",
+          "fairly_fine_possibly_showers_early": "mdi:weather-partly-rainy",
+          "showery_early_improving": "mdi:weather-partly-rainy",
+          "changeable_mending": "mdi:weather-cloudy",
+          "rather_unsettled_clearing_later": "mdi:weather-cloudy",
+          "unsettled_probably_improving": "mdi:weather-cloudy",
+          "unsettled_short_fine_intervals": "mdi:weather-partly-cloudy",
+          "very_unsettled_finer_at_times": "mdi:weather-partly-rainy",
+          "stormy_possibly_improving": "mdi:weather-windy-variant",
+          "stable": "mdi:weather-partly-cloudy"
+        }
+      },
+      "precipitation_probability": {
+        "default": "mdi:water-percent",
+        "range": {
+          "0": "mdi:water-off-outline",
+          "1": "mdi:water-outline",
+          "40": "mdi:water-percent",
+          "75": "mdi:weather-pouring"
+        }
+      },
+      "last_update": {
+        "default": "mdi:clock-time-four"
+      }
+    },
+    "weather": {
+      "weather_station": {
+        "default": "mdi:weather-partly-cloudy"
+      }
+    }
+  }
+}

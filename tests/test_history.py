@@ -254,3 +254,17 @@ async def test_async_warm_history_buffer():
     assert loaded == 1
     assert len(buffer) == 1
     assert buffer.get_pressure_at(t_1h) == 1013.0
+
+    # Test states with missing timestamp and invalid pressure state
+    s_no_time = MagicMock(state="1010.0", last_changed=None, last_updated=None)
+    s_inv_val = MagicMock(state="unavailable", last_changed=t_1h)
+    mock_recorder.async_add_executor_job = AsyncMock(
+        return_value={"sensor.pressure": [s_no_time, s_inv_val]}
+    )
+    with patch(
+        "custom_components.zambretti_sager.history.get_instance", return_value=mock_recorder
+    ):
+        loaded_empty = await async_warm_history_buffer(
+            mock_hass, "sensor.pressure", buffer, hours=2
+        )
+    assert loaded_empty == 0

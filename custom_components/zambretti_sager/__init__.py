@@ -41,9 +41,19 @@ async def _ws_get_version(
 
 async def _async_setup_frontend(hass: HomeAssistant) -> None:
     """Register the custom Lovelace card resource and static path."""
+    hass_data = getattr(hass, "data", None)
+    if isinstance(hass_data, dict):
+        domain_data = hass_data.setdefault(DOMAIN, {})
+        if domain_data.get("_frontend_registered"):
+            return
+    else:
+        domain_data = None
+
     try:
         registrar = JSModuleRegistration(hass)
         await registrar.async_register()
+        if domain_data is not None:
+            domain_data["_frontend_registered"] = True
     except Exception as err:  # noqa: BLE001
         _LOGGER.error(
             "Failed to register Zambretti card resource: %s. "
@@ -101,6 +111,9 @@ async def async_remove_entry(hass: HomeAssistant, entry: ZambrettiConfigEntry) -
     ]
     if not current_entries:
         _LOGGER.info("Last Zambretti & Sager entry removed — cleaning up Lovelace resources")
+        hass_data = getattr(hass, "data", None)
+        if isinstance(hass_data, dict) and DOMAIN in hass_data:
+            hass_data[DOMAIN].pop("_frontend_registered", None)
         try:
             registrar = JSModuleRegistration(hass)
             await registrar.async_unregister()

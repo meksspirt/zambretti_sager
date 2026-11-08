@@ -4,6 +4,7 @@
 # and LovelaceData has resource_mode (not mode) attribute.
 from __future__ import annotations
 
+from collections.abc import Callable
 import logging
 from pathlib import Path
 from typing import Any
@@ -12,7 +13,7 @@ from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_call_later
 
-from ..const import JSMODULES, URL_BASE
+from ..const import DOMAIN, JSMODULES, URL_BASE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +59,19 @@ class JSModuleRegistration:
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
         self.lovelace = _get_lovelace(hass)
+        self._lovelace_retries = 0
+        self._cancel_retry: Callable[[], None] | None = None
+
+    def _clear_retry_timer(self) -> None:
+        """Cancel any scheduled Lovelace resource retry timer."""
+        if self._cancel_retry is not None:
+            self._cancel_retry()
+            self._cancel_retry = None
+        hass_data = getattr(self.hass, "data", None)
+        if isinstance(hass_data, dict) and DOMAIN in hass_data:
+            cancel = hass_data[DOMAIN].pop("_cancel_lovelace_retry", None)
+            if callable(cancel):
+                cancel()
 
     async def async_register(self) -> None:
         """Register static path + Lovelace resource."""
@@ -87,7 +101,7 @@ class JSModuleRegistration:
         """Serve the frontend/ folder as a static HTTP endpoint."""
         try:
             await self.hass.http.async_register_static_paths(
-                [StaticPathConfig(URL_BASE, Path(__file__).parent, False)]
+                [StaticPathConfig(URL_BASE, str(Path(__file__).parent), True)]
             )
             _LOGGER.debug("Static path registered: %s", URL_BASE)
         except RuntimeError:
@@ -95,10 +109,15 @@ class JSModuleRegistration:
 
     async def _async_wait_for_lovelace_resources(self) -> None:
         """Wait until Lovelace resources collection is loaded (max 10 retries)."""
-
+        self._clear_retry_timer()
         self._lovelace_retries = 0
 
         async def _check(_now: Any) -> None:
+            self._cancel_retry = None
+            hass_data = getattr(self.hass, "data", None)
+            if isinstance(hass_data, dict) and DOMAIN in hass_data:
+                hass_data[DOMAIN].pop("_cancel_lovelace_retry", None)
+
             if self.lovelace.resources.loaded:
                 await self._async_register_modules()
                 return
@@ -115,7 +134,10 @@ class JSModuleRegistration:
                 "Lovelace resources not loaded yet, retrying in 5s (attempt %d/10)",
                 self._lovelace_retries,
             )
-            async_call_later(self.hass, 5, _check)
+            cancel = async_call_later(self.hass, 5, _check)
+            self._cancel_retry = cancel
+            if isinstance(hass_data, dict):
+                hass_data.setdefault(DOMAIN, {})["_cancel_lovelace_retry"] = cancel
 
         await _check(0)
 
@@ -164,6 +186,7 @@ class JSModuleRegistration:
 
     async def async_unregister(self) -> None:
         """Remove Lovelace resource entries on uninstall."""
+        self._clear_retry_timer()
         if self.lovelace is None or _get_resource_mode(self.lovelace) != "storage":
             return
         for module in JSMODULES:

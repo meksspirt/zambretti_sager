@@ -47,6 +47,7 @@ CONF_LATITUDE: Final[str] = "latitude"
 CONF_LONGITUDE: Final[str] = "longitude"
 CONF_LOCATION: Final[str] = "location"
 CONF_USE_SEA_LEVEL: Final[str] = "use_sea_level_correction"
+CONF_ELEVATION: Final[str] = "elevation"
 
 # Keywords in entity_id or attributes that suggest the sensor already reports
 # sea-level pressure (MSLP/QNH), so we shouldn't apply altitude correction again
@@ -61,6 +62,7 @@ SEA_LEVEL_SENSOR_HINTS: Final[tuple[str, ...]] = (
 
 __all__ = [
     "CONF_HUMIDITY_SENSOR",
+    "CONF_ELEVATION",
     "CONF_LATITUDE",
     "CONF_LOCATION",
     "CONF_LONGITUDE",

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import deque
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -596,3 +596,289 @@ async def test_coordinator_event_driven_logging():
         await coord._async_update_data()
         assert mock_log_info.call_count == 1
         assert "Forecast changed" in mock_log_info.call_args[0][0]
+
+
+def test_pressure_watcher_callbacks():
+    """Test _start_pressure_watcher attaches listener and calls async_request_refresh on change."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.barometer"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+    coord.async_request_refresh = MagicMock()
+
+    captured_callback = None
+
+    def mock_track_change(hass, entity_ids, callback_fn):
+        nonlocal captured_callback
+        captured_callback = callback_fn
+        return MagicMock()
+
+    with patch(
+        "custom_components.zambretti_sager.coordinator.async_track_state_change_event",
+        side_effect=mock_track_change,
+    ):
+        coord._start_pressure_watcher()
+        assert captured_callback is not None
+        assert coord._unsub_state_listener is not None
+
+        # Calling _start_pressure_watcher again is a no-op
+        coord._start_pressure_watcher()
+
+        # Simulate event with unavailable state -> does not refresh
+        mock_event_unavail = MagicMock()
+        mock_event_unavail.data = {"new_state": MagicMock(state="unavailable")}
+        captured_callback(mock_event_unavail)
+        assert coord.async_request_refresh.call_count == 0
+
+        # Simulate event with valid state -> calls async_request_refresh directly
+        mock_event_valid = MagicMock()
+        mock_event_valid.data = {"new_state": MagicMock(state="1013.25")}
+        captured_callback(mock_event_valid)
+        assert coord.async_request_refresh.call_count == 1
+
+        # Stop watcher
+        coord._stop_pressure_watcher()
+        assert coord._unsub_state_listener is None
+
+
+def test_coordinator_temperature_fallback_units():
+    """Test temperature conversion fallback to Fahrenheit, Kelvin, and non-numeric states."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+    coord.temp_id = "sensor.t"
+
+    # Non-numeric state returns fallback 15.0
+    mock_hass.states.get.return_value = MagicMock(state="unknown")
+    assert coord._get_temperature() == 15.0
+    mock_hass.states.get.return_value = MagicMock(state="not_a_float")
+    assert coord._get_temperature() == 15.0
+
+    # Fahrenheit conversion via fallback
+    with patch(
+        "homeassistant.util.unit_conversion.TemperatureConverter.convert",
+        side_effect=Exception("Failed"),
+    ):
+        mock_hass.states.get.return_value = MagicMock(
+            state="68.0", attributes={"unit_of_measurement": "°F"}
+        )
+        assert pytest.approx(coord._get_temperature(), 0.1) == 20.0
+
+        mock_hass.states.get.return_value = MagicMock(
+            state="293.15", attributes={"unit_of_measurement": "K"}
+        )
+        assert pytest.approx(coord._get_temperature(), 0.1) == 20.0
+
+
+def test_coordinator_wind_speed_fallback_units():
+    """Test wind speed converter fallbacks for km/h, mph, knots, fps, and attributes."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+    coord.wind_speed_id = "sensor.ws"
+
+    # State unavailable returns None
+    mock_hass.states.get.return_value = MagicMock(state="unavailable")
+    assert coord._get_wind_speed() is None
+
+    # State is non-numeric but attribute has speed
+    mock_hass.states.get.return_value = MagicMock(
+        state="strong", attributes={"wind_speed": "12.0", "unit_of_measurement": "m/s"}
+    )
+    assert pytest.approx(coord._get_wind_speed()) == 12.0
+
+    # Fallback conversions when SpeedConverter raises exception
+    with patch(
+        "homeassistant.util.unit_conversion.SpeedConverter.convert", side_effect=Exception("Failed")
+    ):
+        # km/h
+        mock_hass.states.get.return_value = MagicMock(
+            state="36.0", attributes={"unit_of_measurement": "km/h"}
+        )
+        assert pytest.approx(coord._get_wind_speed(), 0.1) == 10.0
+
+        # mph
+        mock_hass.states.get.return_value = MagicMock(
+            state="10.0", attributes={"unit_of_measurement": "mph"}
+        )
+        assert pytest.approx(coord._get_wind_speed(), 0.1) == 4.47
+
+        # knots
+        mock_hass.states.get.return_value = MagicMock(
+            state="10.0", attributes={"unit_of_measurement": "knots"}
+        )
+        assert pytest.approx(coord._get_wind_speed(), 0.1) == 5.14
+
+        # fps
+        mock_hass.states.get.return_value = MagicMock(
+            state="10.0", attributes={"unit_of_measurement": "fps"}
+        )
+        assert pytest.approx(coord._get_wind_speed(), 0.1) == 3.05
+
+
+def test_coordinator_wind_direction_compass_and_attr():
+    """Test wind direction parsing compass strings and attributes."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+    coord.wind_id = "sensor.wind"
+
+    # Numeric state directly
+    mock_hass.states.get.return_value = MagicMock(state="180.0", attributes={})
+    assert coord._get_wind_direction() == 180.0
+
+    # Non-numeric state but attribute has wind_bearing
+    mock_hass.states.get.return_value = MagicMock(
+        state="South", attributes={"wind_bearing": "180.0"}
+    )
+    assert coord._get_wind_direction() == 180.0
+
+    # Compass string state
+    mock_hass.states.get.return_value = MagicMock(state="NE", attributes={})
+    assert coord._get_wind_direction() == 45.0
+
+    # Unavailable
+    mock_hass.states.get.return_value = MagicMock(state="unavailable", attributes={})
+    assert coord._get_wind_direction() is None
+
+
+def test_coordinator_humidity_branches():
+    """Test humidity sensor reading and fallbacks."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+
+    # No humidity ID
+    coord.humidity_id = None
+    assert coord._get_humidity() is None
+
+    # Unavailable state
+    coord.humidity_id = "sensor.h"
+    mock_hass.states.get.return_value = MagicMock(state="unavailable")
+    assert coord._get_humidity() is None
+
+    # Invalid string state
+    mock_hass.states.get.return_value = MagicMock(state="invalid")
+    assert coord._get_humidity() is None
+
+    # Valid numeric state
+    mock_hass.states.get.return_value = MagicMock(state="65.5")
+    assert coord._get_humidity() == 65.5
+
+
+def test_coordinator_sea_level_detection_and_warning():
+    """Test sea level detection via attributes and warning logged only once."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.p", "use_sea_level_correction": True}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+    mock_hass.states.get.return_value = MagicMock(
+        state="1013.25", attributes={"sensor_type": "mslp"}
+    )
+
+    assert coord._is_likely_sea_level_sensor() is True
+
+    # Corrector warns once
+    with patch("custom_components.zambretti_sager.coordinator._LOGGER.warning") as mock_warn:
+        corrector = coord._create_pressure_corrector()
+        assert corrector(1013.25) == 1013.25
+        assert mock_warn.call_count == 1
+
+        # Second call does not warn again
+        corrector2 = coord._create_pressure_corrector()
+        assert corrector2(1013.25) == 1013.25
+        assert mock_warn.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_async_create_coordinator():
+    """Test async_create_coordinator factory."""
+    from custom_components.zambretti_sager.coordinator import async_create_coordinator
+
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.title = "Test Weather"
+    mock_entry.data = {"pressure_sensor": "sensor.p", "latitude": 51.5, "longitude": -0.1}
+    mock_entry.options = {}
+
+    with (
+        patch(
+            "custom_components.zambretti_sager.coordinator.async_resolve_elevation",
+            return_value=50.0,
+        ),
+        patch(
+            "custom_components.zambretti_sager.coordinator.ZambrettiSagerCoordinator.async_config_entry_first_refresh",
+        ) as mock_refresh,
+    ):
+        coord = await async_create_coordinator(mock_hass, mock_entry)
+        assert coord.altitude == 50.0
+        mock_refresh.assert_called_once()
+        mock_hass.config_entries.async_update_entry.assert_called_once_with(
+            mock_entry, data={**mock_entry.data, "elevation": 50.0}
+        )
+
+
+@pytest.mark.asyncio
+async def test_coordinator_invalid_pressure_and_compat_fallbacks():
+    """Test UpdateFailed translation kwargs and older HA TypeError fallbacks."""
+    from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {}
+
+    # 1. Test super().__init__ TypeError fallback when config_entry kwarg is unsupported
+    orig_init = DataUpdateCoordinator.__init__
+
+    def legacy_init(self, hass, logger, *, name, update_interval=None):
+        orig_init(self, hass, logger, name=name, update_interval=update_interval)
+
+    with patch.object(DataUpdateCoordinator, "__init__", legacy_init):
+        coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=100.0)
+        assert coord.pressure_id == "sensor.p"
+
+    # 2. Invalid pressure state raises translated UpdateFailed
+    mock_hass.states.get.return_value = MagicMock(
+        entity_id="sensor.p",
+        state="not_a_number",
+        attributes={"unit_of_measurement": "hPa"},
+    )
+    with pytest.raises(UpdateFailed) as exc_info:
+        await coord._async_update_data()
+    assert getattr(exc_info.value, "translation_key", None) == "invalid_pressure"
+
+    # 3. Legacy UpdateFailed without translation kwargs falls back cleanly
+    class LegacyUpdateFailed(Exception):
+        def __init__(self, message: str) -> None:
+            super().__init__(message)
+
+    with (
+        patch("custom_components.zambretti_sager.coordinator.UpdateFailed", LegacyUpdateFailed),
+        pytest.raises(LegacyUpdateFailed),
+    ):
+        await coord._async_update_data()

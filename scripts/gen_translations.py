@@ -93,7 +93,7 @@ def build(t: dict) -> dict:
         }
     )
     data["config"]["error"] = {"cannot_connect": t["err_conn"], "unknown": t["err_unk"]}
-    data["config"]["abort"] = {"already_configured": t["abort"]}
+    data["config"]["abort"].update({"already_configured": t["abort"]})
     data["entity"]["sensor"]["zambretti_forecast"]["state"] = t["z"]
     data["entity"]["sensor"]["zambretti_forecast_6h"]["state"] = t["z"]
     data["entity"]["sensor"]["zambretti_forecast_12h"]["state"] = t["z"]

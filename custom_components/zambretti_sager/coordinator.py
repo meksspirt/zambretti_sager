@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import SpeedConverter, TemperatureConverter
 
 from .const import (
+    CONF_ELEVATION,
     CONF_HUMIDITY_SENSOR,
     CONF_LATITUDE,
     CONF_LONGITUDE,
@@ -58,12 +59,21 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
     """Collects weather observations and coordinates forecast updates."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, altitude: float | None) -> None:
-        super().__init__(
-            hass,
-            _LOGGER,
-            name=DOMAIN,
-            update_interval=UPDATE_INTERVAL,
-        )
+        try:
+            super().__init__(
+                hass,
+                _LOGGER,
+                config_entry=entry,
+                name=DOMAIN,
+                update_interval=UPDATE_INTERVAL,
+            )
+        except TypeError:
+            super().__init__(
+                hass,
+                _LOGGER,
+                name=DOMAIN,
+                update_interval=UPDATE_INTERVAL,
+            )
         self.entry = entry
         self.altitude = altitude
         self._sea_level_warning_logged = False
@@ -153,7 +163,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                     self.pressure_id,
                     new_state.state,
                 )
-                self.hass.async_create_task(self.async_request_refresh())
+                self.async_request_refresh()
 
         self._unsub_state_listener = async_track_state_change_event(
             self.hass, [self.pressure_id], _on_pressure_state_change
@@ -188,7 +198,15 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             p_now_raw = parse_pressure_hpa(pressure_state)
         except (TypeError, ValueError) as err:
             _LOGGER.error("Invalid pressure value for %s: %s", self.pressure_id, err)
-            raise UpdateFailed(f"Invalid pressure state for {self.pressure_id}") from None
+            try:
+                raise UpdateFailed(
+                    f"Invalid pressure state for {self.pressure_id}",
+                    translation_domain=DOMAIN,
+                    translation_key="invalid_pressure",
+                    translation_placeholders={"entity_id": self.pressure_id},
+                ) from err
+            except TypeError:
+                raise UpdateFailed(f"Invalid pressure state for {self.pressure_id}") from err
 
         # Precompute temperature and sea level classification once per update cycle
         temperature = self._get_temperature()
@@ -531,20 +549,19 @@ async def async_create_coordinator(
     """Create coordinator and resolve altitude using Local-First strategy."""
     latitude = entry.options.get(CONF_LATITUDE, entry.data.get(CONF_LATITUDE))
     longitude = entry.options.get(CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE))
+    configured_elevation = entry.options.get(CONF_ELEVATION, entry.data.get(CONF_ELEVATION))
 
     altitude = await async_resolve_elevation(
         hass,
         latitude=latitude,
         longitude=longitude,
+        configured_elevation=configured_elevation,
         fallback_elevation=getattr(getattr(hass, "config", None), "elevation", None),
     )
 
+    if altitude is not None and entry.data.get(CONF_ELEVATION) != altitude:
+        hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_ELEVATION: altitude})
+
     coordinator = ZambrettiSagerCoordinator(hass, entry, altitude)
-    try:
-        await coordinator.async_config_entry_first_refresh()
-    except Exception:
-        _LOGGER.warning(
-            "Initial data fetch failed for %s, will retry automatically",
-            entry.title,
-        )
+    await coordinator.async_config_entry_first_refresh()
     return coordinator
