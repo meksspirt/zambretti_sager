@@ -2344,7 +2344,7 @@ class ZambrettiWeatherCard extends HTMLElement {
     const pad      = compact ? "12px 10px" : "16px 14px";
 
     return `
-      :host { display:block; }
+      :host { display:block; container-type:inline-size; }
       ha-card {
         border-radius:22px; overflow:hidden;
         box-shadow:0 8px 36px rgba(0,0,0,0.30);
@@ -2481,6 +2481,28 @@ class ZambrettiWeatherCard extends HTMLElement {
         background:rgba(0, 0, 0, 0.35);
         border:1px solid rgba(255, 255, 255, 0.20);
         color:#ffffff; font-family:monospace;
+      }
+      @container (max-width: 360px) {
+        .tile-container {
+          padding:12px 14px;
+        }
+        .tile-header-wrap {
+          flex-wrap:wrap;
+          gap:8px 10px;
+        }
+        .tile-text-group {
+          flex:1 1 130px;
+        }
+        .tile-title,
+        .tile-subtitle {
+          white-space:normal;
+          overflow:visible;
+          text-overflow:clip;
+        }
+        .tile-chip {
+          font-size:${(0.70*s).toFixed(2)}rem;
+          padding:2px 8px;
+        }
       }
 
       /* ── Vintage Barometer Mode ── */
@@ -2716,15 +2738,10 @@ class ZambrettiWeatherCard extends HTMLElement {
   }
 
   getGridOptions() {
-    const isTile = this._config?.card_style === "tile";
-    let rows = isTile ? 2 : 3;
-    if (this._config?.show_trend)   rows += 1;
-    if (this._config?.show_history) rows += 2;
     return {
-      columns: isTile ? 6 : 12,
-      rows: rows,
-      min_columns: isTile ? 6 : 6,
-      min_rows: isTile ? 1 : 2,
+      columns: 12,
+      rows: "auto",
+      min_columns: 6,
     };
   }
 }

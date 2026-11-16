@@ -503,7 +503,7 @@ var ae=new Set(["cs","da","de","de-AT","en","es","fr","hu","it","ja","ko","nb","
           <div class="history-chart-wrap" style="height:${r?150:200}px">${fe(this._historyPoints,i,r)}</div>
         </div>`:""}
       </ha-card>`;let P=this.shadowRoot.querySelector("ha-card");P&&(P.style.background=V.bg),y&&this._setupHistoryScrubbing(),this._lastIconKey=k,this._lastThemeBg=V.bg,this._lastPrecip=f,this._lastStyle=e.card_style,this._lastUnavail=l,this._rendered=!0}_patch(){if(!this._hass||!this._rendered)return;let e=this._config,i=this._labels(),r=this.shadowRoot,o=e.card_style==="vintage",a=e.card_style==="tile",s=this._state(e.entity_zambretti),l=this._isUnavailable(s),w=this._state(e.entity_sager),h=this._state(e.entity_6h),_=this._state(e.entity_12h),m=this._state(e.entity_24h),f=this._readPrecipPct(),S=f!=null?`${f}%`:"\u2014",A=this._attr(e.entity_zambretti,"is_night",!1),k=ge(s,A),N=A&&(s==="settled_fine"||s==="fine_weather")?"night_clear":J[s]||"partlycloudy",j=this._computeThemeBg(N,o);if(k!==this._lastIconKey||j!==this._lastThemeBg||e.card_style!==this._lastStyle||l!==this._lastUnavail){this._rendered=!1,this._render();return}let p=this._localizeState(s,i,!0),z=this._localizeState(w,i,!1),b=r.querySelector(".main-label");b&&b.textContent!==p&&(b.textContent=p);let V=r.querySelector(".main-icon svg, .tile-icon-box svg");V&&V.getAttribute("aria-label")!==p&&V.setAttribute("aria-label",p);let C=r.querySelector(".footer-text");C&&C.textContent!==z&&(C.textContent=z);let D=e.show_wind!==!1,F="";if(D){let x=e.entity_wind_speed||e.entity_zambretti,y=e.entity_wind_speed?this._state(e.entity_wind_speed):l?null:this._attr(e.entity_zambretti,"wind_speed",null),T=this._attr(x,"unit_of_measurement","m/s"),$=l?null:this._attr(e.entity_zambretti,"wind_degrees",null),M=(l?null:this._attr(e.entity_zambretti,"wind_direction",null))||he($),H=pe(y,e.wind_unit||"m/s",T);F=H?M?`${M} ${H}`:H:M||""}let E=r.querySelector(".footer-wind");if(E){let x=F?`\u{1F4A8} ${F}`:"";E.textContent!==x&&(E.textContent=x),E.style.display=D&&F?"":"none"}if(a){let x=this._readPressureHpa(),y=l?null:this._attr(e.entity_zambretti,"pressure_delta_3h",null),T=y!=null&&!Number.isNaN(parseFloat(y))?parseFloat(y):null,$=l?"\u2014":this._attr(e.entity_zambretti,"trend","\u2192 Steady"),M=T==null?"#94a3b8":T>=1.4?"#4ade80":T<=-1.4?"#f87171":"#facc15",H=T==null?"#cbd5e1":T>=1.4?"#86efac":T<=-1.4?"#fca5a5":"#fef08a",P=r.querySelector(".tile-title");P&&P.textContent!==p&&(P.textContent=p);let t=r.querySelector(".tile-subtitle");t&&t.textContent!==z&&(t.textContent=z);let n=r.querySelector(".tile-trend-dot");n&&(n.style.background=M);let c=r.querySelector(".tile-trend-text");c&&(c.textContent!==$&&(c.textContent=$),c.style.color=H);let g=r.querySelector(".tile-chip-precip");g&&(g.textContent=`\u{1F4A7} ${S}`);let u=r.querySelector(".tile-chip-wind");u&&(u.textContent=F?`\u{1F4A8} ${F}`:"",u.style.display=D&&F?"":"none");let B=r.querySelector(".tile-chip-pressure");B&&(B.textContent=`\u23F1 ${x!=null?`${x.toFixed(1)} hPa`:"\u2014"}`)}if(o){let x=this._readPressureHpa(),y=l?null:this._attr(e.entity_zambretti,"pressure_3h_ago",null),T=l?null:this._attr(e.entity_zambretti,"pressure_delta_3h",null),$=T!=null&&!Number.isNaN(parseFloat(T))?parseFloat(T):null,M=x??1013.25,H=$??0,P=y!=null&&!Number.isNaN(parseFloat(y))?parseFloat(y):M-H,t=l?"\u2014":this._attr(e.entity_zambretti,"trend","\u2192 Steady"),n=-120+(Math.max(960,Math.min(1060,M))-960)/100*240,c=-120+(Math.max(960,Math.min(1060,P))-960)/100*240,g=Math.max(-4,Math.min(4,H))/4*45,u=r.querySelector(".v-needle-main");u&&(u.style.transform=`rotate(${n.toFixed(1)}deg)`);let B=r.querySelector(".v-needle-ref");B&&(B.style.transform=`rotate(${c.toFixed(1)}deg)`);let O=r.querySelector(".v-needle-trend");O&&(O.style.transform=`rotate(${g.toFixed(1)}deg)`);let U=r.querySelector(".vintage-forecast-title");U&&U.textContent!==p&&(U.textContent=p);let L=r.querySelector(".v-sager-lbl");L&&L.textContent!==z&&(L.textContent=z);let G=r.querySelector(".v-p-hpa");G&&(G.innerHTML=x!=null?`${x.toFixed(1)} <span style="font-size:0.75em;font-weight:400;color:#d4af37">hPa</span>`:"\u2014");let Z=r.querySelector(".v-p-mm");Z&&(Z.textContent=x!=null?`${(x*.750062).toFixed(1)} mmHg`:"");let W=r.querySelector(".v-trend-delta");W&&(W.textContent=$!=null?`${$>=0?"+":""}${$.toFixed(1)} hPa`:"\u2014",W.style.color=$==null?"#cbd5e1":$>=1.4?"#86efac":$<=-1.4?"#fca5a5":"#fef08a");let K=r.querySelector(".v-trend-lbl");K&&(K.textContent=t);let Q=this._precipLabel(),q=r.querySelector(".footer-precip");q&&(q.textContent=`\u{1F4A7} ${Q}: ${S}`)}let R=r.querySelectorAll(".fc-lbl"),I=[h,_,m];if(R.forEach((x,y)=>{let T=this._localizeState(I[y],i,!1);x.textContent!==T&&(x.textContent=T)}),f!==this._lastPrecip){let x=r.querySelector(".precip-widget");x&&(x.innerHTML=me(f,this._precipLabel())),this._lastPrecip=f}if(e.show_trend&&this._timelineSteps){let x=this._timelineSteps[this._timelineSteps.length-1];!l&&x&&x.state!==s&&(this._timelineSteps.forEach(y=>{y.isCurrent=!1}),this._timelineSteps.push({t:new Date,state:s,isCurrent:!0}),this._timelineSteps.length>8&&this._timelineSteps.shift(),this._patchTimeline())}e.show_history&&this._historyPoints&&this._historyPoints.length>=2&&r.querySelector(".hchart-empty")&&this._patchChart(),e.show_trend&&this._timelineSteps&&this._timelineSteps.length>0&&r.querySelector(".tl-empty")&&this._patchTimeline()}_css(e,i,r=!0,o=!1,a=!1){let s=i?.82:1,l=Math.round(72*s),w=(1.15*s).toFixed(2),h=(.72*s).toFixed(2),_=Math.round(42*s),m=(.8*s).toFixed(2),f=Math.round(118*s),S=(.75*s).toFixed(2);return`
-      :host { display:block; }
+      :host { display:block; container-type:inline-size; }
       ha-card {
         border-radius:22px; overflow:hidden;
         box-shadow:0 8px 36px rgba(0,0,0,0.30);
@@ -640,6 +640,28 @@ var ae=new Set(["cs","da","de","de-AT","en","es","fr","hu","it","ja","ko","nb","
         background:rgba(0, 0, 0, 0.35);
         border:1px solid rgba(255, 255, 255, 0.20);
         color:#ffffff; font-family:monospace;
+      }
+      @container (max-width: 360px) {
+        .tile-container {
+          padding:12px 14px;
+        }
+        .tile-header-wrap {
+          flex-wrap:wrap;
+          gap:8px 10px;
+        }
+        .tile-text-group {
+          flex:1 1 130px;
+        }
+        .tile-title,
+        .tile-subtitle {
+          white-space:normal;
+          overflow:visible;
+          text-overflow:clip;
+        }
+        .tile-chip {
+          font-size:${(.7*s).toFixed(2)}rem;
+          padding:2px 8px;
+        }
       }
 
       /* \u2500\u2500 Vintage Barometer Mode \u2500\u2500 */
@@ -863,4 +885,4 @@ var ae=new Set(["cs","da","de","de-AT","en","es","fr","hu","it","ja","ko","nb","
         opacity:0.55;
         filter:grayscale(0.45);
       }
-    `}getCardSize(){let i=this._config?.card_style==="tile"?2:3;return this._config?.show_trend&&(i+=1),this._config?.show_history&&(i+=2),i}getGridOptions(){let e=this._config?.card_style==="tile",i=e?2:3;return this._config?.show_trend&&(i+=1),this._config?.show_history&&(i+=2),{columns:e?6:12,rows:i,min_columns:6,min_rows:e?1:2}}};customElements.get("zambretti-weather-card")||customElements.define("zambretti-weather-card",ie);window.customCards=window.customCards||[];window.customCards.some(d=>d.type==="zambretti-weather-card")||window.customCards.push({type:"zambretti-weather-card",name:"Zambretti & Sager Weather Card",description:"Weather forecasts (Modern iOS, Vintage Barometer, Compact Tile)",preview:!0,documentationURL:"https://github.com/meksspirt/zambretti_sager"});
+    `}getCardSize(){let i=this._config?.card_style==="tile"?2:3;return this._config?.show_trend&&(i+=1),this._config?.show_history&&(i+=2),i}getGridOptions(){return{columns:12,rows:"auto",min_columns:6}}};customElements.get("zambretti-weather-card")||customElements.define("zambretti-weather-card",ie);window.customCards=window.customCards||[];window.customCards.some(d=>d.type==="zambretti-weather-card")||window.customCards.push({type:"zambretti-weather-card",name:"Zambretti & Sager Weather Card",description:"Weather forecasts (Modern iOS, Vintage Barometer, Compact Tile)",preview:!0,documentationURL:"https://github.com/meksspirt/zambretti_sager"});
