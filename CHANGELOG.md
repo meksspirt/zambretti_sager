@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.2] — 2026-11-16
+
+### Fixes & Improvements
+
+#### 🎨 Lovelace Card (`zambretti-weather-card`)
+- **Full-Width Default & Auto Grid Height (`getGridOptions`)**: Updated `getGridOptions()` to default to `columns: 12`, `rows: "auto"`, and `min_columns: 6` across all card styles (including `tile`), preventing cramped 6-column truncation and vertical overlap with adjacent cards in Home Assistant Sections views.
+- **Responsive Narrow Tile Layout**: Added container-query rules (`@container (max-width: 360px)` on `:host`) so `tile` mode wraps its header and text cleanly without ellipsis truncation if a user manually narrows the card to 6 columns.
+
 ## [2.1.1] — 2026-11-08
 
 ### Fixes & Distribution
