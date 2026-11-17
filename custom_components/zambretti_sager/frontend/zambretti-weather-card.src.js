@@ -1,10 +1,10 @@
 /**
- * Zambretti & Sager Weather Card  v2.3.0
+ * Zambretti & Sager Weather Card  v2.3.1
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.3.0 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.3.1 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
@@ -1074,7 +1074,7 @@ class ZambrettiWeatherCard extends HTMLElement {
 
   /** Returns the editor element used by the Lovelace card picker (lazy-loaded on demand). */
   static async getConfigElement() {
-    await import(new URL("./zambretti-weather-card-editor.js?v=2.3.0", import.meta.url).href);
+    await import(new URL("./zambretti-weather-card-editor.js?v=2.3.1", import.meta.url).href);
     return document.createElement("zambretti-weather-card-editor");
   }
 
@@ -2584,14 +2584,14 @@ class ZambrettiWeatherCard extends HTMLElement {
    * @returns {string}
    */
   _css(theme, compact, showPrecip = true, isVintage = false, isTile = false) {
-    const s        = compact ? 0.82 : 1;
+    const s        = compact ? 0.90 : 1;
     const iconSz   = Math.round(72 * s);
-    const mainFsz  = (1.15 * s).toFixed(2);
-    const subFsz   = (0.72 * s).toFixed(2);
-    const fcIconSz = Math.round(42 * s);
-    const footFsz  = (0.80 * s).toFixed(2);
+    const mainFsz  = (1.28 * s).toFixed(2);
+    const subFsz   = (0.86 * s).toFixed(2);
+    const fcIconSz = Math.round(44 * s);
+    const footFsz  = (0.90 * s).toFixed(2);
     const precipSz = Math.round(118 * s);
-    const precipTSz= (0.75 * s).toFixed(2);
+    const precipTSz= (0.86 * s).toFixed(2);
     const pad      = compact ? "12px 10px" : "16px 14px";
 
     return `
@@ -2633,13 +2633,13 @@ class ZambrettiWeatherCard extends HTMLElement {
         opacity:0.78; margin-top:4px;
       }
       .tile-title-row {
-        display:flex; align-items:center; gap:6px; min-width:0;
+        display:flex; align-items:center; flex-wrap:wrap; gap:6px; min-width:0;
       }
       .confidence-badge {
         display:inline-flex; align-items:center; gap:3px;
-        font-size:${(0.66*s).toFixed(2)}rem; font-weight:700;
+        font-size:${(0.78*s).toFixed(2)}rem; font-weight:700;
         letter-spacing:0.02em; text-transform:none;
-        padding:1px 7px; border-radius:999px;
+        padding:2px 8px; border-radius:999px;
         border:1px solid rgba(255,255,255,0.24);
         background:rgba(0,0,0,0.26); color:#f8fafc;
         white-space:nowrap; flex-shrink:0;
@@ -2683,8 +2683,8 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .alert-pill, .metric-pill, .ledger-pill {
         display:inline-flex; align-items:center; gap:5px;
-        font-size:${(0.70*s).toFixed(2)}rem; font-weight:700; line-height:1.2;
-        padding:3px 9px; border-radius:999px;
+        font-size:${(0.82*s).toFixed(2)}rem; font-weight:700; line-height:1.25;
+        padding:4px 10px; border-radius:999px;
         border:1px solid rgba(255,255,255,0.22);
         background:rgba(0,0,0,0.34); color:#ffffff;
         white-space:nowrap;
@@ -2709,7 +2709,7 @@ class ZambrettiWeatherCard extends HTMLElement {
         background:rgba(245,158,11,0.24); border-color:rgba(252,211,77,0.45); color:#fef3c7;
       }
       .ledger-pill {
-        font-size:${(0.68*s).toFixed(2)}rem; font-weight:600;
+        font-size:${(0.80*s).toFixed(2)}rem; font-weight:600;
         background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);
       }
       .ledger-pill.ledger-hit-hit {
@@ -2719,7 +2719,7 @@ class ZambrettiWeatherCard extends HTMLElement {
         background:rgba(220,38,38,0.26); border-color:rgba(252,165,165,0.45); color:#fee2e2;
       }
       .fc-press {
-        font-size:${(0.70*s).toFixed(2)}rem; font-weight:600; font-family:monospace;
+        font-size:${(0.80*s).toFixed(2)}rem; font-weight:600; font-family:monospace;
         color:rgba(255,255,255,0.68); margin-top:1px;
       }
 
@@ -2740,21 +2740,21 @@ class ZambrettiWeatherCard extends HTMLElement {
       /* ── Tile / Mushroom View Mode ── */
       .tile-container {
         display:flex; flex-direction:column; justify-content:space-between;
-        padding:${compact ? "12px 14px" : "16px 18px"};
+        padding:${compact ? "14px 16px" : "18px 20px"};
         box-sizing:border-box;
-        background:linear-gradient(145deg, rgba(15, 23, 42, 0.52) 0%, rgba(15, 23, 42, 0.74) 100%);
-        backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-        border:1px solid rgba(255, 255, 255, 0.16);
-        border-radius:22px;
-        box-shadow:inset 0 1px 1px rgba(255, 255, 255, 0.14), 0 8px 32px rgba(0, 0, 0, 0.25);
-        min-height:${compact ? "110px" : "130px"};
+        background:transparent;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+        min-height:${compact ? "104px" : "124px"};
       }
       .tile-header-wrap {
-        display:flex; align-items:center; justify-content:space-between;
-        gap:${compact ? 10 : 14}px;
+        display:flex; align-items:flex-start; justify-content:space-between;
+        flex-wrap:wrap;
+        gap:${compact ? "8px 10px" : "10px 14px"};
       }
       .tile-icon-box {
-        width:${compact ? "42px" : "50px"}; height:${compact ? "42px" : "50px"};
+        width:${compact ? "48px" : "56px"}; height:${compact ? "48px" : "56px"};
         flex-shrink:0;
         border-radius:16px;
         background:rgba(255, 255, 255, 0.12);
@@ -2766,47 +2766,47 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .tile-icon-box svg { width:100%; height:100%; display:block; }
       .tile-text-group {
-        flex:1; min-width:0;
+        flex:1 1 180px; min-width:0;
       }
       .tile-title {
-        font-size:${(1.12*s).toFixed(2)}rem; font-weight:700;
-        line-height:1.22; letter-spacing:-0.015em;
+        font-size:${(1.24*s).toFixed(2)}rem; font-weight:700;
+        line-height:1.25; letter-spacing:-0.015em;
         color:#ffffff;
         text-shadow:0 1px 4px rgba(0,0,0,0.45);
-        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        white-space:normal; overflow-wrap:break-word;
       }
       .tile-subtitle {
-        font-size:${(0.74*s).toFixed(2)}rem; font-weight:500;
-        color:rgba(255,255,255,0.85); margin-top:2px;
-        line-height:1.25;
-        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        font-size:${(0.92*s).toFixed(2)}rem; font-weight:500;
+        color:rgba(255,255,255,0.85); margin-top:3px;
+        line-height:1.3;
+        white-space:normal; overflow-wrap:break-word;
         text-shadow:0 1px 3px rgba(0,0,0,0.35);
       }
       .tile-trend-pill {
-        font-size:${(0.70*s).toFixed(2)}rem; font-weight:700;
+        font-size:${(0.86*s).toFixed(2)}rem; font-weight:700;
         letter-spacing:0.02em; border-radius:20px;
-        padding:4px 10px; border:1px solid rgba(255,255,255,0.20);
+        padding:5px 12px; border:1px solid rgba(255,255,255,0.20);
         background:rgba(0, 0, 0, 0.42);
         white-space:nowrap; flex-shrink:0;
-        display:inline-flex; align-items:center; gap:5px;
+        display:inline-flex; align-items:center; gap:6px;
         box-shadow:0 2px 6px rgba(0,0,0,0.20);
       }
       .tile-trend-dot {
-        width:7px; height:7px; border-radius:50%; flex-shrink:0;
+        width:8px; height:8px; border-radius:50%; flex-shrink:0;
       }
       .tile-bottom-chips {
         display:flex; align-items:center; justify-content:space-between;
-        margin-top:${compact ? 8 : 12}px; padding-top:${compact ? 6 : 8}px;
+        margin-top:${compact ? 10 : 14}px; padding-top:${compact ? 8 : 10}px;
         border-top:1px solid rgba(255,255,255,0.12);
         gap:8px; flex-wrap:wrap;
       }
       .tile-chips-left {
-        display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+        display:flex; align-items:center; gap:8px; flex-wrap:wrap;
       }
       .tile-chip {
-        font-size:${(0.74*s).toFixed(2)}rem; font-weight:700;
-        padding:3px 9px; border-radius:12px;
-        display:inline-flex; align-items:center; gap:4px;
+        font-size:${(0.88*s).toFixed(2)}rem; font-weight:700;
+        padding:4px 11px; border-radius:12px;
+        display:inline-flex; align-items:center; gap:5px;
         box-shadow:0 2px 6px rgba(0,0,0,0.15);
       }
       .tile-chip-precip {
@@ -2842,8 +2842,8 @@ class ZambrettiWeatherCard extends HTMLElement {
           text-overflow:clip;
         }
         .tile-chip {
-          font-size:${(0.70*s).toFixed(2)}rem;
-          padding:2px 8px;
+          font-size:${(0.82*s).toFixed(2)}rem;
+          padding:3px 9px;
         }
       }
 
@@ -2881,18 +2881,18 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .vintage-forecast-title {
         font-family:'Cinzel', Georgia, serif;
-        font-size:${(1.16*s).toFixed(2)}rem; font-weight:800;
+        font-size:${(1.26*s).toFixed(2)}rem; font-weight:800;
         color:#ffd966; letter-spacing:0.025em;
         text-shadow:0 2px 6px rgba(0,0,0,0.85), 0 0 12px rgba(255,217,102,0.25);
       }
       .vintage-sager-sub {
-        font-size:${(0.76*s).toFixed(2)}rem; font-weight:500;
+        font-size:${(0.88*s).toFixed(2)}rem; font-weight:500;
         color:rgba(254, 243, 199, 0.85);
         margin-top:4px;
         display:flex; align-items:center; justify-content:center; gap:6px;
       }
       .vintage-badge {
-        font-size:0.62rem; font-weight:800; letter-spacing:0.10em;
+        font-size:0.74rem; font-weight:800; letter-spacing:0.10em;
         text-transform:uppercase; background:rgba(255,217,102,0.20);
         border:1px solid rgba(255,217,102,0.45); border-radius:5px;
         padding:1px 6px; color:#ffd966;
@@ -2910,17 +2910,17 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .vintage-metric-lbl {
         font-family:'Cinzel', Georgia, serif;
-        font-size:${(0.66*s).toFixed(2)}rem; font-weight:700;
+        font-size:${(0.78*s).toFixed(2)}rem; font-weight:700;
         letter-spacing:0.10em; text-transform:uppercase;
         color:#d4af37; opacity:0.90;
       }
       .vintage-metric-val {
-        font-size:${(1.05*s).toFixed(2)}rem; font-weight:800;
+        font-size:${(1.14*s).toFixed(2)}rem; font-weight:800;
         color:#ffffff; margin-top:2px; font-family:monospace;
         text-shadow:0 1px 4px rgba(0,0,0,0.6);
       }
       .vintage-metric-sub {
-        font-size:${(0.72*s).toFixed(2)}rem; font-weight:600;
+        font-size:${(0.84*s).toFixed(2)}rem; font-weight:600;
         color:rgba(254, 243, 199, 0.75); margin-top:2px;
       }
 
@@ -2935,7 +2935,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .fc:last-child { border-right:none; }
       .fc-time {
-        font-size:${(0.82*s).toFixed(2)}rem; font-weight:800;
+        font-size:${(0.90*s).toFixed(2)}rem; font-weight:800;
         letter-spacing:0.06em; text-transform:uppercase;
         color:rgba(255,255,255,0.95);
         background:rgba(255,255,255,0.15); border-radius:5px; padding:1px 7px;
@@ -2946,7 +2946,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .fc-icon svg { width:100%; height:100%; }
       .fc-lbl {
-        font-size:${(0.96*s).toFixed(2)}rem; font-weight:700;
+        font-size:${(1.06*s).toFixed(2)}rem; font-weight:700;
         text-align:center; line-height:1.25; color:#fff;
         text-shadow:0 1px 3px rgba(0,0,0,0.3);
       }
@@ -2958,11 +2958,11 @@ class ZambrettiWeatherCard extends HTMLElement {
         border-top:1px solid rgba(255,255,255,0.09);
       }
       .footer-wind {
-        font-size:${(0.72*s).toFixed(2)}rem; font-weight:600;
+        font-size:${(0.84*s).toFixed(2)}rem; font-weight:600;
         opacity:0.90; letter-spacing:0.04em; white-space:nowrap;
       }
       .footer-badge {
-        font-size:0.62rem; font-weight:700; letter-spacing:0.10em;
+        font-size:0.74rem; font-weight:700; letter-spacing:0.10em;
         text-transform:uppercase; background:rgba(255,255,255,0.16);
         border:1px solid rgba(255,255,255,0.28); border-radius:5px;
         padding:2px 8px; white-space:nowrap; flex-shrink:0;
@@ -2978,7 +2978,7 @@ class ZambrettiWeatherCard extends HTMLElement {
         background:rgba(0,0,0,0.12);
       }
       .trend-title {
-        font-size:${(0.68*s).toFixed(2)}rem; font-weight:700;
+        font-size:${(0.80*s).toFixed(2)}rem; font-weight:700;
         letter-spacing:0.10em; text-transform:uppercase;
         color:rgba(255,255,255,0.55); margin-bottom:${compact?5:7}px;
       }
@@ -2989,12 +2989,12 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
       .tl-step {
         display:flex; flex-direction:column; align-items:center;
-        gap:3px; padding:${compact?"3px 6px":"4px 8px"};
+        gap:3px; padding:${compact?"4px 7px":"5px 9px"};
         border-radius:10px;
         background:rgba(255,255,255,0.06);
         border:1px solid rgba(255,255,255,0.08);
         transition:background 0.3s;
-        min-width:${compact?52:62}px;
+        min-width:${compact?64:74}px;
       }
       .tl-step.tl-current {
         background:rgba(255,255,255,0.20);
@@ -3004,14 +3004,16 @@ class ZambrettiWeatherCard extends HTMLElement {
       .tl-icon { flex-shrink:0; }
       .tl-icon svg { width:100%; height:100%; display:block; }
       .tl-lbl {
-        font-size:${(0.68*s).toFixed(2)}rem; font-weight:600;
+        font-size:${(0.78*s).toFixed(2)}rem; font-weight:600;
         color:rgba(255,255,255,0.90); text-align:center;
-        line-height:1.2; max-width:${compact?52:62}px;
-        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        line-height:1.18; max-width:${compact?78:90}px;
+        white-space:normal; overflow-wrap:break-word;
+        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+        overflow:hidden;
       }
       .tl-current .tl-lbl { color:#fff; font-weight:700; }
       .tl-time {
-        font-size:${(0.60*s).toFixed(2)}rem; font-weight:500;
+        font-size:${(0.72*s).toFixed(2)}rem; font-weight:500;
         color:rgba(255,255,255,0.50); letter-spacing:0.03em;
       }
       .tl-current .tl-time { color:rgba(255,255,255,0.80); }
@@ -3033,7 +3035,7 @@ class ZambrettiWeatherCard extends HTMLElement {
         overflow:visible;
       }
       .history-title {
-        font-size:${(0.68*s).toFixed(2)}rem; font-weight:700;
+        font-size:${(0.80*s).toFixed(2)}rem; font-weight:700;
         letter-spacing:0.10em; text-transform:uppercase;
         color:rgba(255,255,255,0.55);
         margin-bottom:${compact?2:4}px;

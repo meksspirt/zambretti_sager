@@ -1,7 +1,7 @@
 # Zambretti & Sager Weather Forecaster
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.3.1-blue.svg)
 
 A Home Assistant custom integration that provides local weather forecasting using the classic Zambretti and Sager barometric algorithms — no cloud weather API subscription required.
 
@@ -90,34 +90,54 @@ You can update sensors or coordinates at any time via **Configure** (Options Flo
 
 ## Entities Created
 
-Each configured station creates **19 sensors**, **4 binary sensors**, and **1 weather entity** grouped under a single service device:
+Each configured station creates **22 sensors**, **4 binary sensors**, and **1 weather entity** grouped under a single service device:
 
-| Entity | Domain | Category | Description |
+### Weather Entity
+
+| Entity | Domain | Values / Unit | Description |
 |---|---|---|---|
-| **Zambretti Forecast** | `sensor` | Primary | Current Zambretti weather prediction (`enum`, 27 states) + diagnostic pressure/wind attributes |
-| **Sager Forecast** | `sensor` | Primary | Wind-enhanced Sager Weathercaster prediction (`enum`, 11 states) |
-| **Zambretti Forecast 6h** | `sensor` | Primary | Extrapolated Zambretti prediction for +6 hours |
-| **Zambretti Forecast 12h** | `sensor` | Primary | Extrapolated Zambretti prediction for +12 hours |
-| **Zambretti Forecast 24h** | `sensor` | Primary | Extrapolated Zambretti prediction for +24 hours |
-| **Precipitation Probability** | `sensor` | Primary | Estimated chance of precipitation (`0–100%`) |
-| **Snow Probability** | `sensor` | Primary | Chance that precipitation falls as snow (`0–100%`) |
-| **Fog Probability** | `sensor` | Primary | Fog likelihood from humidity, dew-point spread, and wind (`0–100%`) |
-| **Forecast Confidence** | `sensor` | Primary | Data completeness and model agreement score (`0–100%`) |
-| **Sea Level Pressure** | `sensor` | Primary | Sea-level corrected pressure (`hPa`) |
-| **Station Pressure** | `sensor` | Diagnostic | Raw station pressure as reported by the sensor (`hPa`) |
-| **Pressure Trend (3h)** | `sensor` | Primary | Pressure change over 3 hours (`hPa`) |
-| **Pressure Change (24h)** | `sensor` | Primary | Pressure change over 24 hours (`hPa`) |
-| **WMO Pressure Tendency** | `sensor` | Diagnostic | WMO tendency code `0–8` |
-| **Model Divergence** | `sensor` | Diagnostic | Disagreement between Zambretti, Sager, and regression models (`0–100%`) |
-| **Forecast Accuracy (24h)** | `sensor` | Diagnostic | Verified 24-hour forecast hit rate (`0–100%`) |
-| **Last Forecast Hit** | `sensor` | Diagnostic | `hit` or `miss` for the most recent verified forecast |
-| **Adaptive Damping** | `sensor` | Diagnostic | Self-calibrated extrapolation damping exponent |
-| **Last Update** | `sensor` | Diagnostic | Timestamp of the most recent forecast calculation |
-| **Pressure Falling Rapidly** | `binary_sensor` | Diagnostic | Rapid 3-hour pressure drop alert |
-| **Storm Warning** | `binary_sensor` | Diagnostic | High precipitation probability with stormy or rapidly falling conditions |
-| **Frost Risk** | `binary_sensor` | Diagnostic | Temperature at or below the configured frost threshold |
-| **Fog Risk** | `binary_sensor` | Diagnostic | High humidity combined with a high fog probability |
-| **Weather Station** | `weather` | Primary | Native Home Assistant weather entity with current conditions, hourly (`+6h`/`+12h`/`+24h`) and daily (`+24h`) forecasts |
+| **Weather Station** | `weather` | HA condition (`sunny`, `cloudy`, `rainy`, `snowy`, `snowy-rainy`, `fog`, `lightning-rainy`, `clear-night`, etc.) + `°C`, `hPa`, `%`, `km/h` | Native Home Assistant weather entity with current temperature, apparent temperature, dew point, humidity, wind, sea-level pressure, and hourly (`+6h`/`+12h`/`+24h`) + daily (`+24h`) forecasts with per-horizon precipitation probability. |
+
+### Primary Sensors
+
+| Entity | Domain | Values / Unit | Description |
+|---|---|---|---|
+| **Zambretti Forecast** | `sensor` | `enum` (27 states, e.g. `Settled Fine`, `Changeable, Some Rain`, `Showery, Bright Intervals`, `Rain, Worse Later`) | Current Zambretti weather prediction for the next ~12 hours, with diagnostic pressure, wind, and model attributes. |
+| **Sager Forecast** | `sensor` | `enum` (11 states, e.g. `Fair`, `Unsettled, rain likely`, `Rain, storms likely`) | Wind-enhanced Sager Weathercaster prediction combining barometric level, 3h trend, and wind direction/speed. |
+| **Zambretti Forecast 6h** | `sensor` | `enum` (27 states) | Extrapolated Zambretti prediction for `+6 hours` using damped pressure regression. |
+| **Zambretti Forecast 12h** | `sensor` | `enum` (27 states) | Extrapolated Zambretti prediction for `+12 hours`. |
+| **Zambretti Forecast 24h** | `sensor` | `enum` (27 states) | Extrapolated Zambretti prediction for `+24 hours`. |
+| **Precipitation Probability** | `sensor` | `0–100 %` | Estimated chance of precipitation from sea-level pressure, 3h trend, humidity, and wind speed. |
+| **Snow Probability** | `sensor` | `0–100 %` | Likelihood that precipitation falls as snow (`0%` when warm or no temperature sensor is configured). |
+| **Fog Probability** | `sensor` | `0–100 %` | Fog likelihood from humidity, dew-point spread (`T − T_dew`), wind speed, and night/low-wind conditions. |
+| **Forecast Confidence** | `sensor` | `0–100 %` | Data completeness and inter-model agreement score (higher when temperature/wind/humidity sensors are configured and models agree). |
+| **Apparent Temperature** | `sensor` | `°C` / `°F` | Feels-like temperature using Wind Chill (cold + wind) or Steadman Heat Index (warm + humid); `Unknown` if temperature is not configured. |
+| **Cloud Base (LCL)** | `sensor` | `m` | Estimated cumulus cloud base height (Lifting Condensation Level) via Espy's formula `125 × (T − T_dew)`; requires temperature & humidity. |
+| **Barometric Stress** | `sensor` | `0–100 %` | Biometeorological load index combining 3h/24h pressure swings and trend volatility (`1 − R²`). |
+| **Sea Level Pressure** | `sensor` | `hPa` (or HA unit) | Station pressure reduced to mean sea level using station elevation and temperature. |
+| **Pressure Trend (3h)** | `sensor` | `hPa` (or HA unit) | Temperature-compensated sea-level pressure change over the last 3 hours (`ΔP_3h`). |
+| **Pressure Change (24h)** | `sensor` | `hPa` (or HA unit) | Temperature-compensated sea-level pressure change over the last 24 hours (`ΔP_24h`). |
+
+### Binary Sensors (Alerts)
+
+| Entity | Device Class | States | Description |
+|---|---|---|---|
+| **Pressure Falling Rapidly** | `problem` | `Problem` (`on`) / `OK` (`off`) | Triggers when 3-hour pressure drop exceeds the configured rapid-fall threshold (default `−3.0 hPa`). |
+| **Storm Warning** | `safety` | `Unsafe` (`on`) / `Safe` (`off`) | Triggers on high precipitation probability combined with stormy forecast or rapid pressure drop. |
+| **Frost Risk** | `cold` | `Cold` (`on`) / `Normal` (`off`) | Triggers when outdoor temperature drops to or below the frost threshold (default `2.0 °C`); `Unavailable` if no temperature sensor is configured. |
+| **Fog Risk** | `moisture` | `Wet` / `Problem` (`on`) / `Normal` (`off`) | Triggers when humidity is high (`≥ 85%`) and fog probability meets the threshold (default `65%`); `Unavailable` if temperature/humidity sensors are missing. |
+
+### Diagnostic Sensors
+
+| Entity | Domain | Values / Unit | Description |
+|---|---|---|---|
+| **Station Pressure** | `sensor` | `hPa` (or HA unit) | Raw station pressure as reported by the configured barometer before sea-level reduction. |
+| **WMO Pressure Tendency** | `sensor` | `0–8` (WMO code) | WMO standard barometric tendency characteristic (`0–3`: rising, `4`: steady, `5–8`: falling). |
+| **Model Divergence** | `sensor` | `0–100 %` | Disagreement between Zambretti, Sager, and pressure regression models (`0%` = full agreement). |
+| **Forecast Accuracy (24h)** | `sensor` | `0–100 %` (initially `Unknown`) | Rolling 24-hour forecast hit rate verified by `ForecastLedger`. Shows `Unknown` during the first 24 hours until the first forecast is verified; attributes expose `calibration_samples` and `adaptive_damping`. |
+| **Last Forecast Hit** | `sensor` | `hit` / `miss` (initially `Unknown`) | Outcome of the most recently verified 24-hour forecast (`Unknown` until 24h after setup or calibration reset). |
+| **Adaptive Damping** | `sensor` | `0.45–0.90` (default `0.70`) | Self-calibrated extrapolation damping exponent; attributes also report `calibration_samples`, `wind_factor`, `seasonal_factor`, and `precip_bias`. Use `zambretti_sager.reset_calibration` to reset learned calibration. |
+| **Last Update** | `sensor` | `timestamp` | Timestamp of the most recent forecast calculation. |
 
 ## How It Works
 

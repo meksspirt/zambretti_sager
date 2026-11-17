@@ -806,6 +806,10 @@ async def async_create_coordinator(
     latitude = entry.options.get(CONF_LATITUDE, entry.data.get(CONF_LATITUDE))
     longitude = entry.options.get(CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE))
     configured_elevation = entry.options.get(CONF_ELEVATION, entry.data.get(CONF_ELEVATION))
+    if configured_elevation == 0 and latitude is not None and longitude is not None:
+        # Older versions persisted 0.0 when HA home elevation defaulted to 0 m;
+        # re-resolve once from coordinates (falls back to 0.0 if truly at sea level).
+        configured_elevation = None
 
     altitude = await async_resolve_elevation(
         hass,

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.1] - 2026-11-17
+
+### Lovelace Card Readability, Sensor Availability & Auto Elevation Migration
+- **Card typography & Tile mode layout (`zambretti-weather-card`)**:
+  - Increased font sizes across Standard, Tile, and Vintage modes (and raised compact scale factor from `0.82` to `0.90`).
+  - Removed text truncation (`...`) in Tile headers/subtitles and allowed 2-line wrapping in `TREND` timeline labels so longer Russian and multi-word translations fit cleanly.
+  - Unified Tile header styling with `<ha-card>` by removing its nested card border/background/shadow, eliminating the visual seam above `TREND` and `24H` sections.
+- **Ledger diagnostic sensors (`forecast_accuracy_24h`, `last_forecast_hit`)**:
+  - Removed `available_fn` so both sensors report `Unknown` (with diagnostic attributes `calibration_samples` and `adaptive_damping` still accessible) instead of `Unavailable` during the initial 24-hour verification window.
+- **Automatic legacy `0.0 m` elevation migration**:
+  - `async_create_coordinator` now automatically re-resolves `CONF_ELEVATION == 0` from station coordinates on startup when coordinates are present, so stations upgraded from pre-2.3.0 versions get accurate sea-level pressure correction without manual reconfiguration.
+- **Documentation**:
+  - Expanded `README.md` (`Entities Created`) with full descriptions, units, and value ranges for all 22 sensors, 4 binary sensors, and the `weather` entity.
+
 ## [2.3.0] - 2026-11-17
 
 ### Apparent Temperature, Cloud Base, Barometric Stress & Calibration Overhaul

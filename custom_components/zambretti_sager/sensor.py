@@ -280,7 +280,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         icon="mdi:target",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.forecast_accuracy,
-        available_fn=lambda d: d.forecast_accuracy is not None,
         attrs_fn=lambda d, _: {
             "calibration_samples": d.calibration_samples,
             "adaptive_damping": d.adaptive_damping,
@@ -294,7 +293,6 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         icon="mdi:check-decagram",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.last_forecast_hit,
-        available_fn=lambda d: d.last_forecast_hit is not None,
     ),
     ZambrettiSensorEntityDescription(
         key="adaptive_damping",

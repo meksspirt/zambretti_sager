@@ -1067,3 +1067,43 @@ def test_coordinator_cumulative_rain_sensor_tracks_deltas():
     # Midnight reset with immediate rain 0.1 -> raining
     _set_rain("0.1")
     assert coord._get_rain() is True
+
+
+@pytest.mark.asyncio
+async def test_async_create_coordinator_re_resolves_legacy_zero_elevation():
+    """Test legacy elevation=0.0 is automatically re-resolved from coordinates."""
+    from unittest.mock import AsyncMock, patch
+
+    from custom_components.zambretti_sager.const import (
+        CONF_ELEVATION,
+        CONF_LATITUDE,
+        CONF_LONGITUDE,
+    )
+    from custom_components.zambretti_sager.coordinator import async_create_coordinator
+
+    mock_hass = MagicMock()
+    mock_hass.config.elevation = 0
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "legacy_zero"
+    mock_entry.data = {
+        "pressure_sensor": "sensor.p",
+        CONF_LATITUDE: 50.45,
+        CONF_LONGITUDE: 30.52,
+        CONF_ELEVATION: 0.0,
+    }
+    mock_entry.options = {}
+
+    with (
+        patch(
+            "custom_components.zambretti_sager.coordinator.async_resolve_elevation",
+            new=AsyncMock(return_value=179.0),
+        ) as mock_resolve,
+        patch.object(
+            ZambrettiSagerCoordinator, "async_config_entry_first_refresh", new=AsyncMock()
+        ),
+    ):
+        coord = await async_create_coordinator(mock_hass, mock_entry)
+
+    assert coord.altitude == 179.0
+    assert mock_resolve.call_args.kwargs["configured_elevation"] is None
+    mock_hass.config_entries.async_update_entry.assert_called_once()

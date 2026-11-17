@@ -317,6 +317,18 @@ def test_sensor_unavailable_paths(mock_coordinator):
     assert trend_sensor.extra_state_attributes == {}
     assert _sensor(mock_coordinator, "forecast_accuracy_24h").available is False
 
+    # Before first 24h verification completes, ledger sensors stay available (Unknown, not Unavailable).
+    mock_coordinator.data = ForecastData(
+        available=True, forecast_accuracy=None, last_forecast_hit=None
+    )
+    acc = _sensor(mock_coordinator, "forecast_accuracy_24h")
+    hit = _sensor(mock_coordinator, "last_forecast_hit")
+    assert acc.available is True
+    assert acc.native_value is None
+    assert acc.extra_state_attributes["calibration_samples"] == 0
+    assert hit.available is True
+    assert hit.native_value is None
+
 
 def test_pressure_delta_sensors_use_pressure_device_class(mock_coordinator):
     """Test pressure delta sensors expose SensorDeviceClass.PRESSURE for HA unit conversion."""
