@@ -330,6 +330,35 @@ if "homeassistant" not in sys.modules:
         homeassistant.components.sensor.SensorEntity = MockSensorEntity
         homeassistant.components.sensor.SensorEntityDescription = MockSensorEntityDescription
 
+        import homeassistant.components.binary_sensor
+        import homeassistant.helpers.selector
+
+        @dataclass(frozen=True, kw_only=True)
+        class MockBinarySensorEntityDescription:
+            key: str
+            device_class: Any = None
+            translation_key: str | None = None
+            icon: str | None = None
+            entity_category: Any = None
+            has_entity_name: bool = False
+
+        class MockBinarySensorEntity(MockEntity):
+            pass
+
+        homeassistant.components.binary_sensor.BinarySensorEntity = MockBinarySensorEntity
+        homeassistant.components.binary_sensor.BinarySensorEntityDescription = (
+            MockBinarySensorEntityDescription
+        )
+
+        homeassistant.helpers.selector.EntitySelector = MagicMock()
+        homeassistant.helpers.selector.EntitySelectorConfig = MagicMock()
+        homeassistant.helpers.selector.BooleanSelector = MagicMock()
+        homeassistant.helpers.selector.LocationSelector = MagicMock()
+        homeassistant.helpers.selector.LocationSelectorConfig = MagicMock()
+        homeassistant.helpers.selector.NumberSelector = MagicMock()
+        homeassistant.helpers.selector.NumberSelectorConfig = MagicMock()
+        homeassistant.helpers.selector.NumberSelectorMode = MagicMock()
+
         import homeassistant.data_entry_flow
 
         class MockAbortFlow(Exception):
@@ -450,6 +479,10 @@ if "homeassistant" not in sys.modules:
 
         homeassistant.const.UnitOfTemperature.CELSIUS = "°C"
         homeassistant.const.UnitOfSpeed.METERS_PER_SECOND = "m/s"
+        homeassistant.const.CONF_DEVICE_ID = "device_id"
+        homeassistant.const.CONF_DOMAIN = "domain"
+        homeassistant.const.CONF_PLATFORM = "platform"
+        homeassistant.const.CONF_TYPE = "type"
 
         class MockPressureConverter:
             @staticmethod

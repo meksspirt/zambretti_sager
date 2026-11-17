@@ -11,14 +11,23 @@ import voluptuous as vol
 
 from .const import (
     CONF_ELEVATION,
+    CONF_FALLING_RAPID_THRESHOLD,
+    CONF_FOG_HUMIDITY_THRESHOLD,
+    CONF_FROST_TEMP_THRESHOLD,
     CONF_HUMIDITY_SENSOR,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_PRESSURE_SENSOR,
+    CONF_RAIN_SENSOR,
+    CONF_STORM_PRECIP_THRESHOLD,
     CONF_TEMPERATURE_SENSOR,
     CONF_USE_SEA_LEVEL,
     CONF_WIND_SENSOR,
     CONF_WIND_SPEED_SENSOR,
+    DEFAULT_FALLING_RAPID_THRESHOLD,
+    DEFAULT_FOG_HUMIDITY_THRESHOLD,
+    DEFAULT_FROST_TEMP_THRESHOLD,
+    DEFAULT_STORM_PRECIP_THRESHOLD,
     DOMAIN,
 )
 
@@ -28,6 +37,7 @@ OPTIONAL_ENTITY_KEYS = (
     CONF_WIND_SPEED_SENSOR,
     CONF_TEMPERATURE_SENSOR,
     CONF_HUMIDITY_SENSOR,
+    CONF_RAIN_SENSOR,
 )
 
 PRESSURE_SENSOR_SELECTOR = selector.EntitySelector(
@@ -46,6 +56,14 @@ WIND_SENSOR_SELECTOR = selector.EntitySelector(
 WIND_SPEED_SENSOR_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(
         domain="sensor",
+        device_class="wind_speed",
+    )
+)
+
+RAIN_SENSOR_SELECTOR = selector.EntitySelector(
+    selector.EntitySelectorConfig(
+        domain=["sensor", "binary_sensor"],
+        device_class=["moisture", "precipitation"],
     )
 )
 
@@ -62,6 +80,19 @@ HUMIDITY_SENSOR_SELECTOR = selector.EntitySelector(
         device_class="humidity",
     )
 )
+
+
+def _threshold_selector(minimum: float, maximum: float, step: float, unit: str):
+    """Return a boxed numeric selector for an alert threshold."""
+    return selector.NumberSelector(
+        selector.NumberSelectorConfig(
+            min=minimum,
+            max=maximum,
+            step=step,
+            mode=selector.NumberSelectorMode.BOX,
+            unit_of_measurement=unit,
+        )
+    )
 
 
 def _normalize_optional_entities(data: dict) -> dict:
@@ -105,6 +136,17 @@ def _build_options_schema(
     current_use_sea_level = _get_entry_value(entry, CONF_USE_SEA_LEVEL, False)
     current_lat = _get_entry_value(entry, CONF_LATITUDE)
     current_lon = _get_entry_value(entry, CONF_LONGITUDE)
+    current_rain = _get_entry_value(entry, CONF_RAIN_SENSOR)
+    current_falling = _get_entry_value(
+        entry, CONF_FALLING_RAPID_THRESHOLD, DEFAULT_FALLING_RAPID_THRESHOLD
+    )
+    current_storm = _get_entry_value(
+        entry, CONF_STORM_PRECIP_THRESHOLD, DEFAULT_STORM_PRECIP_THRESHOLD
+    )
+    current_frost = _get_entry_value(entry, CONF_FROST_TEMP_THRESHOLD, DEFAULT_FROST_TEMP_THRESHOLD)
+    current_fog = _get_entry_value(
+        entry, CONF_FOG_HUMIDITY_THRESHOLD, DEFAULT_FOG_HUMIDITY_THRESHOLD
+    )
 
     default_location = {
         "latitude": current_lat if current_lat is not None else default_lat,
@@ -139,6 +181,24 @@ def _build_options_schema(
         )
     else:
         schema_dict[vol.Optional(CONF_HUMIDITY_SENSOR)] = HUMIDITY_SENSOR_SELECTOR
+
+    if current_rain:
+        schema_dict[vol.Optional(CONF_RAIN_SENSOR, default=current_rain)] = RAIN_SENSOR_SELECTOR
+    else:
+        schema_dict[vol.Optional(CONF_RAIN_SENSOR)] = RAIN_SENSOR_SELECTOR
+
+    schema_dict[vol.Optional(CONF_FALLING_RAPID_THRESHOLD, default=current_falling)] = (
+        _threshold_selector(0.3, 10.0, 0.1, "hPa/3h")
+    )
+    schema_dict[vol.Optional(CONF_STORM_PRECIP_THRESHOLD, default=current_storm)] = (
+        _threshold_selector(30, 100, 1, "%")
+    )
+    schema_dict[vol.Optional(CONF_FROST_TEMP_THRESHOLD, default=current_frost)] = (
+        _threshold_selector(-20.0, 10.0, 0.1, "°C")
+    )
+    schema_dict[vol.Optional(CONF_FOG_HUMIDITY_THRESHOLD, default=current_fog)] = (
+        _threshold_selector(70.0, 100.0, 1.0, "%")
+    )
 
     schema_dict[vol.Optional(CONF_USE_SEA_LEVEL, default=current_use_sea_level)] = (
         selector.BooleanSelector()
@@ -191,6 +251,23 @@ class ZambrettiSagerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional(CONF_WIND_SPEED_SENSOR): WIND_SPEED_SENSOR_SELECTOR,
                     vol.Optional(CONF_TEMPERATURE_SENSOR): TEMPERATURE_SENSOR_SELECTOR,
                     vol.Optional(CONF_HUMIDITY_SENSOR): HUMIDITY_SENSOR_SELECTOR,
+                    vol.Optional(CONF_RAIN_SENSOR): RAIN_SENSOR_SELECTOR,
+                    vol.Optional(
+                        CONF_FALLING_RAPID_THRESHOLD,
+                        default=DEFAULT_FALLING_RAPID_THRESHOLD,
+                    ): _threshold_selector(0.3, 10.0, 0.1, "hPa/3h"),
+                    vol.Optional(
+                        CONF_STORM_PRECIP_THRESHOLD,
+                        default=DEFAULT_STORM_PRECIP_THRESHOLD,
+                    ): _threshold_selector(30, 100, 1, "%"),
+                    vol.Optional(
+                        CONF_FROST_TEMP_THRESHOLD,
+                        default=DEFAULT_FROST_TEMP_THRESHOLD,
+                    ): _threshold_selector(-20.0, 10.0, 0.1, "°C"),
+                    vol.Optional(
+                        CONF_FOG_HUMIDITY_THRESHOLD,
+                        default=DEFAULT_FOG_HUMIDITY_THRESHOLD,
+                    ): _threshold_selector(70.0, 100.0, 1.0, "%"),
                     vol.Optional(CONF_USE_SEA_LEVEL, default=False): selector.BooleanSelector(),
                     vol.Optional(
                         CONF_LOCATION, default=default_location

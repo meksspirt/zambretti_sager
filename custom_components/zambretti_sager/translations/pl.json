@@ -11,7 +11,12 @@
           "temperature_sensor": "Czujnik temperatury (opcjonalnie)",
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "use_sea_level_correction": "Włącz korekcję ciśnienia na poziom morza",
-          "location": "Lokalizacja"
+          "location": "Lokalizacja",
+          "rain_sensor": "Rain Sensor (optional)",
+          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
+          "storm_precip_threshold": "Storm Precipitation Threshold",
+          "frost_temp_threshold": "Frost Temperature Threshold",
+          "fog_humidity_threshold": "Fog Humidity Threshold"
         },
         "data_description": {
           "pressure_sensor": "Wybierz czujnik ciśnienia barometrycznego",
@@ -20,7 +25,12 @@
           "temperature_sensor": "Opcjonalnie: używany do korekcji na poziom morza",
           "humidity_sensor": "Opcjonalnie: poprawia dokładność prawdopodobieństwa opadów",
           "use_sea_level_correction": "Włącz przy czujniku ciśnienia bezwzględnego powyżej poziomu morza",
-          "location": "Kliknij na mapie, aby obliczyć wysokość"
+          "location": "Kliknij na mapie, aby obliczyć wysokość",
+          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
+          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
+          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
+          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
+          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
         }
       },
       "reconfigure": {
@@ -33,7 +43,12 @@
           "temperature_sensor": "Czujnik temperatury (opcjonalnie)",
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "use_sea_level_correction": "Włącz korekcję ciśnienia na poziom morza",
-          "location": "Lokalizacja"
+          "location": "Lokalizacja",
+          "rain_sensor": "Rain Sensor (optional)",
+          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
+          "storm_precip_threshold": "Storm Precipitation Threshold",
+          "frost_temp_threshold": "Frost Temperature Threshold",
+          "fog_humidity_threshold": "Fog Humidity Threshold"
         },
         "data_description": {
           "pressure_sensor": "Wybierz czujnik ciśnienia barometrycznego",
@@ -42,7 +57,12 @@
           "temperature_sensor": "Opcjonalnie: używany do korekcji na poziom morza",
           "humidity_sensor": "Opcjonalnie: poprawia dokładność prawdopodobieństwa opadów",
           "use_sea_level_correction": "Włącz przy czujniku ciśnienia bezwzględnego powyżej poziomu morza",
-          "location": "Kliknij na mapie, aby obliczyć wysokość"
+          "location": "Kliknij na mapie, aby obliczyć wysokość",
+          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
+          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
+          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
+          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
+          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
         }
       }
     },
@@ -67,7 +87,12 @@
           "temperature_sensor": "Czujnik temperatury (opcjonalnie)",
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "use_sea_level_correction": "Włącz korekcję ciśnienia na poziom morza",
-          "location": "Lokalizacja"
+          "location": "Lokalizacja",
+          "rain_sensor": "Rain Sensor (optional)",
+          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
+          "storm_precip_threshold": "Storm Precipitation Threshold",
+          "frost_temp_threshold": "Frost Temperature Threshold",
+          "fog_humidity_threshold": "Fog Humidity Threshold"
         },
         "data_description": {
           "pressure_sensor": "Wybierz czujnik ciśnienia barometrycznego",
@@ -76,7 +101,12 @@
           "temperature_sensor": "Opcjonalnie: używany do korekcji na poziom morza",
           "humidity_sensor": "Opcjonalnie: poprawia dokładność prawdopodobieństwa opadów",
           "use_sea_level_correction": "Włącz przy czujniku ciśnienia bezwzględnego powyżej poziomu morza",
-          "location": "Kliknij na mapie, aby obliczyć wysokość"
+          "location": "Kliknij na mapie, aby obliczyć wysokość",
+          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
+          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
+          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
+          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
+          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
         }
       }
     }
@@ -232,11 +262,65 @@
       },
       "last_update": {
         "name": "Last Update"
+      },
+      "sea_level_pressure": {
+        "name": "Sea Level Pressure"
+      },
+      "station_pressure": {
+        "name": "Station Pressure"
+      },
+      "pressure_trend_3h": {
+        "name": "Pressure Trend (3h)"
+      },
+      "pressure_change_24h": {
+        "name": "Pressure Change (24h)"
+      },
+      "wmo_tendency_code": {
+        "name": "WMO Pressure Tendency"
+      },
+      "snow_probability": {
+        "name": "Snow Probability"
+      },
+      "fog_probability": {
+        "name": "Fog Probability"
+      },
+      "forecast_confidence": {
+        "name": "Forecast Confidence"
+      },
+      "model_divergence": {
+        "name": "Model Divergence"
+      },
+      "forecast_accuracy_24h": {
+        "name": "Forecast Accuracy (24h)"
+      },
+      "last_forecast_hit": {
+        "name": "Last Forecast Hit",
+        "state": {
+          "hit": "Hit",
+          "miss": "Miss"
+        }
+      },
+      "adaptive_damping": {
+        "name": "Adaptive Damping"
       }
     },
     "weather": {
       "weather_station": {
         "name": "Weather Station"
+      }
+    },
+    "binary_sensor": {
+      "pressure_falling_rapidly": {
+        "name": "Pressure Falling Rapidly"
+      },
+      "storm_warning": {
+        "name": "Storm Warning"
+      },
+      "frost_risk": {
+        "name": "Frost Risk"
+      },
+      "fog_risk": {
+        "name": "Fog Risk"
       }
     }
   },

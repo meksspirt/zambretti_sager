@@ -48,6 +48,23 @@ CONF_LONGITUDE: Final[str] = "longitude"
 CONF_LOCATION: Final[str] = "location"
 CONF_USE_SEA_LEVEL: Final[str] = "use_sea_level_correction"
 CONF_ELEVATION: Final[str] = "elevation"
+CONF_RAIN_SENSOR: Final[str] = "rain_sensor"
+
+# Alert / calibration thresholds (configurable via the options flow)
+CONF_FALLING_RAPID_THRESHOLD: Final[str] = "falling_rapid_threshold"
+CONF_STORM_PRECIP_THRESHOLD: Final[str] = "storm_precip_threshold"
+CONF_FROST_TEMP_THRESHOLD: Final[str] = "frost_temp_threshold"
+CONF_FOG_HUMIDITY_THRESHOLD: Final[str] = "fog_humidity_threshold"
+
+DEFAULT_FALLING_RAPID_THRESHOLD: Final[float] = 1.6
+DEFAULT_STORM_PRECIP_THRESHOLD: Final[int] = 75
+DEFAULT_FROST_TEMP_THRESHOLD: Final[float] = 2.0
+DEFAULT_FOG_HUMIDITY_THRESHOLD: Final[float] = 95.0
+
+# Home Assistant bus events
+EVENT_FORECAST_CHANGED: Final[str] = f"{DOMAIN}_forecast_changed"
+EVENT_HORIZON_CHANGED: Final[str] = f"{DOMAIN}_forecast_horizon_changed"
+EVENT_PRESSURE_DROP: Final[str] = f"{DOMAIN}_pressure_drop_alert"
 
 # Keywords in entity_id or attributes that suggest the sensor already reports
 # sea-level pressure (MSLP/QNH), so we shouldn't apply altitude correction again
@@ -61,17 +78,29 @@ SEA_LEVEL_SENSOR_HINTS: Final[tuple[str, ...]] = (
 )
 
 __all__ = [
-    "CONF_HUMIDITY_SENSOR",
     "CONF_ELEVATION",
+    "CONF_FALLING_RAPID_THRESHOLD",
+    "CONF_FOG_HUMIDITY_THRESHOLD",
+    "CONF_FROST_TEMP_THRESHOLD",
+    "CONF_HUMIDITY_SENSOR",
     "CONF_LATITUDE",
     "CONF_LOCATION",
     "CONF_LONGITUDE",
     "CONF_PRESSURE_SENSOR",
+    "CONF_RAIN_SENSOR",
+    "CONF_STORM_PRECIP_THRESHOLD",
     "CONF_TEMPERATURE_SENSOR",
     "CONF_USE_SEA_LEVEL",
     "CONF_WIND_SENSOR",
     "CONF_WIND_SPEED_SENSOR",
+    "DEFAULT_FALLING_RAPID_THRESHOLD",
+    "DEFAULT_FOG_HUMIDITY_THRESHOLD",
+    "DEFAULT_FROST_TEMP_THRESHOLD",
+    "DEFAULT_STORM_PRECIP_THRESHOLD",
     "DOMAIN",
+    "EVENT_FORECAST_CHANGED",
+    "EVENT_HORIZON_CHANGED",
+    "EVENT_PRESSURE_DROP",
     "JSMODULES",
     "SAGER_TREND_RAPID",
     "SAGER_TREND_SLOW",

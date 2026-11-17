@@ -17,7 +17,9 @@ from .pressure_util import parse_pressure_hpa_from_history
 _LOGGER = logging.getLogger(__name__)
 
 BUFFER_MAX_AGE = datetime.timedelta(hours=25)
-DEFAULT_TOLERANCE = datetime.timedelta(minutes=45)
+# Keep buffer and recorder lookups on the same tolerance so a history point is
+# either accepted or rejected identically regardless of the data source.
+DEFAULT_TOLERANCE = datetime.timedelta(minutes=20)
 
 
 class PressureHistoryBuffer:
@@ -29,10 +31,17 @@ class PressureHistoryBuffer:
 
     def append(self, timestamp: datetime.datetime, pressure_hpa: float) -> None:
         """Add a pressure reading maintaining chronological order and prune expired entries."""
-        if not self._buffer or timestamp >= self._buffer[-1][0]:
+        if not self._buffer or timestamp > self._buffer[-1][0]:
             self._buffer.append((timestamp, pressure_hpa))
+        elif timestamp == self._buffer[-1][0]:
+            # Refresh the value instead of storing duplicate timestamps.
+            self._buffer[-1] = (timestamp, pressure_hpa)
         else:
-            bisect.insort(self._buffer, (timestamp, pressure_hpa), key=lambda x: x[0])
+            idx = bisect.bisect_left(self._buffer, timestamp, key=lambda x: x[0])
+            if idx < len(self._buffer) and self._buffer[idx][0] == timestamp:
+                self._buffer[idx] = (timestamp, pressure_hpa)
+            else:
+                self._buffer.insert(idx, (timestamp, pressure_hpa))
         self.prune(timestamp - self.max_age)
 
     def prune(self, cutoff: datetime.datetime) -> None:
@@ -140,7 +149,7 @@ async def async_get_history_pressures_batch_from_recorder(
     pressure_id: str,
     hours_list: list[int] | tuple[int, ...],
     now: datetime.datetime,
-    window_minutes: int = 15,
+    window_minutes: int = 20,
     pressure_corrector: Callable[[float], float] | None = None,
     buffer: PressureHistoryBuffer | None = None,
 ) -> dict[int, float | None]:
@@ -223,7 +232,7 @@ async def async_get_history_pressure_from_recorder(
     pressure_id: str,
     hours: int,
     now: datetime.datetime,
-    window_minutes: int = 15,
+    window_minutes: int = 20,
     pressure_corrector: Callable[[float], float] | None = None,
 ) -> float | None:
     """Query recorder for pressure reading N hours ago (compatibility wrapper)."""

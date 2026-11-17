@@ -115,6 +115,69 @@ Altitude is determined via the **Open-Elevation API** using map coordinates.
 
 ---
 
+## Ensemble consensus
+
+Three estimators vote on the forecast severity (0 = settled, 5 = stormy):
+
+| Model | Weight | Basis |
+|---|---|---|
+| Zambretti | 0.4 | 3-hour pressure change and current pressure |
+| Sager | 0.3 | 6-hour trend, pressure zone, and wind quadrant |
+| Least-squares regression | 0.3 | Smoothed 6-hour pressure slope and R² |
+
+The weighted severity selects the nearest available Zambretti state (`consensus_state`). The spread between the three severities becomes `sensor.model_divergence` (0–100%). A wide spread lowers `sensor.forecast_confidence`.
+
+## Confidence score
+
+`forecast_confidence` starts at 40 points and adjusts for:
+
+- available 6h, 12h, and 24h pressure history,
+- wind direction and humidity availability,
+- regression quality (R²),
+- agreement between Zambretti and Sager,
+- model divergence,
+- pressure sample age (stale samples are penalised),
+- physically implausible pressure values.
+
+The result is clamped to 0–100%.
+
+## Dew-point refinement
+
+Using the Magnus formula:
+
+```text
+γ = ln(RH / 100) + (17.62 × T) / (243.12 + T)
+Td = (243.12 × γ) / (17.62 − γ)
+```
+
+The dew-point spread (`T − Td`) adjusts precipitation probability. `snow_probability` scales rain probability by temperature (full probability at ≤ 1 °C, zero at ≥ 3.5 °C, linear in between). `fog_probability` combines high humidity, a small dew-point spread, and low wind.
+
+## WMO tendency code
+
+The integration reports the WMO 3-hour pressure tendency code (`0–8`) using the net 3-hour change and, when available, the 1.5-hour pressure to distinguish accelerating, decelerating, and reversible tendencies.
+
+## Forecast verification ledger
+
+Each forecast is recorded at most once every six hours and verified 24 hours later. A hit requires:
+
+- 24-hour pressure error ≤ 2 hPa,
+- observed severity within one step of the forecast,
+- optional rain sensor agreement with the predicted rain probability (≥ 50% = rain).
+
+The ledger keeps the most recent 200 records and reports a rolling hit rate over up to 60 verified forecasts.
+
+## Adaptive calibration
+
+Verified 24-hour trends adjust the damping exponent used by `calculate_extrapolations`:
+
+- actual change larger than predicted → damping +0.02,
+- actual change smaller than predicted → damping −0.02,
+- clamped to `[0.45, 0.85]`; flat trends (< 1 hPa predicted) are ignored.
+
+The current value is exposed as `sensor.adaptive_damping`.
+
+---
+
 ## Limitations
 
 | Limitation | Explanation |

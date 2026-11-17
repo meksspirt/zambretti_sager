@@ -2,6 +2,22 @@
 
 from __future__ import annotations
 
+import datetime
+
+import pytest
+
+from custom_components.zambretti_sager.algorithms import (
+    DAMPING_EXPONENT,
+    calculate_consensus_forecast,
+    calculate_dew_point,
+    calculate_fog_probability,
+    calculate_forecast_confidence,
+    calculate_snow_probability,
+    classify_wmo_pressure_tendency,
+    linear_pressure_trend,
+    sager_severity,
+    zambretti_severity,
+)
 from custom_components.zambretti_sager.const import (
     ZAMBRETTI_MAPPING,
     calculate_extrapolations,
@@ -221,3 +237,131 @@ def test_extrapolations_fallback_to_6h():
     """Test 24h extrapolation uses p_6h when p_12h is None."""
     res = calculate_extrapolations(p_now=1010.0, p_3h=1012.0, p_6h=1014.0, p_12h=None)
     assert res[24].predicted_pressure < 1010.0
+
+
+def test_wmo_pressure_tendency_codes():
+    """Test the WMO 0-8 tendency classification including shape disambiguation."""
+    assert classify_wmo_pressure_tendency(None, None, 1010.0) is None
+    assert classify_wmo_pressure_tendency(1010.0, None, 1013.0) == 2
+    assert classify_wmo_pressure_tendency(1013.0, None, 1010.0) == 7
+    assert classify_wmo_pressure_tendency(1010.0, None, 1010.0) == 4
+    # Increasing, then decreasing, returning to the three-hour value.
+    assert classify_wmo_pressure_tendency(1010.0, 1014.0, 1010.0) == 0
+    # Decreasing, then increasing, returning to the three-hour value.
+    assert classify_wmo_pressure_tendency(1014.0, 1009.0, 1014.0) == 5
+    # Increasing faster in the second half.
+    assert classify_wmo_pressure_tendency(1010.0, 1011.0, 1015.0) == 2
+    # Decreasing fast then slowing.
+    assert classify_wmo_pressure_tendency(1015.0, 1011.0, 1009.0) == 6
+
+
+def test_dew_point_and_snow_probability():
+    """Test Magnus dew point and temperature-dependent snow probability."""
+    assert calculate_dew_point(None, 80.0) is None
+    dew_point = calculate_dew_point(20.0, 50.0)
+    assert dew_point is not None
+    assert pytest.approx(dew_point, abs=0.5) == 9.3
+
+    assert calculate_snow_probability(80, None) is None
+    assert calculate_snow_probability(80, -2.0) == 80
+    assert calculate_snow_probability(80, 0.0) == 80
+    assert calculate_snow_probability(80, 5.0) == 0
+    mixed = calculate_snow_probability(80, 2.25)
+    assert mixed is not None and 0 < mixed < 80
+
+
+def test_fog_probability_uses_dew_point_spread_and_wind():
+    """Test fog probability under saturated, dry, and windy conditions."""
+    assert calculate_fog_probability(None, 90.0) is None
+    saturated = calculate_fog_probability(5.0, 100.0, wind_speed=0.5)
+    assert saturated is not None and saturated >= 80
+    dry = calculate_fog_probability(20.0, 40.0, wind_speed=10.0)
+    assert dry == 0
+    windy = calculate_fog_probability(5.0, 100.0, wind_speed=10.0)
+    assert windy is not None and windy < saturated
+
+
+def test_linear_pressure_trend_fit():
+    """Test least-squares slope and R² over a perfectly linear series."""
+    now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
+    entries = [
+        (now - datetime.timedelta(hours=hours), 1010.0 + (6 - hours) * 1.0)
+        for hours in range(6, 0, -1)
+    ]
+    slope, r2 = linear_pressure_trend(entries, now, hours=6)
+    assert slope is not None and pytest.approx(slope, abs=0.01) == 3.0
+    assert r2 == 1.0
+
+    # Too few points
+    assert linear_pressure_trend(entries[:2], now, hours=6) == (None, None)
+
+
+def test_forecast_confidence_range_and_penalties():
+    """Test confidence scoring bounds and missing-data penalties."""
+    full = calculate_forecast_confidence(
+        p_now=1013.0,
+        p_6h=1012.0,
+        p_12h=1011.0,
+        p_24h=1010.0,
+        wind_degrees=180.0,
+        humidity=60.0,
+        pressure_age_seconds=60.0,
+        zambretti_state="fine_weather",
+        sager_state="sager_fair_no_change",
+        trend_r2=0.9,
+        model_divergence=0,
+    )
+    sparse = calculate_forecast_confidence(
+        p_now=1013.0,
+        p_6h=None,
+        p_12h=None,
+        p_24h=None,
+        wind_degrees=None,
+        humidity=None,
+        pressure_age_seconds=3 * 3600,
+        zambretti_state="fine_weather",
+        sager_state="sager_unsettled_rain_likely",
+        trend_r2=None,
+        model_divergence=80,
+    )
+    assert 0 <= sparse < full <= 100
+
+
+def test_consensus_and_severity():
+    """Test severity lookup and weighted consensus selection."""
+    assert zambretti_severity("settled_fine") == 0
+    assert zambretti_severity("stormy_much_rain") == 5
+    assert zambretti_severity(None) is None
+    assert sager_severity("sager_unsettled_rain_likely") == 4
+    assert sager_severity("unknown") is None
+
+    consensus, divergence = calculate_consensus_forecast(
+        "fine_weather", "sager_fair_no_change", "settled_fine"
+    )
+    assert consensus == "fine_weather"
+    assert divergence == 0
+
+    consensus2, divergence2 = calculate_consensus_forecast(
+        "settled_fine", "sager_unsettled_rain_likely", None
+    )
+    assert consensus2 in {"settled_fine", "sager_unsettled_rain_likely"}
+    assert divergence2 is not None and divergence2 > 0
+
+    assert calculate_consensus_forecast(None, None, None) == (None, None)
+
+
+def test_extrapolations_use_regression_rate_and_damping():
+    """Test regression-rate override and adaptive damping influence."""
+    baseline = calculate_extrapolations(1010.0, 1008.0)
+    smoothed = calculate_extrapolations(1010.0, 1008.0, trend_rate_3h=-1.0)
+    damped = calculate_extrapolations(1010.0, 1008.0, trend_rate_3h=-1.0, damping=0.45)
+
+    assert smoothed[6].predicted_pressure != baseline[6].predicted_pressure
+    assert damped[24].predicted_pressure > smoothed[24].predicted_pressure
+    assert -10.0 <= damped[24].predicted_pressure - 1010.0 <= 0.0
+
+    # Damping is clamped to a sane range.
+    extreme = calculate_extrapolations(1010.0, 1020.0, damping=5.0)
+    assert extreme[24].predicted_pressure <= 1010.0
+    assert extreme[24].predicted_pressure >= 950.0
+    assert DAMPING_EXPONENT == 0.65

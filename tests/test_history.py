@@ -31,7 +31,7 @@ def test_pressure_history_buffer_append_and_lookup():
     p_3h = buffer.get_pressure_at(now - datetime.timedelta(hours=3))
     assert p_3h == 1012.0
 
-    # Within default 45m tolerance (3h 20m ago matches 3h ago point)
+    # Within the default 20m tolerance (3h 20m ago matches the 3h-old point)
     p_near = buffer.get_pressure_at(now - datetime.timedelta(hours=3, minutes=20))
     assert p_near == 1012.0
 
@@ -268,3 +268,20 @@ async def test_async_warm_history_buffer():
             mock_hass, "sensor.pressure", buffer, hours=2
         )
     assert loaded_empty == 0
+
+
+def test_pressure_history_buffer_deduplicates_timestamps():
+    """Test that re-appending the same instant refreshes instead of duplicating."""
+    buffer = PressureHistoryBuffer()
+    now = datetime.datetime(2026, 9, 21, 14, 0, tzinfo=datetime.UTC)
+
+    buffer.append(now, 1013.0)
+    buffer.append(now, 1013.5)
+    assert len(buffer) == 1
+    assert buffer.get_pressure_at(now) == 1013.5
+
+    older = now - datetime.timedelta(hours=1)
+    buffer.append(older, 1011.0)
+    buffer.append(older, 1011.5)
+    assert len(buffer) == 2
+    assert buffer.get_pressure_at(older) == 1011.5

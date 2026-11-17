@@ -313,7 +313,7 @@ async def test_coordinator_fetch_history_pressures_batch_fallback():
     coord._history_warmed = False
 
     now = datetime.datetime(2026, 9, 21, 14, 0, tzinfo=datetime.UTC)
-    mock_batch = AsyncMock(return_value={3: 1010.0, 6: 1008.0, 12: 1005.0})
+    mock_batch = AsyncMock(return_value={3: 1010.0, 6: 1008.0, 12: 1005.0, 24: 1002.0})
 
     with patch(
         "custom_components.zambretti_sager.coordinator.async_get_history_pressures_batch_from_recorder",
@@ -321,11 +321,11 @@ async def test_coordinator_fetch_history_pressures_batch_fallback():
     ):
         res = await coord._fetch_history_pressures(now)
 
-    assert res == {3: 1010.0, 6: 1008.0, 12: 1005.0}
+    assert res == {3: 1010.0, 6: 1008.0, 12: 1005.0, 24: 1002.0}
     assert mock_batch.call_count == 1
-    # Check that missing_hours (3, 6, 12) were passed in a single batch
+    # Check that missing_hours (3, 6, 12, 24) were passed in a single batch
     call_args = mock_batch.call_args[0]
-    assert call_args[2] == [3, 6, 12]
+    assert call_args[2] == [3, 6, 12, 24]
     assert coord._history_warmed is True
 
 
@@ -373,23 +373,6 @@ async def test_coordinator_historical_pressure_no_double_sea_level_correction():
     # Delta over 3 hours must be ~0.0 hPa (steady), NOT a massive false drop caused by double correction
     assert pytest.approx(data.delta_3h, abs=0.1) == 0.0
     assert "Steady" in data.trend_label
-
-
-def test_coordinator_correct_history_pressure_fallback_chain():
-    """Test _correct_history_pressure returns value directly or cascades fallback."""
-    mock_hass = MagicMock()
-    mock_entry = MagicMock()
-    mock_entry.entry_id = "test"
-    mock_entry.data = {"pressure_sensor": "sensor.pressure", "use_sea_level_correction": True}
-    mock_entry.options = {}
-
-    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=500.0)
-
-    # Value is present -> returned as-is without second altitude correction
-    assert coord._correct_history_pressure(1013.25, fallback=1020.0) == 1013.25
-
-    # Value is None -> returns fallback
-    assert coord._correct_history_pressure(None, fallback=1020.0) == 1020.0
 
 
 def test_coordinator_clearing_optional_sensors():
@@ -882,3 +865,126 @@ async def test_coordinator_invalid_pressure_and_compat_fallbacks():
         pytest.raises(LegacyUpdateFailed),
     ):
         await coord._async_update_data()
+
+
+def test_coordinator_get_rain_variants():
+    """Test the optional rain sensor normalisation."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {"pressure_sensor": "sensor.p", "rain_sensor": "binary_sensor.rain"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=0.0)
+    assert coord.rain_id == "binary_sensor.rain"
+
+    for state, expected in (
+        ("on", True),
+        ("off", False),
+        ("wet", True),
+        ("dry", False),
+        ("0.0", False),
+        ("2.4", True),
+        ("unavailable", None),
+        ("weird", None),
+    ):
+        mock_hass.states.get.return_value = MagicMock(state=state)
+        assert coord._get_rain() is expected
+
+    coord.rain_id = None
+    assert coord._get_rain() is None
+
+
+def test_coordinator_temperature_availability_and_pressure_age():
+    """Test temperature availability gating and pressure reading age."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {"pressure_sensor": "sensor.p", "temperature_sensor": "sensor.t"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=0.0)
+    mock_hass.states.get.return_value = MagicMock(state="20.0")
+    assert coord._is_temperature_available() is True
+    mock_hass.states.get.return_value = MagicMock(state="unavailable")
+    assert coord._is_temperature_available() is False
+    coord.temp_id = None
+    assert coord._is_temperature_available() is False
+
+    now = datetime.datetime(2026, 9, 21, 14, 0, tzinfo=datetime.UTC)
+    fresh = MagicMock(last_updated=now - datetime.timedelta(seconds=90))
+    assert coord._pressure_age_seconds(fresh, now) == 90.0
+    assert coord._pressure_age_seconds(MagicMock(last_updated=None), now) is None
+    naive = MagicMock(last_updated=now.replace(tzinfo=None))
+    assert coord._pressure_age_seconds(naive, now) == 0.0
+
+
+def test_coordinator_fires_forecast_events():
+    """Test forecast, horizon, and pressure-drop bus events."""
+    from custom_components.zambretti_sager.const import (
+        EVENT_FORECAST_CHANGED,
+        EVENT_HORIZON_CHANGED,
+        EVENT_PRESSURE_DROP,
+    )
+
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "entry_1"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=0.0)
+    previous = ForecastData(
+        available=True,
+        p_now=1015.0,
+        delta_3h=0.5,
+        zambretti_state="fine_weather",
+        zambretti_6h="fine_weather",
+        zambretti_12h="fine_weather",
+        zambretti_24h="fine_weather",
+    )
+    current = ForecastData(
+        available=True,
+        p_now=1009.0,
+        delta_3h=-2.5,
+        zambretti_state="rain_at_times_worse_later",
+        zambretti_6h="unsettled_rain_later",
+        zambretti_12h="fine_weather",
+        zambretti_24h="fine_weather",
+    )
+    coord.data = previous
+
+    coord._fire_events(current)
+
+    event_types = [call.args[0] for call in mock_hass.bus.async_fire.call_args_list]
+    assert EVENT_FORECAST_CHANGED in event_types
+    assert EVENT_HORIZON_CHANGED in event_types
+    assert EVENT_PRESSURE_DROP in event_types
+
+    payload = next(
+        call.args[1]
+        for call in mock_hass.bus.async_fire.call_args_list
+        if call.args[0] == EVENT_PRESSURE_DROP
+    )
+    assert payload["entry_id"] == "entry_1"
+    assert payload["delta_3h"] == -2.5
+
+
+def test_coordinator_event_thresholds_respect_options():
+    """Test alert thresholds are read from options and override data."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "entry_1"
+    mock_entry.data = {"pressure_sensor": "sensor.p"}
+    mock_entry.options = {
+        "falling_rapid_threshold": 2.5,
+        "storm_precip_threshold": 90,
+        "frost_temp_threshold": -1.0,
+        "fog_humidity_threshold": 98.0,
+    }
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=0.0)
+    assert coord.falling_rapid_threshold == 2.5
+    assert coord.storm_precip_threshold == 90
+    assert coord.frost_temp_threshold == -1.0
+    assert coord.fog_humidity_threshold == 98.0

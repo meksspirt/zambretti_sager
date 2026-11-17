@@ -4,12 +4,16 @@ Current project status and development plans.
 
 ---
 
-## Current status — v1.9.8 ✅
+## Current status — unreleased development ✅
 
 | Component | Status |
 |---|---|
 | Zambretti/Sager integration | ✅ Stable |
-| 6 sensors | ✅ Working |
+| 19 sensors + 4 alert binary sensors | ✅ New |
+| Ensemble consensus + confidence | ✅ New |
+| Dew-point snow/fog probabilities | ✅ New |
+| 24-hour forecast verification ledger | ✅ New |
+| Adaptive damping calibration | ✅ New |
 | Config Flow + Options Flow | ✅ Done |
 | Sea level correction | ✅ Done |
 | Lovelace Weather Card | ✅ Done |
@@ -17,7 +21,7 @@ Current project status and development plans.
 | Pressure sparkline | ✅ v1.9.5+ |
 | Night mode | ✅ v1.9.5+ |
 | Wind speed + units | ✅ v1.9.7+ |
-| Localization EN/RU/FR | ✅ Done |
+| Localization (21 locales) | ✅ Done |
 | HACS | ✅ Published |
 | CI (hassfest + hacs) | ✅ Configured |
 
@@ -40,24 +44,29 @@ Current project status and development plans.
 - [x] Fix unavailable sensors after restart
 - [x] Fix SVG animation jitter
 - [x] Multiple integration instances
+- [x] Numeric pressure/trend/confidence sensors
+- [x] Alert binary sensors with configurable thresholds
+- [x] Ensemble consensus and model divergence
+- [x] Dew-point snow and fog probabilities
+- [x] Persistent forecast verification ledger
+- [x] Adaptive damping calibration
+- [x] Device triggers and forecast bus events
+- [x] 21-locale translation parity
 
 ---
 
 ## Planned
 
-- [ ] **German translation (DE)** — community request
-- [ ] **Spanish translation (ES)**
 - [ ] **HACS default repository** — submit to HACS default repo
-- [ ] **Unit tests** — Zambretti/Sager algorithm tests
 - [ ] **Card themes** — custom color schemes
-- [ ] **Weather entity integration** — map Zambretti → `weather.*`
+- [ ] **Ledger chart** — visualize forecast accuracy over time
+- [ ] **Optional notifications blueprint** for storm and frost alerts
 
 ---
 
 ## Ideas (backlog)
 
 - Multi-sensor pressure averaging
-- Push notifications on rapid pressure drop
 - Forecast history export
 - inHg / mmHg unit support
 - Comparison with Met.no / OpenWeatherMap forecasts

@@ -11,15 +11,17 @@ import pytest
 from custom_components.zambretti_sager.algorithms import SAGER_OPTIONS, ZAMBRETTI_OPTIONS
 from custom_components.zambretti_sager.coordinator import ForecastData
 from custom_components.zambretti_sager.sensor import (
-    LastUpdateSensor,
-    PrecipitationProbability,
-    SagerSensor,
-    ZambrettiForecast6h,
-    ZambrettiForecast12h,
-    ZambrettiForecast24h,
-    ZambrettiSensor,
+    SENSOR_DESCRIPTIONS,
+    WeatherSensor,
+    _get_base_attrs,
 )
 from custom_components.zambretti_sager.weather import ZambrettiWeather
+
+
+def _sensor(coordinator, key: str) -> WeatherSensor:
+    """Return the sensor entity described by ``key``."""
+    description = next(desc for desc in SENSOR_DESCRIPTIONS if desc.key == key)
+    return WeatherSensor(coordinator, description)
 
 
 @pytest.fixture
@@ -43,6 +45,7 @@ def mock_coordinator():
         humidity=55.0,
         altitude=120.0,
         temperature=21.5,
+        temperature_available=True,
         is_night=False,
         last_updated=datetime.datetime(2026, 8, 22, 16, 0, tzinfo=datetime.UTC),
         delta_3h=2.2,
@@ -62,7 +65,7 @@ def mock_coordinator():
 
 def test_zambretti_sensor(mock_coordinator):
     """Test ZambrettiSensor properties and attributes."""
-    sensor = ZambrettiSensor(mock_coordinator)
+    sensor = _sensor(mock_coordinator, "zambretti")
     assert sensor.translation_key == "zambretti_forecast"
     assert sensor.device_class == SensorDeviceClass.ENUM
     assert sensor.options == ZAMBRETTI_OPTIONS
@@ -81,7 +84,7 @@ def test_zambretti_sensor(mock_coordinator):
 
 def test_sager_sensor(mock_coordinator):
     """Test SagerSensor properties."""
-    sensor = SagerSensor(mock_coordinator)
+    sensor = _sensor(mock_coordinator, "sager")
     assert sensor.translation_key == "sager_forecast"
     assert sensor.device_class == SensorDeviceClass.ENUM
     assert sensor.options == SAGER_OPTIONS
@@ -92,21 +95,21 @@ def test_sager_sensor(mock_coordinator):
 
 def test_forecast_horizon_sensors(mock_coordinator):
     """Test 6h, 12h, and 24h Zambretti extrapolation sensors."""
-    s6 = ZambrettiForecast6h(mock_coordinator)
+    s6 = _sensor(mock_coordinator, "zambretti_6h")
     assert s6.translation_key == "zambretti_forecast_6h"
     assert s6.device_class == SensorDeviceClass.ENUM
     assert s6.options == ZAMBRETTI_OPTIONS
     assert s6.native_value == "fairly_fine_improving"
     assert s6.extra_state_attributes == {"predicted_pressure_hpa": 1020.8}
 
-    s12 = ZambrettiForecast12h(mock_coordinator)
+    s12 = _sensor(mock_coordinator, "zambretti_12h")
     assert s12.translation_key == "zambretti_forecast_12h"
     assert s12.device_class == SensorDeviceClass.ENUM
     assert s12.options == ZAMBRETTI_OPTIONS
     assert s12.native_value == "fine_weather"
     assert s12.extra_state_attributes == {"predicted_pressure_hpa": 1025.2}
 
-    s24 = ZambrettiForecast24h(mock_coordinator)
+    s24 = _sensor(mock_coordinator, "zambretti_24h")
     assert s24.translation_key == "zambretti_forecast_24h"
     assert s24.device_class == SensorDeviceClass.ENUM
     assert s24.options == ZAMBRETTI_OPTIONS
@@ -116,7 +119,7 @@ def test_forecast_horizon_sensors(mock_coordinator):
 
 def test_precipitation_probability_sensor(mock_coordinator):
     """Test PrecipitationProbability sensor."""
-    sensor = PrecipitationProbability(mock_coordinator)
+    sensor = _sensor(mock_coordinator, "precipitation_probability")
     assert sensor.translation_key == "precipitation_probability"
     assert sensor.native_value == 10
     assert sensor.extra_state_attributes == {}
@@ -124,7 +127,7 @@ def test_precipitation_probability_sensor(mock_coordinator):
 
 def test_last_update_sensor(mock_coordinator):
     """Test LastUpdateSensor properties and entity category."""
-    sensor = LastUpdateSensor(mock_coordinator)
+    sensor = _sensor(mock_coordinator, "last_update")
     assert sensor.translation_key == "last_update"
     assert sensor.available is True
     assert sensor.native_value == datetime.datetime(2026, 8, 22, 16, 0, tzinfo=datetime.UTC)
@@ -187,7 +190,7 @@ async def test_sensor_async_setup_entry(mock_coordinator):
         added.extend(entities)
 
     await sensor.async_setup_entry(MagicMock(), entry, mock_add)
-    assert len(added) == 7
+    assert len(added) == 19
 
 
 @pytest.mark.asyncio
@@ -243,15 +246,10 @@ def test_zambretti_entity_device_naming(mock_coordinator):
 
 
 def test_sensor_helpers_and_base_class(mock_coordinator):
-    """Test _get_base_attrs and WeatherSensorBase fallback."""
-    from custom_components.zambretti_sager.sensor import (
-        WeatherSensorBase,
-        _get_base_attrs,
-    )
-
+    """Test _get_base_attrs and the shared WeatherSensor entity."""
     assert _get_base_attrs(None) == {}
 
-    base = WeatherSensorBase(mock_coordinator)
+    base = _sensor(mock_coordinator, "zambretti")
     assert base.translation_key == "zambretti_forecast"
 
     # Base attributes with night mode

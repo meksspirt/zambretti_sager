@@ -154,8 +154,62 @@
           "75": "mdi:weather-pouring"
         }
       },
+      "sea_level_pressure": {
+        "default": "mdi:gauge"
+      },
+      "station_pressure": {
+        "default": "mdi:gauge-empty"
+      },
+      "pressure_trend_3h": {
+        "default": "mdi:trending-neutral"
+      },
+      "pressure_change_24h": {
+        "default": "mdi:gauge"
+      },
+      "wmo_tendency_code": {
+        "default": "mdi:weather-windy"
+      },
+      "snow_probability": {
+        "default": "mdi:weather-snowy"
+      },
+      "fog_probability": {
+        "default": "mdi:weather-fog"
+      },
+      "forecast_confidence": {
+        "default": "mdi:shield-check"
+      },
+      "model_divergence": {
+        "default": "mdi:call-split"
+      },
+      "forecast_accuracy_24h": {
+        "default": "mdi:target"
+      },
+      "last_forecast_hit": {
+        "default": "mdi:check-decagram",
+        "state": {
+          "hit": "mdi:check-circle",
+          "miss": "mdi:close-circle"
+        }
+      },
+      "adaptive_damping": {
+        "default": "mdi:tune"
+      },
       "last_update": {
         "default": "mdi:clock-time-four"
+      }
+    },
+    "binary_sensor": {
+      "pressure_falling_rapidly": {
+        "default": "mdi:download"
+      },
+      "storm_warning": {
+        "default": "mdi:weather-lightning"
+      },
+      "frost_risk": {
+        "default": "mdi:snowflake-alert"
+      },
+      "fog_risk": {
+        "default": "mdi:weather-fog"
       }
     },
     "weather": {

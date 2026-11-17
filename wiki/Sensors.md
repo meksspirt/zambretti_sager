@@ -1,6 +1,6 @@
 # Sensors
 
-The integration creates **6 sensors** grouped under a single **Weather Forecaster** device.
+The integration creates **19 sensors**, **4 binary sensors**, and **1 weather entity** grouped under a single **Weather Forecaster** device.
 
 ---
 
@@ -14,8 +14,24 @@ The integration creates **6 sensors** grouped under a single **Weather Forecaste
 | **Zambretti Forecast 6h** | `sensor.zambretti_forecast_6h` | Forecast 6 hours ahead |
 | **Zambretti Forecast 12h** | `sensor.zambretti_forecast_12h` | Forecast 12 hours ahead |
 | **Zambretti Forecast 24h** | `sensor.zambretti_forecast_24h` | Forecast 24 hours ahead |
-| **Precipitation Probability** | `sensor.precipitation_probability` | Chance of precipitation, 0–100% |
+| **Precipitation Probability** | `sensor.precipitation_probability` | Chance of precipitation, 0-100% |
+| **Snow Probability** | `sensor.snow_probability` | Chance precipitation falls as snow, 0-100% |
+| **Fog Probability** | `sensor.fog_probability` | Fog likelihood from humidity, dew point, and wind, 0-100% |
+| **Forecast Confidence** | `sensor.forecast_confidence` | Combined data-quality and model-agreement score, 0-100% |
+| **Sea Level Pressure** | `sensor.sea_level_pressure` | Sea-level corrected pressure in hPa |
+| **Station Pressure** | `sensor.station_pressure` | Raw station pressure as reported, in hPa |
+| **Pressure Trend (3h)** | `sensor.pressure_trend_3h` | Pressure change over 3 hours, in hPa |
+| **Pressure Change (24h)** | `sensor.pressure_change_24h` | Pressure change over 24 hours, in hPa |
+| **WMO Pressure Tendency** | `sensor.wmo_tendency_code` | WMO tendency code 0-8 |
+| **Model Divergence** | `sensor.model_divergence` | Disagreement between the three forecast models, 0-100% |
+| **Forecast Accuracy (24h)** | `sensor.forecast_accuracy_24h` | Verified 24-hour hit rate, 0-100% |
+| **Last Forecast Hit** | `sensor.last_forecast_hit` | `hit` or `miss` for the latest verified forecast |
+| **Adaptive Damping** | `sensor.adaptive_damping` | Self-calibrated extrapolation damping exponent |
 | **Last Update** | `sensor.last_update` | Timestamp of the last successful coordinator refresh |
+| **Pressure Falling Rapidly** | `binary_sensor.pressure_falling_rapidly` | Rapid 3-hour pressure drop alert |
+| **Storm Warning** | `binary_sensor.storm_warning` | Storm conditions alert |
+| **Frost Risk** | `binary_sensor.frost_risk` | Temperature at or below the frost threshold |
+| **Fog Risk** | `binary_sensor.fog_risk` | High humidity with high fog probability |
 
 > Exact entity IDs depend on your HA configuration. Look for the **Weather Forecaster** device in **Settings → Devices & Services**.
 

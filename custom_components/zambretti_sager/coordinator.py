@@ -14,17 +14,30 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import SpeedConverter, TemperatureConverter
 
+from .algorithms import linear_pressure_trend
 from .const import (
     CONF_ELEVATION,
+    CONF_FALLING_RAPID_THRESHOLD,
+    CONF_FOG_HUMIDITY_THRESHOLD,
+    CONF_FROST_TEMP_THRESHOLD,
     CONF_HUMIDITY_SENSOR,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_PRESSURE_SENSOR,
+    CONF_RAIN_SENSOR,
+    CONF_STORM_PRECIP_THRESHOLD,
     CONF_TEMPERATURE_SENSOR,
     CONF_USE_SEA_LEVEL,
     CONF_WIND_SENSOR,
     CONF_WIND_SPEED_SENSOR,
+    DEFAULT_FALLING_RAPID_THRESHOLD,
+    DEFAULT_FOG_HUMIDITY_THRESHOLD,
+    DEFAULT_FROST_TEMP_THRESHOLD,
+    DEFAULT_STORM_PRECIP_THRESHOLD,
     DOMAIN,
+    EVENT_FORECAST_CHANGED,
+    EVENT_HORIZON_CHANGED,
+    EVENT_PRESSURE_DROP,
     SEA_LEVEL_SENSOR_HINTS,
 )
 from .elevation import async_resolve_elevation
@@ -34,6 +47,7 @@ from .history import (
     async_get_history_pressures_batch_from_recorder,
     async_warm_history_buffer,
 )
+from .ledger import ForecastLedger
 from .pressure_util import (
     calculate_sea_level_pressure,
     parse_pressure_hpa,
@@ -42,7 +56,12 @@ from .pressure_util import (
 _LOGGER = logging.getLogger(__name__)
 
 UPDATE_INTERVAL = datetime.timedelta(minutes=5)
-HISTORY_HOURS = (3, 6, 12)
+HISTORY_HOURS = (3, 6, 12, 24)
+BUFFER_WARM_HOURS = 25
+HISTORY_FALLBACK_INTERVAL = datetime.timedelta(minutes=15)
+PRESSURE_WATCHER_MIN_INTERVAL = datetime.timedelta(seconds=60)
+
+_INVALID_STATES = frozenset({"unknown", "unavailable", "none", ""})
 
 type ZambrettiConfigEntry = ConfigEntry["ZambrettiSagerCoordinator"]
 
@@ -79,17 +98,22 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         self._sea_level_warning_logged = False
         self._unsub_state_listener = None
         self._last_pressure_id: str | None = None
+        self._last_watcher_refresh: datetime.datetime | None = None
 
         # In-memory rolling history buffer
         self._history_buffer = PressureHistoryBuffer()
         self._history_warmed = False
+        self._last_history_fallback: datetime.datetime | None = None
 
         # State tracking for clean, low-frequency logging
         self._last_logged_zambretti: str | None = None
         self._last_logged_trend: str | None = None
         self._first_forecast_logged = False
 
-        # Load sensor entity IDs from config entry
+        # Forecast verification ledger (persistent, self-calibrating)
+        self._ledger = ForecastLedger(hass, entry.entry_id)
+
+        # Load sensor entity IDs and thresholds from config entry
         self._update_sensor_ids()
 
         # Register cleanup on unload
@@ -108,6 +132,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             self._last_pressure_id = new_pressure_id
             self._history_buffer.clear()
             self._history_warmed = False
+            self._last_history_fallback = None
             self._first_forecast_logged = False
             self._last_logged_zambretti = None
             self._last_logged_trend = None
@@ -148,6 +173,37 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             if CONF_LONGITUDE in entry.options
             else entry.data.get(CONF_LONGITUDE)
         )
+        self.rain_id = (
+            entry.options.get(CONF_RAIN_SENSOR)
+            if CONF_RAIN_SENSOR in entry.options
+            else entry.data.get(CONF_RAIN_SENSOR)
+        )
+
+        # Alert thresholds (options flow overrides the integration defaults)
+        self.falling_rapid_threshold = float(
+            entry.options.get(
+                CONF_FALLING_RAPID_THRESHOLD,
+                entry.data.get(CONF_FALLING_RAPID_THRESHOLD, DEFAULT_FALLING_RAPID_THRESHOLD),
+            )
+        )
+        self.storm_precip_threshold = int(
+            entry.options.get(
+                CONF_STORM_PRECIP_THRESHOLD,
+                entry.data.get(CONF_STORM_PRECIP_THRESHOLD, DEFAULT_STORM_PRECIP_THRESHOLD),
+            )
+        )
+        self.frost_temp_threshold = float(
+            entry.options.get(
+                CONF_FROST_TEMP_THRESHOLD,
+                entry.data.get(CONF_FROST_TEMP_THRESHOLD, DEFAULT_FROST_TEMP_THRESHOLD),
+            )
+        )
+        self.fog_humidity_threshold = float(
+            entry.options.get(
+                CONF_FOG_HUMIDITY_THRESHOLD,
+                entry.data.get(CONF_FOG_HUMIDITY_THRESHOLD, DEFAULT_FOG_HUMIDITY_THRESHOLD),
+            )
+        )
 
     def _start_pressure_watcher(self) -> None:
         """Subscribe to pressure sensor state changes for immediate updates."""
@@ -157,13 +213,29 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         @callback
         def _on_pressure_state_change(event) -> None:
             new_state = event.data.get("new_state")
-            if new_state and new_state.state not in ("unknown", "unavailable", None):
+            if not new_state or new_state.state in _INVALID_STATES:
+                return
+
+            # Throttle pressure-triggered refreshes so a chatty sensor cannot
+            # cause an update storm. The regular polling interval still runs.
+            now = dt_util.utcnow()
+            if (
+                self._last_watcher_refresh is not None
+                and now - self._last_watcher_refresh < PRESSURE_WATCHER_MIN_INTERVAL
+            ):
                 _LOGGER.debug(
-                    "Pressure sensor %s became available (%s), triggering update",
+                    "Skipping pressure-triggered refresh for %s (throttled)",
                     self.pressure_id,
-                    new_state.state,
                 )
-                self.async_request_refresh()
+                return
+
+            self._last_watcher_refresh = now
+            _LOGGER.debug(
+                "Pressure sensor %s became available (%s), triggering update",
+                self.pressure_id,
+                new_state.state,
+            )
+            self.async_request_refresh()
 
         self._unsub_state_listener = async_track_state_change_event(
             self.hass, [self.pressure_id], _on_pressure_state_change
@@ -228,7 +300,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                 self.hass,
                 self.pressure_id,
                 self._history_buffer,
-                hours=13,
+                hours=BUFFER_WARM_HOURS,
                 pressure_corrector=corrector,
             )
             self._history_warmed = True
@@ -248,28 +320,69 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         wind_speed = self._get_wind_speed()
         humidity = self._get_humidity()
         is_night = self._is_nighttime()
+        temperature_available = self._is_temperature_available()
+        rain = self._get_rain()
+        pressure_age_seconds = self._pressure_age_seconds(pressure_state, now_dt)
 
-        # Historical pressures (already sea-level corrected via buffer or batch query)
-        p_3h = self._correct_history_pressure(history_pressures.get(3), p_now)
-        p_6h = self._correct_history_pressure(history_pressures.get(6), p_3h)
-        p_12h = self._correct_history_pressure(history_pressures.get(12), p_6h)
+        # Historical pressures (already sea-level corrected via buffer or batch query).
+        # Only the 3h point is allowed to fall back to the current reading: using it
+        # for 6/12/24h would fabricate a flat trend that never existed.
+        p_3h = history_pressures.get(3)
+        if p_3h is None:
+            p_3h = p_now
+        p_6h = history_pressures.get(6)
+        p_12h = history_pressures.get(12)
+        p_24h = history_pressures.get(24)
+        p_1_5h = self._history_buffer.get_pressure_at(now_dt - datetime.timedelta(minutes=90))
+
+        # Least-squares regression over the recent buffer, used as a third model
+        # and to smooth the extrapolation rate.
+        trend_rate_3h, trend_r2 = linear_pressure_trend(
+            self._history_buffer.entries, now_dt, hours=6
+        )
+
+        await self._ledger.async_load()
 
         observations = WeatherObservations(
             p_now=p_now,
             p_3h=p_3h,
             p_6h=p_6h,
             p_12h=p_12h,
+            p_24h=p_24h,
+            p_1_5h=p_1_5h,
+            raw_pressure=p_now_raw,
             wind_degrees=wind,
             wind_speed=wind_speed,
             humidity=humidity,
             temperature=temperature,
+            temperature_available=temperature_available,
             altitude=self.altitude,
             latitude=self.latitude,
             is_night=is_night,
+            rain=rain,
+            pressure_age_seconds=pressure_age_seconds,
+            trend_rate_3h=trend_rate_3h,
+            trend_r2=trend_r2,
+            calibration_damping=self._ledger.damping,
             timestamp=now_dt,
         )
 
         forecast_data = ForecastEngine.compute(observations)
+
+        # Verify previously issued forecasts, then record this one.
+        await self._ledger.async_verify(
+            forecast_data.p_now,
+            forecast_data.zambretti_state,
+            now_dt,
+            rain=rain,
+        )
+        await self._ledger.async_record(forecast_data, now_dt, rain=rain)
+        forecast_data.forecast_accuracy = self._ledger.accuracy
+        forecast_data.last_forecast_hit = self._ledger.last_hit
+        forecast_data.calibration_samples = self._ledger.calibration_samples
+        forecast_data.adaptive_damping = self._ledger.damping
+
+        self._fire_events(forecast_data)
 
         # Log on first startup, or only when forecast state or trend direction changes
         if not self._first_forecast_logged:
@@ -303,16 +416,68 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             self._last_logged_trend = forecast_data.trend_label
 
         _LOGGER.debug(
-            "Coordinator update: p_now=%.1f delta_3h=%.2f zambretti=%s sager=%s night=%s (buffer: %d pts)",
+            "Coordinator update: p_now=%.1f delta_3h=%.2f zambretti=%s sager=%s consensus=%s confidence=%s night=%s (buffer: %d pts)",
             forecast_data.p_now or 0.0,
             forecast_data.delta_3h or 0.0,
             forecast_data.zambretti_state,
             forecast_data.sager_state,
+            forecast_data.consensus_state,
+            forecast_data.confidence,
             forecast_data.is_night,
             len(self._history_buffer),
         )
 
         return forecast_data
+
+    def _fire_events(self, forecast: ForecastData) -> None:
+        """Fire bus events when the forecast, horizons, or pressure alert change."""
+        previous = getattr(self, "data", None)
+        if previous is None or not getattr(previous, "available", False):
+            return
+
+        entry_id = getattr(self.entry, "entry_id", None)
+
+        if forecast.zambretti_state != previous.zambretti_state:
+            self.hass.bus.async_fire(
+                EVENT_FORECAST_CHANGED,
+                {
+                    "entry_id": entry_id,
+                    "old_state": previous.zambretti_state,
+                    "new_state": forecast.zambretti_state,
+                    "trend_label": forecast.trend_label,
+                    "confidence": forecast.confidence,
+                },
+            )
+
+        horizon_changes = {
+            horizon: {"old": getattr(previous, key), "new": getattr(forecast, key)}
+            for horizon, key in (
+                ("6h", "zambretti_6h"),
+                ("12h", "zambretti_12h"),
+                ("24h", "zambretti_24h"),
+            )
+            if getattr(previous, key) != getattr(forecast, key)
+        }
+        if horizon_changes:
+            self.hass.bus.async_fire(
+                EVENT_HORIZON_CHANGED,
+                {"entry_id": entry_id, "changes": horizon_changes},
+            )
+
+        if (
+            forecast.delta_3h is not None
+            and forecast.delta_3h <= -self.falling_rapid_threshold
+            and (previous.delta_3h is None or previous.delta_3h > -self.falling_rapid_threshold)
+        ):
+            self.hass.bus.async_fire(
+                EVENT_PRESSURE_DROP,
+                {
+                    "entry_id": entry_id,
+                    "pressure": forecast.p_now,
+                    "delta_3h": forecast.delta_3h,
+                    "threshold": self.falling_rapid_threshold,
+                },
+            )
 
     def _get_temperature(self) -> float:
         """Return current temperature in °C using TemperatureConverter or fallback."""
@@ -338,6 +503,51 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
                     return raw_val - 273.15
 
         return raw_val
+
+    def _is_temperature_available(self) -> bool:
+        """Return True when a configured temperature sensor reports a numeric value."""
+        if not self.temp_id:
+            return False
+        state = self.hass.states.get(self.temp_id)
+        if not state or state.state in _INVALID_STATES:
+            return False
+        try:
+            float(state.state)
+        except (TypeError, ValueError):
+            return False
+        return True
+
+    def _get_rain(self) -> bool | None:
+        """Return True when the optional rain sensor reports precipitation."""
+        if not self.rain_id:
+            return None
+        state = self.hass.states.get(self.rain_id)
+        if not state or state.state in _INVALID_STATES:
+            return None
+
+        raw = str(state.state).strip().lower()
+        if raw in ("on", "true", "wet", "rain", "raining"):
+            return True
+        if raw in ("off", "false", "dry"):
+            return False
+
+        try:
+            return float(raw) > 0
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _pressure_age_seconds(pressure_state, now: datetime.datetime) -> float | None:
+        """Return the age of the current pressure reading in seconds."""
+        last_updated = getattr(pressure_state, "last_updated", None)
+        if not isinstance(last_updated, datetime.datetime):
+            return None
+        if last_updated.tzinfo is None:
+            last_updated = last_updated.replace(tzinfo=datetime.UTC)
+        try:
+            return max(0.0, (now - last_updated).total_seconds())
+        except TypeError:
+            return None
 
     def _is_likely_sea_level_sensor(self) -> bool:
         """Check if the pressure sensor already reports sea-level pressure (MSLP/QNH)."""
@@ -398,16 +608,6 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             return raw_pressure
         temp = self._get_temperature() if temperature is None else temperature
         return calculate_sea_level_pressure(raw_pressure, temp, self.altitude)
-
-    def _correct_history_pressure(self, history_pressure: float | None, fallback: float) -> float:
-        """Resolve historical pressure reading, or return fallback if unavailable.
-
-        Readings from the buffer and recorder queries are already normalized and
-        sea-level corrected; this method applies fallback chaining without double correction.
-        """
-        if history_pressure is None:
-            return fallback
-        return history_pressure
 
     def _get_wind_direction(self) -> float | None:
         """Return wind direction in degrees or None."""
@@ -513,7 +713,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         now: datetime.datetime | None = None,
         pressure_corrector: Callable[[float], float] | None = None,
     ) -> dict[int, float | None]:
-        """Fetch pressure at 3, 6, and 12 hours ago (memory buffer first, single batch fallback to recorder)."""
+        """Fetch pressure at 3, 6, 12, and 24 hours ago (buffer first, recorder fallback)."""
         if now is None:
             now = dt_util.utcnow()
         results: dict[int, float | None] = {}
@@ -525,20 +725,25 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             if p is None:
                 missing_hours.append(hours)
 
-        # Batch fallback to recorder if points are missing and buffer wasn't warmed
-        if missing_hours and not self._history_warmed and self.pressure_id:
-            batch_results = await async_get_history_pressures_batch_from_recorder(
-                self.hass,
-                self.pressure_id,
-                missing_hours,
-                now,
-                pressure_corrector=pressure_corrector or self._create_pressure_corrector(),
-                buffer=self._history_buffer,
-            )
-            for h, p in batch_results.items():
-                if p is not None:
-                    results[h] = p
-            self._history_warmed = True
+        # Fall back to the recorder whenever the buffer has holes (for example
+        # after a Home Assistant restart), but throttle the queries so a sparse
+        # sensor cannot hit the database on every five-minute poll.
+        if missing_hours and self.pressure_id:
+            last_fallback = self._last_history_fallback
+            if last_fallback is None or now - last_fallback >= HISTORY_FALLBACK_INTERVAL:
+                batch_results = await async_get_history_pressures_batch_from_recorder(
+                    self.hass,
+                    self.pressure_id,
+                    missing_hours,
+                    now,
+                    pressure_corrector=pressure_corrector or self._create_pressure_corrector(),
+                    buffer=self._history_buffer,
+                )
+                for h, p in batch_results.items():
+                    if p is not None:
+                        results[h] = p
+                self._last_history_fallback = now
+                self._history_warmed = True
 
         return results
 

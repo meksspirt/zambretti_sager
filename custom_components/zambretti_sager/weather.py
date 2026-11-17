@@ -79,20 +79,25 @@ class ZambrettiWeather(ZambrettiEntity, WeatherEntity):
 
     @property
     def condition(self) -> str | None:
-        """Return the current weather condition."""
+        """Return the current weather condition from the consensus state."""
         d = self.data
-        if not d or not d.available or not d.zambretti_state:
+        if not d or not d.available:
             return None
-        cond = ZAMBRETTI_TO_CONDITION.get(d.zambretti_state)
+        state = d.consensus_state or d.zambretti_state
+        if not state:
+            return None
+        cond = ZAMBRETTI_TO_CONDITION.get(state)
         if cond == "sunny" and d.is_night:
             return "clear-night"
         return cond
 
     @property
     def native_temperature(self) -> float | None:
-        """Return the current temperature."""
+        """Return the current temperature, or None when no sensor is configured."""
         d = self.data
-        return d.temperature if d else None
+        if not d or not d.temperature_available:
+            return None
+        return d.temperature
 
     @property
     def native_pressure(self) -> float | None:
@@ -162,9 +167,10 @@ class ZambrettiWeather(ZambrettiEntity, WeatherEntity):
             forecast_dict: dict = {
                 "datetime": forecast_time,
                 "condition": cond,
-                "native_temperature": d.temperature,
                 "native_pressure": p_pred,
             }
+            if d.temperature_available:
+                forecast_dict["native_temperature"] = d.temperature
             if d.precip_probability is not None:
                 forecast_dict["precipitation_probability"] = d.precip_probability
             if d.wind_speed is not None:

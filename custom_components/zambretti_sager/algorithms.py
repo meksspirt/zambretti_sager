@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
+import datetime
+import math
 from typing import Final
 
 # Zambretti algorithm mapping: pressure trend index (1–32) → translation key
@@ -209,6 +212,421 @@ SAGER_OPTIONS: Final[list[str]] = list(
     )
 )
 
+# Coarse condition severity (0 = settled/fine, 5 = stormy) used by the
+# confidence score, the consensus model and forecast verification.
+ZAMBRETTI_SEVERITY: Final[dict[str, int]] = {
+    "settled_fine": 0,
+    "fine_weather": 0,
+    "stable": 0,
+    "fine_becoming_less_settled": 1,
+    "fine_possibly_showers": 1,
+    "fairly_fine_improving": 1,
+    "fairly_fine_possibly_showers_early": 1,
+    "becoming_fine": 1,
+    "fairly_fine_showery_later": 2,
+    "fairly_fine_showers_likely": 2,
+    "showery_bright_intervals": 2,
+    "changeable_mending": 2,
+    "showery_early_improving": 2,
+    "unsettled_short_fine_intervals": 2,
+    "changeable_some_rain": 2,
+    "showery_becoming_more_unsettled": 3,
+    "unsettled_rain_later": 3,
+    "unsettled_rain_at_times": 3,
+    "rather_unsettled_clearing_later": 3,
+    "unsettled_probably_improving": 3,
+    "very_unsettled_finer_at_times": 3,
+    "rain_at_times_worse_later": 3,
+    "rain_at_frequent_intervals": 3,
+    "rain_at_times_becoming_very_unsettled": 4,
+    "very_unsettled_rain": 4,
+    "stormy_possibly_improving": 4,
+    "stormy_much_rain": 5,
+}
+
+SAGER_SEVERITY: Final[dict[str, int]] = {
+    "sager_fair_improving": 0,
+    "sager_fair_no_change": 0,
+    "sager_fair_tending_to_deteriorate": 1,
+    "sager_variable_slowly_improving": 1,
+    "sager_variable_some_change": 1,
+    "sager_changeable_becoming_fairer": 1,
+    "sager_variable_slowly_deteriorating": 2,
+    "sager_unsettled_probably_improving": 2,
+    "sager_changeable_becoming_more_unsettled": 3,
+    "sager_unsettled_rain_at_times": 3,
+    "sager_unsettled_rain_likely": 4,
+}
+
+# WMO 3-hour pressure tendency codes (WMO Manual on Codes, code table 0200).
+WMO_TENDENCY_DESCRIPTIONS: Final[dict[int, str]] = {
+    0: "Increasing, then decreasing; pressure same or lower than 3 hours ago",
+    1: "Increasing, then steady; or increasing, then increasing more slowly",
+    2: "Increasing steadily or unsteadily",
+    3: "Falling or steady, then increasing; or increasing then increasing more rapidly",
+    4: "Steady",
+    5: "Decreasing, then increasing; pressure same or higher than 3 hours ago",
+    6: "Decreasing, then steady; or decreasing, then decreasing more slowly",
+    7: "Decreasing steadily or unsteadily",
+    8: "Steady or increasing, then decreasing; or decreasing then decreasing more rapidly",
+}
+
+WMO_STEADY_EPSILON: Final[float] = 0.3
+
+
+def zambretti_severity(state: str | None) -> int | None:
+    """Return the coarse severity (0-5) of a Zambretti state."""
+    if state is None:
+        return None
+    return ZAMBRETTI_SEVERITY.get(state)
+
+
+def sager_severity(state: str | None) -> int | None:
+    """Return the coarse severity (0-5) of a Sager state."""
+    if state is None:
+        return None
+    return SAGER_SEVERITY.get(state)
+
+
+def classify_wmo_pressure_tendency(
+    p_3h: float | None,
+    p_1_5h: float | None = None,
+    p_now: float | None = None,
+) -> int | None:
+    """Classify the 3-hour pressure tendency using the WMO 0-8 code table.
+
+    Uses the net 3-hour change and, when available, the pressure 1.5 hours ago
+    to distinguish accelerating, decelerating and reversible tendencies.
+
+    Args:
+        p_3h: Pressure 3 hours ago (hPa).
+        p_1_5h: Optional pressure 1.5 hours ago (hPa).
+        p_now: Current pressure (hPa).
+
+    Returns:
+        WMO tendency code 0-8, or None when data is insufficient.
+    """
+    if p_3h is None or p_now is None:
+        return None
+
+    net = p_now - p_3h
+    eps = WMO_STEADY_EPSILON
+
+    if p_1_5h is None:
+        if net > eps:
+            return 2
+        if net < -eps:
+            return 7
+        return 4
+
+    first = p_1_5h - p_3h
+    second = p_now - p_1_5h
+
+    if net > eps:
+        if first < -eps and second > eps:
+            return 3
+        if second < first:
+            return 1
+        return 2
+
+    if net < -eps:
+        if first > eps and second < -eps:
+            return 8
+        if second > first:
+            return 6
+        return 7
+
+    # Net change is within the steady band: shape decides between 0, 4 and 5.
+    if first > eps and second < -eps:
+        return 0
+    if first < -eps and second > eps:
+        return 5
+    return 4
+
+
+def calculate_dew_point(temperature: float | None, humidity: float | None) -> float | None:
+    """Return the dew point in °C using the Magnus formula."""
+    if temperature is None or humidity is None:
+        return None
+    humidity = max(1.0, min(100.0, humidity))
+    a, b = 17.62, 243.12
+    gamma = math.log(humidity / 100.0) + (a * temperature) / (b + temperature)
+    denominator = a - gamma
+    if denominator == 0:
+        return None
+    return round((b * gamma) / denominator, 2)
+
+
+def calculate_snow_probability(
+    precipitation_probability: int | None,
+    temperature: float | None,
+) -> int | None:
+    """Estimate the chance that precipitation falls as snow (0-100%)."""
+    if precipitation_probability is None or temperature is None:
+        return None
+    if temperature <= 1.0:
+        return int(max(0, min(100, precipitation_probability)))
+    if temperature >= 3.5:
+        return 0
+    factor = (3.5 - temperature) / 2.5
+    return int(round(max(0.0, min(100.0, precipitation_probability * factor))))
+
+
+def calculate_fog_probability(
+    temperature: float | None,
+    humidity: float | None,
+    wind_speed: float | None = None,
+) -> int | None:
+    """Estimate fog probability (0-100%) from humidity, dew point spread and wind."""
+    if temperature is None or humidity is None:
+        return None
+
+    dew_point = calculate_dew_point(temperature, humidity)
+    if dew_point is None:
+        return None
+    spread = temperature - dew_point
+
+    score = 0
+    if humidity >= 98:
+        score += 45
+    elif humidity >= 95:
+        score += 35
+    elif humidity >= 90:
+        score += 20
+    elif humidity >= 85:
+        score += 10
+
+    if spread <= 0.5:
+        score += 35
+    elif spread <= 1.5:
+        score += 25
+    elif spread <= 3.0:
+        score += 12
+    elif spread >= 6.0:
+        score -= 10
+
+    if wind_speed is not None:
+        if wind_speed < 1.0:
+            score += 15
+        elif wind_speed < 3.0:
+            score += 5
+        elif wind_speed > 6.0:
+            score -= 20
+
+    return int(round(max(0.0, min(100.0, float(score)))))
+
+
+def linear_pressure_trend(
+    entries: Sequence[tuple[datetime.datetime, float]],
+    now: datetime.datetime,
+    hours: int = 6,
+) -> tuple[float | None, float | None]:
+    """Fit a least-squares line to recent pressure samples.
+
+    Args:
+        entries: Chronologically sorted (timestamp, pressure) pairs.
+        now: Reference time.
+        hours: Look-back window in hours.
+
+    Returns:
+        Tuple of (slope in hPa per 3 hours, R²). Both are None when fewer than
+        three points or less than one hour of data is available.
+    """
+    cutoff = now - datetime.timedelta(hours=hours)
+    points = [(t, p) for t, p in entries if t >= cutoff]
+    if len(points) < 3:
+        return None, None
+
+    first_ts = points[0][0]
+    span_hours = (points[-1][0] - first_ts).total_seconds() / 3600.0
+    if span_hours < 1.0:
+        return None, None
+
+    xs = [(t - first_ts).total_seconds() / 3600.0 for t, _ in points]
+    ys = [p for _, p in points]
+    n = len(points)
+    sum_x = sum(xs)
+    sum_y = sum(ys)
+    sum_xx = sum(x * x for x in xs)
+    sum_xy = sum(x * y for x, y in zip(xs, ys, strict=True))
+    denominator = n * sum_xx - sum_x * sum_x
+    if denominator == 0:
+        return None, None
+
+    slope = (n * sum_xy - sum_x * sum_y) / denominator
+    intercept = (sum_y - slope * sum_x) / n
+
+    mean_y = sum_y / n
+    ss_tot = sum((y - mean_y) ** 2 for y in ys)
+    ss_res = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys, strict=True))
+    r_squared = 1.0 if ss_tot <= 1e-9 else max(0.0, min(1.0, 1.0 - ss_res / ss_tot))
+
+    return round(slope * 3.0, 3), round(r_squared, 2)
+
+
+def calculate_forecast_confidence(
+    *,
+    p_now: float | None,
+    p_6h: float | None,
+    p_12h: float | None,
+    p_24h: float | None,
+    wind_degrees: float | None,
+    humidity: float | None,
+    pressure_age_seconds: float | None,
+    zambretti_state: str | None = None,
+    sager_state: str | None = None,
+    trend_r2: float | None = None,
+    model_divergence: int | None = None,
+) -> int:
+    """Estimate forecast confidence (0-100) from data completeness and agreement."""
+    score = 40.0
+
+    if p_now is not None:
+        score += 10
+    if p_6h is not None:
+        score += 10
+    if p_12h is not None:
+        score += 10
+    if p_24h is not None:
+        score += 10
+    if wind_degrees is not None:
+        score += 7
+    if humidity is not None:
+        score += 5
+    if trend_r2 is not None:
+        if trend_r2 >= 0.5:
+            score += 5
+        elif trend_r2 < 0.2:
+            score -= 5
+
+    z_sev = zambretti_severity(zambretti_state)
+    s_sev = sager_severity(sager_state)
+    if z_sev is not None and s_sev is not None:
+        difference = abs(z_sev - s_sev)
+        if difference == 0:
+            score += 5
+        elif difference >= 2:
+            score -= 10.0 * min(difference, 3)
+
+    if model_divergence is not None:
+        score -= min(20.0, model_divergence * 0.2)
+
+    if pressure_age_seconds is not None:
+        if pressure_age_seconds > 7200:
+            score -= 35
+        elif pressure_age_seconds > 1800:
+            score -= 20
+        elif pressure_age_seconds > 900:
+            score -= 10
+
+    if p_now is not None and not (MIN_PHYSICAL_PRESSURE <= p_now <= MAX_PHYSICAL_PRESSURE):
+        score -= 15
+
+    return int(round(max(0.0, min(100.0, score))))
+
+
+def calculate_consensus_forecast(
+    zambretti_state: str | None,
+    sager_state: str | None,
+    regression_state: str | None = None,
+) -> tuple[str | None, int | None]:
+    """Blend Zambretti, Sager and regression-based forecasts by severity.
+
+    Returns:
+        Tuple of (consensus Zambretti state, model divergence 0-100).
+    """
+    candidates: list[tuple[str, int, float, int]] = []
+    z_sev = zambretti_severity(zambretti_state)
+    s_sev = sager_severity(sager_state)
+    r_sev = zambretti_severity(regression_state)
+
+    if zambretti_state is not None and z_sev is not None:
+        candidates.append((zambretti_state, z_sev, 0.4, 0))
+    if sager_state is not None and s_sev is not None:
+        candidates.append((sager_state, s_sev, 0.3, 1))
+    if regression_state is not None and r_sev is not None:
+        candidates.append((regression_state, r_sev, 0.3, 2))
+
+    if not candidates:
+        return None, None
+
+    total_weight = sum(weight for _, _, weight, _ in candidates)
+    target = sum(sev * weight for _, sev, weight, _ in candidates) / total_weight
+    consensus_state = min(candidates, key=lambda item: (abs(item[1] - target), item[3]))[0]
+
+    severities = [sev for _, sev, _, _ in candidates]
+    divergence = int(round((max(severities) - min(severities)) / 5.0 * 100.0))
+    return consensus_state, divergence
+
+
+def calculate_precipitation_probability(
+    p_now: float,
+    delta_hpa: float,
+    humidity: float | None = None,
+    temperature: float | None = None,
+    wind_speed: float | None = None,
+) -> int:
+    """Calculate precipitation probability percentage.
+
+    Combines pressure level, 3-hour trend, relative humidity and (when
+    available) the dew point spread. ``wind_speed`` is accepted for future
+    tuning but does not change the result yet.
+    """
+    if p_now < 1000:
+        base_prob = 90
+    elif p_now < 1005:
+        base_prob = 70
+    elif p_now < 1010:
+        base_prob = 50
+    elif p_now < 1015:
+        base_prob = 30
+    elif p_now < 1020:
+        base_prob = 15
+    else:
+        base_prob = 5
+
+    if delta_hpa < -3.0:
+        trend_modifier = 30
+    elif delta_hpa < -1.6:
+        trend_modifier = 15
+    elif delta_hpa > 3.0:
+        trend_modifier = -30
+    elif delta_hpa > 1.6:
+        trend_modifier = -15
+    else:
+        trend_modifier = 0
+
+    humidity_modifier = 0
+    if humidity is not None:
+        if humidity >= 90:
+            humidity_modifier = 15
+        elif humidity >= 80:
+            humidity_modifier = 10
+        elif humidity >= 70:
+            humidity_modifier = 5
+        elif humidity <= 30:
+            humidity_modifier = -15
+        elif humidity <= 40:
+            humidity_modifier = -10
+
+    dew_point_modifier = 0
+    if temperature is not None and humidity is not None:
+        dew_point = calculate_dew_point(temperature, humidity)
+        if dew_point is not None:
+            spread = temperature - dew_point
+            if spread <= 1.0:
+                dew_point_modifier = 10
+            elif spread <= 3.0:
+                dew_point_modifier = 5
+            elif spread >= 10.0:
+                dew_point_modifier = -10
+            elif spread >= 6.0:
+                dew_point_modifier = -5
+
+    return round(
+        max(0, min(100, base_prob + trend_modifier + humidity_modifier + dew_point_modifier))
+    )
+
 
 def classify_pressure_trend(delta_hpa: float) -> str:
     """Classify pressure trend for the Sager algorithm.
@@ -298,50 +716,6 @@ def calculate_zambretti_index(
         return max(10, min(z, 19))
 
 
-def calculate_precipitation_probability(
-    p_now: float, delta_hpa: float, humidity: float | None = None
-) -> int:
-    """Calculate precipitation probability percentage based on pressure, trend, and humidity."""
-    if p_now < 1000:
-        base_prob = 90
-    elif p_now < 1005:
-        base_prob = 70
-    elif p_now < 1010:
-        base_prob = 50
-    elif p_now < 1015:
-        base_prob = 30
-    elif p_now < 1020:
-        base_prob = 15
-    else:
-        base_prob = 5
-
-    if delta_hpa < -3.0:
-        trend_modifier = 30
-    elif delta_hpa < -1.6:
-        trend_modifier = 15
-    elif delta_hpa > 3.0:
-        trend_modifier = -30
-    elif delta_hpa > 1.6:
-        trend_modifier = -15
-    else:
-        trend_modifier = 0
-
-    humidity_modifier = 0
-    if humidity is not None:
-        if humidity >= 90:
-            humidity_modifier = 15
-        elif humidity >= 80:
-            humidity_modifier = 10
-        elif humidity >= 70:
-            humidity_modifier = 5
-        elif humidity <= 30:
-            humidity_modifier = -15
-        elif humidity <= 40:
-            humidity_modifier = -10
-
-    return round(max(0, min(100, base_prob + trend_modifier + humidity_modifier)))
-
-
 def wind_degrees_to_compass(degrees: float | None) -> str | None:
     """Convert wind direction in degrees to 8-point compass string (N, NE, E, ...)."""
     if degrees is None:
@@ -416,15 +790,43 @@ def calculate_extrapolations(
     month: int | None = None,
     wind_degrees: float | None = None,
     latitude: float | None = None,
+    trend_rate_3h: float | None = None,
+    damping: float = DAMPING_EXPONENT,
 ) -> dict[int, ExtrapolatedForecast]:
     """Calculate extrapolated pressure and Zambretti states for 6h, 12h, and 24h horizons.
 
-    Applies non-linear synoptic damping (alpha ≈ 0.65) to prevent unrealistically
-    extreme pressure deviations on longer horizons, and clamps to physical bounds.
+    Applies non-linear synoptic damping (alpha ≈ 0.65 by default) to prevent
+    unrealistically extreme pressure deviations on longer horizons, and clamps
+    to physical bounds. When a least-squares ``trend_rate_3h`` (hPa/3h) is
+    supplied, it replaces the noisy two-point rates for all horizons. The
+    damping exponent may be adapted by the forecast verification ledger.
     """
-    # 6h extrapolation: (6/3)^0.65 ≈ 1.569
-    rate_3h = p_now - p_3h
-    delta_6h = rate_3h * (2.0**DAMPING_EXPONENT)
+    alpha = min(1.0, max(0.3, damping))
+
+    if trend_rate_3h is not None:
+        rate_3h = trend_rate_3h
+        rate_12_3h = trend_rate_3h
+        rate_24_3h = trend_rate_3h
+    else:
+        rate_3h = p_now - p_3h
+
+        p_ref_12 = p_6h if p_6h is not None else p_3h
+        h_12 = 6 if p_6h is not None else 3
+        rate_12_3h = (p_now - p_ref_12) / h_12 * 3
+
+        if p_12h is not None:
+            p_ref_24 = p_12h
+            h_24 = 12
+        elif p_6h is not None:
+            p_ref_24 = p_6h
+            h_24 = 6
+        else:
+            p_ref_24 = p_3h
+            h_24 = 3
+        rate_24_3h = (p_now - p_ref_24) / h_24 * 3
+
+    # 6h extrapolation: (6/3)^alpha
+    delta_6h = rate_3h * (2.0**alpha)
     predicted_p_6h = round(_clamp_pressure(p_now + delta_6h), 1)
     zambretti_6h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(
@@ -437,11 +839,8 @@ def calculate_extrapolations(
         "stable",
     )
 
-    # 12h extrapolation: (12/3)^0.65 ≈ 2.462
-    p_ref_12 = p_6h if p_6h is not None else p_3h
-    h_12 = 6 if p_6h is not None else 3
-    rate_12_3h = (p_now - p_ref_12) / h_12 * 3
-    delta_12h = rate_12_3h * (4.0**DAMPING_EXPONENT)
+    # 12h extrapolation: (12/3)^alpha
+    delta_12h = rate_12_3h * (4.0**alpha)
     predicted_p_12h = round(_clamp_pressure(p_now + delta_12h), 1)
     zambretti_12h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(
@@ -454,19 +853,8 @@ def calculate_extrapolations(
         "stable",
     )
 
-    # 24h extrapolation: (24/3)^0.65 ≈ 3.864
-    if p_12h is not None:
-        p_ref_24 = p_12h
-        h_24 = 12
-    elif p_6h is not None:
-        p_ref_24 = p_6h
-        h_24 = 6
-    else:
-        p_ref_24 = p_3h
-        h_24 = 3
-
-    rate_24_3h = (p_now - p_ref_24) / h_24 * 3
-    delta_24h = rate_24_3h * (8.0**DAMPING_EXPONENT)
+    # 24h extrapolation: (24/3)^alpha
+    delta_24h = rate_24_3h * (8.0**alpha)
     predicted_p_24h = round(_clamp_pressure(p_now + delta_24h), 1)
     zambretti_24h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(

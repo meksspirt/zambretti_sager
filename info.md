@@ -11,6 +11,15 @@ Provides weather forecasts based on barometric pressure trends using two proven 
 
 Extended forecasts for **6h, 12h, and 24h** ahead, plus a **precipitation probability** sensor.
 
+The integration now also provides:
+
+- **Ensemble consensus** of Zambretti, Sager, and least-squares regression, with a `model_divergence` sensor and a 0–100% `forecast_confidence` score
+- **Dew-point refinement** with `snow_probability` and `fog_probability`
+- **Self-verifying forecasts** — a persistent 24-hour ledger reports `forecast_accuracy_24h` and `last_forecast_hit`
+- **Adaptive calibration** — the extrapolation damping exponent tunes itself from verified outcomes
+- **Alert binary sensors** for rapid pressure falls, storms, frost, and fog, with configurable thresholds
+- **Device triggers and bus events** for forecast, horizon, and pressure-drop changes
+
 ## Why use it?
 
 - Works fully offline with your local weather station

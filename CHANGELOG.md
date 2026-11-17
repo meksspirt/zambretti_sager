@@ -1,6 +1,43 @@
 # Changelog
 
-## [2.1.2] — 2026-11-16
+## [Unreleased]
+
+### Forecast Verification, Ensemble Consensus & Alerts
+
+#### New sensors and binary sensors
+- **Numeric sensors**: `sea_level_pressure`, `station_pressure`, `pressure_trend_3h`, `pressure_change_24h`, `wmo_tendency_code`, `forecast_confidence`, `model_divergence`, `snow_probability`, `fog_probability`, `forecast_accuracy_24h`, `last_forecast_hit`, and `adaptive_damping`.
+- **Alert binary sensors**: `pressure_falling_rapidly`, `storm_warning`, `frost_risk`, and `fog_risk`, with thresholds configurable in the options flow.
+- **Device triggers and bus events**: `zambretti_sager_forecast_changed`, `zambretti_sager_forecast_horizon_changed`, and `zambretti_sager_pressure_drop_alert` are now available in automations.
+
+#### Forecasting improvements
+- **Ensemble consensus**: Zambretti, Sager, and a least-squares regression model are blended by severity; disagreement is exposed as `model_divergence`.
+- **Forecast confidence**: a 0–100% score combines data completeness, regression quality, model agreement, pressure freshness, and physical plausibility.
+- **Dew-point refinement**: precipitation probability now accounts for the dew-point spread; new `snow_probability` and `fog_probability` outputs.
+- **WMO tendency code**: 3-hour pressure tendency classified as WMO code 0–8.
+- **Regression-smoothed extrapolations**: least-squares pressure rates replace noisy two-point rates for 6h/12h/24h horizons.
+
+#### Self-verification and calibration
+- **Persistent 24-hour ledger**: forecasts are recorded at most once every six hours, verified after 24 hours against pressure and an optional rain sensor, and scored as hit/miss.
+- **Accuracy sensors**: `forecast_accuracy_24h` (rolling hit rate) and `last_forecast_hit`.
+- **Adaptive calibration**: the extrapolation damping exponent self-tunes between 0.45 and 0.85 from verified outcomes.
+
+#### Fixes
+- The weather entity no longer reports a fake 15 °C when no temperature sensor is configured.
+- Historical pressure no longer substitutes `p_6h`/`p_12h` with `p_3h`; only the 3-hour point may fall back to the current reading.
+- Recorder fallback now fills buffer holes after restarts, throttled to one query every 15 minutes.
+- Buffer and recorder history lookups share a single 20-minute tolerance.
+- Pressure-triggered refreshes are throttled to at most once per 60 seconds.
+- The wind-speed selector now filters by `device_class: wind_speed`.
+- Removed obsolete compatibility sensor classes.
+- History buffer de-duplicates identical timestamps.
+
+#### Localization and documentation
+- Added all new keys to `strings.json` and all 21 translation files (100% key parity).
+- Updated README, info, and wiki documentation for the new sensors, thresholds, ledger, and calibration.
+
+---
+
+## [2.1.2] - 2026-11-16
 
 ### Fixes & Improvements
 
