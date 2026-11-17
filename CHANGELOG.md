@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2] - 2026-11-17
+
+### Complete 21-Locale Card Localization
+- **Pressure trend badge**: Localized `Rising Fast`, `Rising`, `Steady`, `Falling`, and `Falling Fast` across all 21 supported languages.
+- **Wind compass & speed units**: Localized 16-point compass directions (`N`, `NNE`, …, `NNW`) and wind speed units (`km/h`, `m/s`, `mph`, `kn`) across all 21 languages.
+- **Timeline & 24h chart**: Localized `Trend` / `24h` section headers, pressure unit (`hPa` / `гПа`), and `precip %` legend label in the 24-hour history chart.
+
 ## [2.3.1] - 2026-11-17
 
 ### Lovelace Card Readability, Sensor Availability & Auto Elevation Migration

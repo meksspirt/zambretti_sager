@@ -24,7 +24,7 @@ from .algorithms import (
 
 DOMAIN: Final[str] = "zambretti_sager"
 
-VERSION: Final[str] = "2.3.1"
+VERSION: Final[str] = "2.3.2"
 
 # Frontend (Lovelace card)
 URL_BASE: Final[str] = "/zambretti_sager_card"

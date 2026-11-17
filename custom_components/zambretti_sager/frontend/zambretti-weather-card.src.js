@@ -1,10 +1,10 @@
 /**
- * Zambretti & Sager Weather Card  v2.3.1
+ * Zambretti & Sager Weather Card  v2.3.2
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.3.1 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.3.2 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
@@ -366,7 +366,29 @@ function degToCompass(deg) {
  * @param {string} sensorUnit   Native sensor unit
  * @returns {string|null}
  */
-function formatWind(speed, displayUnit, sensorUnit) {
+const COMPASS_EN = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+
+function localizeWindDir(dir, extras) {
+  if (!dir) return "";
+  const idx = COMPASS_EN.indexOf(String(dir).trim().toUpperCase());
+  if (idx >= 0 && Array.isArray(extras?.compass) && extras.compass[idx]) {
+    return extras.compass[idx];
+  }
+  return dir;
+}
+
+function localizeTrend(rawTrend, extras) {
+  if (!rawTrend || rawTrend === "—" || rawTrend === "Unavailable") return "—";
+  const t = String(rawTrend);
+  if (t.includes("Rising Fast")) return `↑↑ ${extras?.trendRisingFast || "Rising Fast"}`;
+  if (t.includes("Rising")) return `↑ ${extras?.trendRising || "Rising"}`;
+  if (t.includes("Steady")) return `→ ${extras?.trendSteady || "Steady"}`;
+  if (t.includes("Falling Fast")) return `↓↓ ${extras?.trendFallingFast || "Falling Fast"}`;
+  if (t.includes("Falling")) return `↓ ${extras?.trendFalling || "Falling"}`;
+  return t;
+}
+
+function formatWind(speed, displayUnit, sensorUnit, extras = null) {
   if (speed === null || speed === undefined) return null;
   const n = parseFloat(speed);
   if (isNaN(n)) return null;
@@ -388,15 +410,15 @@ function formatWind(speed, displayUnit, sensorUnit) {
   }
 
   if (dst === "mph") {
-    return `${(ms * 2.23694).toFixed(1)} mph`;
+    return `${(ms * 2.23694).toFixed(1)} ${extras?.unitMph || "mph"}`;
   }
   if (dst === "km/h" || dst === "kmh") {
-    return `${Math.round(ms * 3.6)} km/h`;
+    return `${Math.round(ms * 3.6)} ${extras?.unitKmh || "km/h"}`;
   }
   if (dst === "kn" || dst === "kt") {
-    return `${(ms * 1.94384).toFixed(1)} kn`;
+    return `${(ms * 1.94384).toFixed(1)} ${extras?.unitKn || "kn"}`;
   }
-  return `${ms.toFixed(1)} m/s`; // default m/s
+  return `${ms.toFixed(1)} ${extras?.unitMs || "m/s"}`; // default m/s
 }
 
 // ── Vintage Aneroid Brass Barometer Dial ──────────────────────────────────
@@ -731,7 +753,7 @@ function forecastTimeline(steps, labels, compact) {
  * @param {boolean} compact  use compact sizing
  * @returns {string}  SVG markup string
  */
-function historyChart(points, labels, compact) {
+function historyChart(points, labels, compact, hpaLabel = "hPa", precipChartLabel = "precip %") {
   if (!points || points.length < 2) {
     return `<div class="hchart-empty">— no history data yet —</div>`;
   }
@@ -939,10 +961,10 @@ function historyChart(points, labels, compact) {
     <!-- Legend -->
     <circle cx="${PAD.left+7}" cy="${PAD.top-7}" r="4" fill="#90CAF9"/>
     <text x="${PAD.left+15}" y="${PAD.top-4}" fill="rgba(255,255,255,0.70)"
-      font-size="${FONT}" font-family="${FONT_FAMILY}" dominant-baseline="middle">hPa</text>
-    <circle cx="${PAD.left+52}" cy="${PAD.top-7}" r="4" fill="rgba(255,255,255,0.80)"/>
-    <text x="${PAD.left+60}" y="${PAD.top-4}" fill="rgba(255,255,255,0.60)"
-      font-size="${FONT}" font-family="${FONT_FAMILY}" dominant-baseline="middle">precip %</text>
+      font-size="${FONT}" font-family="${FONT_FAMILY}" dominant-baseline="middle">${escapeHtml(hpaLabel)}</text>
+    <circle cx="${PAD.left+56}" cy="${PAD.top-7}" r="4" fill="rgba(255,255,255,0.80)"/>
+    <text x="${PAD.left+64}" y="${PAD.top-4}" fill="rgba(255,255,255,0.60)"
+      font-size="${FONT}" font-family="${FONT_FAMILY}" dominant-baseline="middle">${escapeHtml(precipChartLabel)}</text>
 
     <!-- Interactive Scrub Cursor & Tooltip -->
     <g class="hchart-scrub-cursor" style="opacity:0; pointer-events:none; transition:opacity 0.15s ease-out;">
@@ -1074,7 +1096,7 @@ class ZambrettiWeatherCard extends HTMLElement {
 
   /** Returns the editor element used by the Lovelace card picker (lazy-loaded on demand). */
   static async getConfigElement() {
-    await import(new URL("./zambretti-weather-card-editor.js?v=2.3.1", import.meta.url).href);
+    await import(new URL("./zambretti-weather-card-editor.js?v=2.3.2", import.meta.url).href);
     return document.createElement("zambretti-weather-card-editor");
   }
 
@@ -1740,7 +1762,14 @@ class ZambrettiWeatherCard extends HTMLElement {
     const compact = !!this._config.compact;
     chartWrap.style.height = `${compact ? 150 : 200}px`;
     const L = this._labels();
-    chartWrap.innerHTML = historyChart(this._historyPoints, L, compact);
+    const X = this._extras();
+    chartWrap.innerHTML = historyChart(
+      this._historyPoints,
+      L,
+      compact,
+      X.unitHpa || "hPa",
+      `${this._precipLabel()} %`,
+    );
     this._setupHistoryScrubbing();
   }
 
@@ -2153,10 +2182,11 @@ class ZambrettiWeatherCard extends HTMLElement {
       const sensorWindUnit = this._attr(windSpeedEntityId, "unit_of_measurement", "m/s");
       const windDeg = isUnavail ? null : this._attr(cfg.entity_zambretti, "wind_degrees", null);
       const windDir = (isUnavail ? null : this._attr(cfg.entity_zambretti, "wind_direction", null)) || degToCompass(windDeg);
-      const windFormatted = formatWind(windSpeedRaw, cfg.wind_unit || "m/s", sensorWindUnit);
+      const windFormatted = formatWind(windSpeedRaw, cfg.wind_unit || "m/s", sensorWindUnit, E);
+      const locDir = localizeWindDir(windDir, E);
       windStr = windFormatted
-        ? (windDir ? `${windDir} ${windFormatted}` : windFormatted)
-        : windDir || "";
+        ? (locDir ? `${locDir} ${windFormatted}` : windFormatted)
+        : locDir || "";
     }
 
     // Theme
@@ -2206,7 +2236,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       const pNow = this._readPressureHpa();
       const delta3hRaw = isUnavail ? null : this._attr(cfg.entity_zambretti, "pressure_delta_3h", null);
       const delta3h = delta3hRaw != null && !Number.isNaN(parseFloat(delta3hRaw)) ? parseFloat(delta3hRaw) : null;
-      const trendLabel = isUnavail ? "—" : this._attr(cfg.entity_zambretti, "trend", "→ Steady");
+      const trendLabel = isUnavail ? "—" : localizeTrend(this._attr(cfg.entity_zambretti, "trend", "→ Steady"), E);
       const trendDotColor = delta3h == null ? "#94a3b8" : (delta3h >= 1.4 ? "#4ade80" : delta3h <= -1.4 ? "#f87171" : "#facc15");
       const trendBadgeColor = delta3h == null ? "#cbd5e1" : (delta3h >= 1.4 ? "#86efac" : delta3h <= -1.4 ? "#fca5a5" : "#fef08a");
 
@@ -2233,7 +2263,7 @@ class ZambrettiWeatherCard extends HTMLElement {
               ${showPrecip ? `<span class="tile-chip tile-chip-precip" ${this._moreInfoAttrs(cfg.entity_precip)}>💧 ${escapeHtml(precipTxt)}</span>` : ""}
               ${showWind && windStr ? `<span class="tile-chip tile-chip-wind" ${this._moreInfoAttrs(windSpeedEntityId)}>💨 ${escapeHtml(windStr)}</span>` : ""}
             </div>
-            <span class="tile-chip tile-chip-pressure" ${pressureMoreInfo}>⏱ ${pNow != null ? `${pNow.toFixed(1)} hPa` : "—"}</span>
+            <span class="tile-chip tile-chip-pressure" ${pressureMoreInfo}>⏱ ${pNow != null ? `${pNow.toFixed(1)} ${escapeHtml(E.unitHpa || "hPa")}` : "—"}</span>
           </div>
           <div class="ledger-slot" style="${ledgerHtml ? "" : "display:none"}">${ledgerHtml}</div>
         </div>
@@ -2247,7 +2277,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       const pDial = pNow ?? 1013.25;
       const deltaDial = delta3h ?? 0.0;
       const p3h = p3hRaw != null && !Number.isNaN(parseFloat(p3hRaw)) ? parseFloat(p3hRaw) : (pDial - deltaDial);
-      const trendLabel = isUnavail ? "—" : this._attr(cfg.entity_zambretti, "trend", "→ Steady");
+      const trendLabel = isUnavail ? "—" : localizeTrend(this._attr(cfg.entity_zambretti, "trend", "→ Steady"), E);
 
       const dialSvg = vintageBarometerDial(pDial, p3h, deltaDial, VL, {
         showSubdial: cfg.show_subdial !== false,
@@ -2325,13 +2355,13 @@ class ZambrettiWeatherCard extends HTMLElement {
         ${mainCardBody}
         ${showTrend ? `
         <div class="trend-section">
-          <div class="trend-title"><svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="4" x2="8" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="8.5" x2="11" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Trend</div>
+          <div class="trend-title"><svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="4" x2="8" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="8.5" x2="11" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>${escapeHtml(this._vintageLabels().trend || "Trend")}</div>
           <div class="trend-timeline-wrap">${forecastTimeline(this._timelineSteps, L, compact)}</div>
         </div>` : ""}
         ${showHistory ? `
         <div class="history-section">
-          <div class="history-title"><svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><polyline points="1,12 5,6 8,9 11,4 15,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>24h</div>
-          <div class="history-chart-wrap" style="height:${compact ? 150 : 200}px">${historyChart(this._historyPoints, L, compact)}</div>
+          <div class="history-title"><svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" style="vertical-align:-1px;margin-right:4px;opacity:0.7"><polyline points="1,12 5,6 8,9 11,4 15,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>${escapeHtml(E.h24Label || "24h")}</div>
+          <div class="history-chart-wrap" style="height:${compact ? 150 : 200}px">${historyChart(this._historyPoints, L, compact, E.unitHpa || "hPa", `${this._precipLabel()} %`)}</div>
         </div>` : ""}
       </ha-card>`;
 
@@ -2420,10 +2450,11 @@ class ZambrettiWeatherCard extends HTMLElement {
       const sensorWindUnit = this._attr(windSpeedEntityId, "unit_of_measurement", "m/s");
       const windDeg = isUnavail ? null : this._attr(cfg.entity_zambretti, "wind_degrees", null);
       const windDir = (isUnavail ? null : this._attr(cfg.entity_zambretti, "wind_direction", null)) || degToCompass(windDeg);
-      const windFormatted = formatWind(windSpeedRaw, cfg.wind_unit || "m/s", sensorWindUnit);
+      const windFormatted = formatWind(windSpeedRaw, cfg.wind_unit || "m/s", sensorWindUnit, E);
+      const locDir = localizeWindDir(windDir, E);
       windStr = windFormatted
-        ? (windDir ? `${windDir} ${windFormatted}` : windFormatted)
-        : windDir || "";
+        ? (locDir ? `${locDir} ${windFormatted}` : windFormatted)
+        : locDir || "";
     }
     const footerWind = sr.querySelector(".footer-wind");
     if (footerWind) {
@@ -2437,7 +2468,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       const pNow = this._readPressureHpa();
       const delta3hRaw = isUnavail ? null : this._attr(cfg.entity_zambretti, "pressure_delta_3h", null);
       const delta3h = delta3hRaw != null && !Number.isNaN(parseFloat(delta3hRaw)) ? parseFloat(delta3hRaw) : null;
-      const trendLabel = isUnavail ? "—" : this._attr(cfg.entity_zambretti, "trend", "→ Steady");
+      const trendLabel = isUnavail ? "—" : localizeTrend(this._attr(cfg.entity_zambretti, "trend", "→ Steady"), E);
       const trendDotColor = delta3h == null ? "#94a3b8" : (delta3h >= 1.4 ? "#4ade80" : delta3h <= -1.4 ? "#f87171" : "#facc15");
       const trendBadgeColor = delta3h == null ? "#cbd5e1" : (delta3h >= 1.4 ? "#86efac" : delta3h <= -1.4 ? "#fca5a5" : "#fef08a");
 
@@ -2466,7 +2497,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       }
 
       const tilePress = sr.querySelector(".tile-chip-pressure");
-      if (tilePress) tilePress.textContent = `⏱ ${pNow != null ? `${pNow.toFixed(1)} hPa` : "—"}`;
+      if (tilePress) tilePress.textContent = `⏱ ${pNow != null ? `${pNow.toFixed(1)} ${E.unitHpa || "hPa"}` : "—"}`;
     }
 
     // Vintage specific patch
@@ -2478,7 +2509,7 @@ class ZambrettiWeatherCard extends HTMLElement {
       const pVal = pNow ?? 1013.25;
       const deltaVal = delta3h ?? 0.0;
       const p3hVal = p3hRaw != null && !Number.isNaN(parseFloat(p3hRaw)) ? parseFloat(p3hRaw) : (pVal - deltaVal);
-      const trendLabel = isUnavail ? "—" : this._attr(cfg.entity_zambretti, "trend", "→ Steady");
+      const trendLabel = isUnavail ? "—" : localizeTrend(this._attr(cfg.entity_zambretti, "trend", "→ Steady"), E);
 
       const mainAngle = -120 + ((Math.max(960, Math.min(1060, pVal)) - 960) / 100) * 240;
       const refAngle = -120 + ((Math.max(960, Math.min(1060, p3hVal)) - 960) / 100) * 240;
