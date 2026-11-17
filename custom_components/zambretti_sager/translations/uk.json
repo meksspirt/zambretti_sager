@@ -12,11 +12,11 @@
           "humidity_sensor": "Датчик вологості (необов'язково)",
           "use_sea_level_correction": "Увімкнути корекцію тиску до рівня моря",
           "location": "Розташування",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Датчик дощу (необов'язково)",
+          "falling_rapid_threshold": "Поріг швидкого падіння тиску",
+          "storm_precip_threshold": "Поріг опадів для штормового попередження",
+          "frost_temp_threshold": "Поріг температури заморозків",
+          "fog_humidity_threshold": "Поріг вологості для туману"
         },
         "data_description": {
           "pressure_sensor": "Виберіть датчик атмосферного тиску",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Необов'язково: покращує точність ймовірності опадів",
           "use_sea_level_correction": "Увімкніть, якщо використовуєте абсолютний датчик тиску над рівнем моря",
           "location": "Натисніть на карту для розрахунку висоти",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Необов'язково: використовується журналом перевірки прогнозів та оцінкою ймовірності дощу",
+          "falling_rapid_threshold": "Падіння тиску за 3 години (гПа), яке активує попередження про швидке зниження",
+          "storm_precip_threshold": "Ймовірність опадів (%), вище якої видається штормове попередження",
+          "frost_temp_threshold": "Температура (°C), за якої або нижче якої повідомляється про ризик заморозків",
+          "fog_humidity_threshold": "Відносна вологість (%), необхідна разом із моделлю туману для попередження"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Датчик вологості (необов'язково)",
           "use_sea_level_correction": "Увімкнути корекцію тиску до рівня моря",
           "location": "Розташування",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Датчик дощу (необов'язково)",
+          "falling_rapid_threshold": "Поріг швидкого падіння тиску",
+          "storm_precip_threshold": "Поріг опадів для штормового попередження",
+          "frost_temp_threshold": "Поріг температури заморозків",
+          "fog_humidity_threshold": "Поріг вологості для туману"
         },
         "data_description": {
           "pressure_sensor": "Виберіть датчик атмосферного тиску",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Необов'язково: покращує точність ймовірності опадів",
           "use_sea_level_correction": "Увімкніть, якщо використовуєте абсолютний датчик тиску над рівнем моря",
           "location": "Натисніть на карту для розрахунку висоти",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Необов'язково: використовується журналом перевірки прогнозів та оцінкою ймовірності дощу",
+          "falling_rapid_threshold": "Падіння тиску за 3 години (гПа), яке активує попередження про швидке зниження",
+          "storm_precip_threshold": "Ймовірність опадів (%), вище якої видається штормове попередження",
+          "frost_temp_threshold": "Температура (°C), за якої або нижче якої повідомляється про ризик заморозків",
+          "fog_humidity_threshold": "Відносна вологість (%), необхідна разом із моделлю туману для попередження"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Цю метеостанцію вже налаштовано",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Метеостанцію успішно переналаштовано"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Датчик вологості (необов'язково)",
           "use_sea_level_correction": "Увімкнути корекцію тиску до рівня моря",
           "location": "Розташування",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Датчик дощу (необов'язково)",
+          "falling_rapid_threshold": "Поріг швидкого падіння тиску",
+          "storm_precip_threshold": "Поріг опадів для штормового попередження",
+          "frost_temp_threshold": "Поріг температури заморозків",
+          "fog_humidity_threshold": "Поріг вологості для туману"
         },
         "data_description": {
           "pressure_sensor": "Виберіть датчик атмосферного тиску",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Необов'язково: покращує точність ймовірності опадів",
           "use_sea_level_correction": "Увімкніть, якщо використовуєте абсолютний датчик тиску над рівнем моря",
           "location": "Натисніть на карту для розрахунку висоти",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Необов'язково: використовується журналом перевірки прогнозів та оцінкою ймовірності дощу",
+          "falling_rapid_threshold": "Падіння тиску за 3 години (гПа), яке активує попередження про швидке зниження",
+          "storm_precip_threshold": "Ймовірність опадів (%), вище якої видається штормове попередження",
+          "frost_temp_threshold": "Температура (°C), за якої або нижче якої повідомляється про ризик заморозків",
+          "fog_humidity_threshold": "Відносна вологість (%), необхідна разом із моделлю туману для попередження"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Прогноз Замбретті",
         "state": {
           "settled_fine": "Ясно, стабільно",
           "fine_weather": "Гарна погода",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Прогноз Сагера",
         "state": {
           "sager_fair_improving": "Гарна погода, покращення",
           "sager_fair_tending_to_deteriorate": "Поки добре, очікується погіршення",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Прогноз Замбретті на 6 год",
         "state": {
           "settled_fine": "Ясно, стабільно",
           "fine_weather": "Гарна погода",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Прогноз Замбретті на 12 год",
         "state": {
           "settled_fine": "Ясно, стабільно",
           "fine_weather": "Гарна погода",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Прогноз Замбретті на 24 год",
         "state": {
           "settled_fine": "Ясно, стабільно",
           "fine_weather": "Гарна погода",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Ймовірність опадів"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Останнє оновлення"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Тиск на рівні моря"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Станційний тиск"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Тренд тиску (3 год)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Зміна тиску (24 год)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "Тенденція тиску ВМО"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Ймовірність снігу"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Ймовірність туману"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Впевненість прогнозу"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Розбіжність моделей"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Точність прогнозу (24 год)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Останній прогноз",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Справдився",
+          "miss": "Не справдився"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Адаптивне згладжування"
+      },
+      "apparent_temperature": {
+        "name": "Відчувана температура"
+      },
+      "cloud_base": {
+        "name": "Нижня межа хмар (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Барометричне навантаження"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Метеостанція"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Швидке падіння тиску"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Штормове попередження"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Ризик заморозків"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Ризик туману"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Некоректне значення тиску для {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Прогноз змінився",
+      "horizon_changed": "Прогноз на горизонті змінився",
+      "pressure_drop": "Попередження про різке падіння тиску"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Скинути калібрування прогнозу",
+      "description": "Очищає історію перевірки та скидає всі адаптивні коефіцієнти калібрування до початкових значень.",
+      "fields": {
+        "entry_id": {
+          "name": "Запис інтеграції",
+          "description": "Необов'язковий запис конфігурації. Якщо не вказано, скидає всі станції."
+        }
+      }
     }
   }
 }

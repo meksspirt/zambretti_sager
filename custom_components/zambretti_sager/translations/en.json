@@ -302,6 +302,15 @@
       },
       "adaptive_damping": {
         "name": "Adaptive Damping"
+      },
+      "apparent_temperature": {
+        "name": "Apparent Temperature"
+      },
+      "cloud_base": {
+        "name": "Cloud Base (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometric Stress"
       }
     },
     "weather": {
@@ -327,6 +336,25 @@
   "exceptions": {
     "invalid_pressure": {
       "message": "Invalid pressure state for {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Forecast changed",
+      "horizon_changed": "Forecast horizon changed",
+      "pressure_drop": "Rapid pressure drop alert"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Reset forecast calibration",
+      "description": "Clear stored verification history and reset all adaptive calibration factors to defaults.",
+      "fields": {
+        "entry_id": {
+          "name": "Config entry",
+          "description": "Optional config entry to reset. Resets all Zambretti & Sager entries when omitted."
+        }
+      }
     }
   }
 }

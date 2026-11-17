@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.3.0] - 2026-11-17
+
+### Apparent Temperature, Cloud Base, Barometric Stress & Calibration Overhaul
+
+#### New sensors and services
+- **`apparent_temperature`**: Wind Chill (≤ 10 °C) and Rothfusz Heat Index (≥ 26.7 °C) sensor, also exposed as `native_apparent_temperature` on the `weather` entity.
+- **`cloud_base`**: Estimated cumulus cloud base height (LCL, meters) via Espy's formula `125 × (T − T_dew)`.
+- **`barometric_stress`**: Biometeorological pressure-stress index (0–100%) combining 3h rate, 24h swing, and trend instability (`1 - R²`).
+- **`zambretti_sager.reset_calibration` service**: Resets verification history and restores all adaptive calibration factors cleanly from Home Assistant automations or Developer Tools.
+
+#### Adaptive calibration & verification upgrades
+- **Full station calibration**: In addition to trend `damping`, the ledger now calibrates `wind_factor`, `seasonal_factor`, and `precip_bias` after `CALIBRATION_MIN_SAMPLES = 3` verified records, feeding back into Zambretti, extrapolations, and precipitation probability.
+- **Sign-aware trend damping**: Trend reversals within 24 hours reduce `damping` instead of inflating it.
+- **Windowed rain verification**: `ForecastLedger.async_observe_rain()` tracks rain across the entire 24-hour window rather than only at `T+24h`, and verification no longer compares against a future forecast state.
+
+#### Lovelace card (`zambretti-weather-card` v2.3.0)
+- Added auto-discovery and UI badges across all 3 card styles (`modern`, `vintage`, `tile`) for active weather alerts, forecast confidence & consensus divergence, snow/fog probabilities, dew point, predicted horizon pressures (`6h`/`12h`/`24h`), and 24h verification/calibration (`forecast_accuracy_24h`, `last_forecast_hit`, `α`), with toggle switches in the visual editor and 21-language i18n.
+
+#### Bug fixes & localization
+- Eliminated false pressure trends caused by diurnal outdoor temperature swings by re-normalizing raw historical pressure to current temperature.
+- Fixed elevation lookup skipping external API when Home Assistant's default elevation is `0 m`.
+- Cumulative rain sensors (`total` / `total_increasing`) now detect active rain by positive delta rather than `value > 0`.
+- Zambretti falling-pressure index `9` now maps to `stormy_much_rain` (severity 5); WMO tendency codes `1` and `6` no longer misclassify trend reversals; `calculate_fog_probability` incorporates `is_night` and reaches 90–100% on saturation.
+- `weather` entity now exposes `snowy`, `snowy-rainy`, `fog`, `native_dew_point`, `native_apparent_temperature`, and per-horizon `precipitation_probability`.
+- Fixed `_fog_risk` returning `False` instead of `None` without temp/humidity sensors, `WeatherSensor.available` bypassing `super().available`, and double reload on coordinate change in Options Flow.
+- Restored legacy sensor class aliases in `sensor.py` and added `SensorDeviceClass.PRESSURE` to pressure delta sensors.
+- Completed 21-language translations for all integration sensors, binary sensors, config/options fields, device automation triggers, and `reset_calibration` service.
+
+---
+
 ## [2.2.0] - 2026-11-17
 
 ### Forecast Verification, Ensemble Consensus & Alerts

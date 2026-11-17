@@ -1,16 +1,16 @@
 /**
- * Zambretti & Sager Weather Card  v2.2.0
+ * Zambretti & Sager Weather Card  v2.3.0
  * Lovelace custom card for Home Assistant (Self-contained standalone bundle)
  */
 
 console.info(
-  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.2.0 `,
+  `%c ZAMBRETTI & SAGER WEATHER CARD %c v2.3.0 `,
   'color: white; background: #d97706; font-weight: 700; border-radius: 3px 0 0 3px; padding: 2px 5px;',
   'color: #92400e; background: #fef3c7; font-weight: 700; border-radius: 0 3px 3px 0; padding: 2px 5px;'
 );
 
 
-import { getLabels, getPrecipLabel, getVintageLabels } from './zambretti-card-i18n.js';
+import { getCardExtras, getLabels, getPrecipLabel, getVintageLabels } from './zambretti-card-i18n.js';
 
 // ── Condition map ─────────────────────────────────────────────────────────
 /** Maps Zambretti state keys to generic weather condition strings used for icon routing and theming. */
@@ -1010,6 +1010,17 @@ const TRANSLATION_KEY_MAP = {
   zambretti_forecast_12h:    "entity_12h",
   zambretti_forecast_24h:    "entity_24h",
   precipitation_probability: "entity_precip",
+  sea_level_pressure:        "entity_pressure",
+  forecast_confidence:       "entity_confidence",
+  snow_probability:          "entity_snow",
+  fog_probability:           "entity_fog",
+  forecast_accuracy_24h:     "entity_accuracy",
+  last_forecast_hit:         "entity_last_hit",
+  adaptive_damping:          "entity_damping",
+  pressure_falling_rapidly:  "entity_alert_pressure",
+  storm_warning:             "entity_alert_storm",
+  frost_risk:                "entity_alert_frost",
+  fog_risk:                  "entity_alert_fog",
 };
 
 class ZambrettiWeatherCard extends HTMLElement {
@@ -1028,7 +1039,7 @@ class ZambrettiWeatherCard extends HTMLElement {
     });
     this.shadowRoot.addEventListener("keydown", (e) => {
       const target = e.target?.closest?.("[data-more-info]");
-      if (!target) return;
+      if (!target || target.tagName === "BUTTON") return;
       if (e.key === "Enter") {
         e.preventDefault();
         this._openMoreInfo(target.getAttribute("data-more-info"));
@@ -1038,7 +1049,7 @@ class ZambrettiWeatherCard extends HTMLElement {
     });
     this.shadowRoot.addEventListener("keyup", (e) => {
       const target = e.target?.closest?.("[data-more-info]");
-      if (target && e.key === " ") {
+      if (target && target.tagName !== "BUTTON" && e.key === " ") {
         e.preventDefault();
         this._openMoreInfo(target.getAttribute("data-more-info"));
       }
@@ -1063,7 +1074,7 @@ class ZambrettiWeatherCard extends HTMLElement {
 
   /** Returns the editor element used by the Lovelace card picker (lazy-loaded on demand). */
   static async getConfigElement() {
-    await import(new URL("./zambretti-weather-card-editor.js?v=2.2.0", import.meta.url).href);
+    await import(new URL("./zambretti-weather-card-editor.js?v=2.3.0", import.meta.url).href);
     return document.createElement("zambretti-weather-card-editor");
   }
 
@@ -1129,6 +1140,9 @@ class ZambrettiWeatherCard extends HTMLElement {
       show_sager:   true,
       show_precip:  true,
       show_forecasts: true,
+      show_alerts:  true,
+      show_metrics: true,
+      show_ledger:  true,
       show_trend:   false,
       show_history: false,
       language:     "auto",
@@ -1157,6 +1171,9 @@ class ZambrettiWeatherCard extends HTMLElement {
       show_sager:     true,
       show_precip:    true,
       show_forecasts: true,
+      show_alerts:    true,
+      show_metrics:   true,
+      show_ledger:    true,
       auto_theme:     true,
       theme_alpha:    config.theme_alpha ?? 100,
       custom_bg:      "linear-gradient(135deg,#1565C0 0%,#1976D2 100%)",
@@ -1269,12 +1286,18 @@ class ZambrettiWeatherCard extends HTMLElement {
     }
 
     const SIBLINGS = {
-      entity_sager:     ["sager_forecast", "sager"],
-      entity_6h:        ["zambretti_forecast_6h", "forecast_6h"],
-      entity_12h:       ["zambretti_forecast_12h", "forecast_12h"],
-      entity_24h:       ["zambretti_forecast_24h", "forecast_24h"],
-      entity_precip:    ["precipitation_probability", "precip_probability"],
-      entity_pressure:  ["pressure", "barometric_pressure"],
+      entity_sager:          ["sager_forecast", "sager"],
+      entity_6h:             ["zambretti_forecast_6h", "forecast_6h"],
+      entity_12h:            ["zambretti_forecast_12h", "forecast_12h"],
+      entity_24h:            ["zambretti_forecast_24h", "forecast_24h"],
+      entity_precip:         ["precipitation_probability", "precip_probability"],
+      entity_pressure:       ["sea_level_pressure", "pressure", "barometric_pressure"],
+      entity_confidence:     ["forecast_confidence"],
+      entity_snow:           ["snow_probability"],
+      entity_fog:            ["fog_probability"],
+      entity_accuracy:       ["forecast_accuracy_24h"],
+      entity_last_hit:       ["last_forecast_hit"],
+      entity_damping:        ["adaptive_damping"],
     };
 
     for (const [key, suffixes] of Object.entries(SIBLINGS)) {
@@ -1301,6 +1324,40 @@ class ZambrettiWeatherCard extends HTMLElement {
         found = Object.keys(states).find(id => {
           if (!id.startsWith("sensor.")) return false;
           const slug = id.slice(7);
+          return suffixes.some(s => slug === s || slug.endsWith(`_${s}`));
+        });
+      }
+      if (found) resolved[key] = found;
+    }
+
+    const BINARY_SIBLINGS = {
+      entity_alert_pressure: ["pressure_falling_rapidly"],
+      entity_alert_storm:    ["storm_warning"],
+      entity_alert_frost:    ["frost_risk"],
+      entity_alert_fog:      ["fog_risk"],
+    };
+    const binPrefix = prefix.startsWith("sensor.") ? `binary_sensor.${prefix.slice(7)}` : "";
+    for (const [key, suffixes] of Object.entries(BINARY_SIBLINGS)) {
+      if (resolved[key]) continue;
+      const cur = this._config[key];
+      if (cur && states[cur]) {
+        resolved[key] = cur;
+        continue;
+      }
+      let found = null;
+      if (binPrefix) {
+        for (const s of suffixes) {
+          const candidate = `${binPrefix}${s}`;
+          if (states[candidate]) {
+            found = candidate;
+            break;
+          }
+        }
+      }
+      if (!found) {
+        found = Object.keys(states).find(id => {
+          if (!id.startsWith("binary_sensor.")) return false;
+          const slug = id.slice(14);
           return suffixes.some(s => slug === s || slug.endsWith(`_${s}`));
         });
       }
@@ -1345,6 +1402,16 @@ class ZambrettiWeatherCard extends HTMLElement {
         this._config.entity_precip,
         this._config.entity_wind_speed,
         this._config.entity_pressure,
+        this._config.entity_confidence,
+        this._config.entity_snow,
+        this._config.entity_fog,
+        this._config.entity_accuracy,
+        this._config.entity_last_hit,
+        this._config.entity_damping,
+        this._config.entity_alert_pressure,
+        this._config.entity_alert_storm,
+        this._config.entity_alert_frost,
+        this._config.entity_alert_fog,
       ].filter(Boolean);
 
       const langChanged = (this._config.language === "auto" || !this._config.language) &&
@@ -1889,6 +1956,154 @@ class ZambrettiWeatherCard extends HTMLElement {
     return getPrecipLabel(this._config.language || "auto", this._hass?.language || "en");
   }
 
+  /** Returns the localized extra labels (alerts, metrics, ledger). */
+  _extras() {
+    return getCardExtras(this._config.language || "auto", this._hass?.language || "en");
+  }
+
+  /** Safely parses a numeric state or attribute, returning null when unavailable. */
+  _readNum(entityId, attrKey = null) {
+    if (!entityId) return null;
+    const raw = attrKey != null ? this._attr(entityId, attrKey, null) : this._state(entityId);
+    if (this._isUnavailable(raw)) return null;
+    const n = parseFloat(raw);
+    return Number.isNaN(n) ? null : n;
+  }
+
+  /** Renders active weather alert pills when any alert binary sensor is "on". */
+  _buildAlertsHtml(E) {
+    const cfg = this._config;
+    if (cfg.show_alerts === false) return "";
+    const defs = [
+      { key: "storm",    id: cfg.entity_alert_storm,    icon: "⚡", label: E.alertStorm || "Storm" },
+      { key: "pressure", id: cfg.entity_alert_pressure, icon: "📉", label: E.alertPressureDrop || "Rapid Fall" },
+      { key: "frost",    id: cfg.entity_alert_frost,    icon: "❄️", label: E.alertFrost || "Frost" },
+      { key: "fog",      id: cfg.entity_alert_fog,      icon: "🌫️", label: E.alertFog || "Fog" },
+    ];
+    const active = defs.filter(d => d.id && this._state(d.id) === "on");
+    if (!active.length) return "";
+    return active.map(d =>
+      `<button type="button" class="mi-btn alert-pill alert-${d.key}" data-more-info="${escapeHtml(d.id)}" aria-label="${escapeHtml(d.label)}"><span aria-hidden="true">${d.icon}</span><span>${escapeHtml(d.label)}</span></button>`
+    ).join("");
+  }
+
+  /** Renders confidence badge (non-nested indicator inside main forecast area). */
+  _buildConfidenceHtml(E, isUnavail) {
+    if (this._config.show_metrics === false || isUnavail) return "";
+    const cfg = this._config;
+    const conf = this._readNum(cfg.entity_confidence) ?? this._readNum(cfg.entity_zambretti, "confidence");
+    if (conf == null) return "";
+    const pct = Math.max(0, Math.min(100, Math.round(conf)));
+    const cls = pct >= 75 ? "conf-high" : pct >= 50 ? "conf-mid" : "conf-low";
+    return `<span class="confidence-badge ${cls}" title="${escapeHtml(E.confidence || "Confidence")}"><span aria-hidden="true">🛡</span> ${pct}%</span>`;
+  }
+
+  /** Renders consensus divergence, snow/fog probabilities, and dew point pills. */
+  _buildMetricsHtml(L, E, zState, isUnavail) {
+    if (this._config.show_metrics === false || isUnavail) return "";
+    const cfg = this._config;
+    const pills = [];
+
+    const consensus = this._attr(cfg.entity_zambretti, "consensus_state", null);
+    const divergence = this._readNum(cfg.entity_zambretti, "model_divergence");
+    if (consensus && consensus !== zState && divergence != null && divergence >= 30) {
+      const cLabel = this._localizeState(consensus, L, false);
+      pills.push(
+        `<button type="button" class="mi-btn metric-pill metric-consensus" data-more-info="${escapeHtml(cfg.entity_zambretti)}"><span aria-hidden="true">⚖️</span><span>${escapeHtml(E.consensus || "Consensus")}: ${escapeHtml(cLabel)}</span></button>`
+      );
+    }
+
+    const snow = this._readNum(cfg.entity_snow);
+    if (snow != null && snow > 0) {
+      const eid = cfg.entity_snow || cfg.entity_zambretti;
+      pills.push(
+        `<button type="button" class="mi-btn metric-pill metric-snow" data-more-info="${escapeHtml(eid)}"><span aria-hidden="true">❄️</span><span>${escapeHtml(E.snow || "Snow")} ${Math.round(snow)}%</span></button>`
+      );
+    }
+
+    const fog = this._readNum(cfg.entity_fog);
+    if (fog != null && fog >= 25) {
+      const eid = cfg.entity_fog || cfg.entity_zambretti;
+      pills.push(
+        `<button type="button" class="mi-btn metric-pill metric-fog" data-more-info="${escapeHtml(eid)}"><span aria-hidden="true">🌫️</span><span>${escapeHtml(E.fog || "Fog")} ${Math.round(fog)}%</span></button>`
+      );
+    }
+
+    const dew = this._readNum(cfg.entity_zambretti, "dew_point");
+    if (dew != null) {
+      pills.push(
+        `<button type="button" class="mi-btn metric-pill metric-dew" data-more-info="${escapeHtml(cfg.entity_zambretti)}"><span aria-hidden="true">🌡️</span><span>${escapeHtml(E.dewPoint || "Dew point")} ${dew.toFixed(1)}°C</span></button>`
+      );
+    }
+
+    return pills.join("");
+  }
+
+  /** Renders 24h verification accuracy, last hit/miss, and adaptive damping pills. */
+  _buildLedgerHtml(E) {
+    const cfg = this._config;
+    if (cfg.show_ledger === false) return "";
+    const pills = [];
+
+    const acc = this._readNum(cfg.entity_accuracy);
+    if (acc != null) {
+      pills.push(
+        `<button type="button" class="mi-btn ledger-pill ledger-acc" data-more-info="${escapeHtml(cfg.entity_accuracy)}"><span aria-hidden="true">🎯</span><span>${escapeHtml(E.accuracy24h || "24h accuracy")}: <b>${Math.round(acc)}%</b></span></button>`
+      );
+    }
+
+    const hitRaw = cfg.entity_last_hit ? this._state(cfg.entity_last_hit) : null;
+    if (hitRaw === "hit" || hitRaw === "miss") {
+      const hitLbl = hitRaw === "hit" ? (E.hit || "Hit") : (E.miss || "Miss");
+      const mark = hitRaw === "hit" ? "✓" : "✕";
+      pills.push(
+        `<button type="button" class="mi-btn ledger-pill ledger-hit-${hitRaw}" data-more-info="${escapeHtml(cfg.entity_last_hit)}"><span aria-hidden="true">${mark}</span><span>${escapeHtml(hitLbl)}</span></button>`
+      );
+    }
+
+    const damping = this._readNum(cfg.entity_damping);
+    const samples = this._readNum(cfg.entity_damping, "calibration_samples") ?? this._readNum(cfg.entity_accuracy, "calibration_samples");
+    if (damping != null && samples != null && samples > 0) {
+      pills.push(
+        `<button type="button" class="mi-btn ledger-pill ledger-alpha" data-more-info="${escapeHtml(cfg.entity_damping)}"><span aria-hidden="true">⚙</span><span>α=${damping.toFixed(2)}</span></button>`
+      );
+    }
+
+    return pills.join("");
+  }
+
+  /** Updates dynamic alerts, metrics, confidence, and ledger slots without rebuilding SVGs. */
+  _patchExtras(L, E, zState, isUnavail) {
+    const sr = this.shadowRoot;
+    if (!sr) return;
+
+    const confSlot = sr.querySelector(".confidence-slot");
+    if (confSlot) {
+      confSlot.innerHTML = this._buildConfidenceHtml(E, isUnavail);
+    }
+
+    const alertsHtml = this._buildAlertsHtml(E);
+    const alertsSlot = sr.querySelector(".alerts-slot");
+    if (alertsSlot) {
+      alertsSlot.innerHTML = alertsHtml;
+      alertsSlot.style.display = alertsHtml ? "" : "none";
+    }
+
+    const metricsHtml = this._buildMetricsHtml(L, E, zState, isUnavail);
+    const metricsSlot = sr.querySelector(".metrics-slot");
+    if (metricsSlot) {
+      metricsSlot.innerHTML = metricsHtml;
+      metricsSlot.style.display = metricsHtml ? "" : "none";
+    }
+
+    const ledgerHtml = this._buildLedgerHtml(E);
+    const ledgerSlot = sr.querySelector(".ledger-slot");
+    if (ledgerSlot) {
+      ledgerSlot.innerHTML = ledgerHtml;
+      ledgerSlot.style.display = ledgerHtml ? "" : "none";
+    }
+  }
+
   /** Computes the card theme background consistently for both _render and _patch. */
   _computeThemeBg(condThemeKey, isVintage) {
     const cfg = this._config;
@@ -1905,6 +2120,7 @@ class ZambrettiWeatherCard extends HTMLElement {
     if (!this._hass) return;
     const cfg = this._config;
     const L   = this._labels();
+    const E   = this._extras();
     const compact = !!cfg.compact;
     const isVintage = cfg.card_style === "vintage";
     const isTile = cfg.card_style === "tile";
@@ -1956,8 +2172,14 @@ class ZambrettiWeatherCard extends HTMLElement {
     const showPrecip    = cfg.show_precip    !== false;
     const showForecasts = cfg.show_forecasts !== false;
     const showSager     = cfg.show_sager     !== false;
+    const showMetrics   = cfg.show_metrics   !== false;
     const showHistory   = !!cfg.show_history;
     const showTrend     = !!cfg.show_trend;
+
+    const alertsHtml     = this._buildAlertsHtml(E);
+    const confidenceHtml = this._buildConfidenceHtml(E, isUnavail);
+    const metricsHtml    = this._buildMetricsHtml(L, E, zState, isUnavail);
+    const ledgerHtml     = this._buildLedgerHtml(E);
 
     const fCells = [
       {label:"6h",  key:s6h,  entityId: cfg.entity_6h},
@@ -1966,11 +2188,14 @@ class ZambrettiWeatherCard extends HTMLElement {
     ].map(f => {
       const fLabel = this._localizeState(f.key, L, false);
       const fIcon = renderWeatherIconSvg(ZAMBRETTI_CONDITION[f.key] || "partlycloudy", `${f.label}: ${fLabel}`);
+      const pPred = showMetrics && !isUnavail ? this._readNum(f.entityId, "predicted_pressure_hpa") : null;
+      const pPredTxt = pPred != null ? `${pPred.toFixed(0)} hPa` : "";
       return `
       <div class="fc" ${this._moreInfoAttrs(f.entityId)}>
         <span class="fc-time">${escapeHtml(f.label)}</span>
         <span class="fc-icon">${fIcon}</span>
         <span class="fc-lbl">${escapeHtml(fLabel)}</span>
+        ${showMetrics ? `<span class="fc-press">${escapeHtml(pPredTxt)}</span>` : ""}
       </div>`;
     }).join("");
 
@@ -1990,7 +2215,10 @@ class ZambrettiWeatherCard extends HTMLElement {
           <div class="tile-header-wrap">
             <div class="tile-icon-box" ${this._moreInfoAttrs(cfg.entity_zambretti)}>${icon}</div>
             <div class="tile-text-group">
-              <div class="tile-title" ${this._moreInfoAttrs(cfg.entity_zambretti)}>${escapeHtml(zLabel)}</div>
+              <div class="tile-title-row">
+                <div class="tile-title" ${this._moreInfoAttrs(cfg.entity_zambretti)}>${escapeHtml(zLabel)}</div>
+                <span class="confidence-slot">${confidenceHtml}</span>
+              </div>
               ${showSager ? `<div class="tile-subtitle" ${this._moreInfoAttrs(cfg.entity_sager)}>${escapeHtml(sLabel)}</div>` : ""}
             </div>
             <div class="tile-trend-pill">
@@ -1998,6 +2226,8 @@ class ZambrettiWeatherCard extends HTMLElement {
               <span class="tile-trend-text" style="color:${trendBadgeColor}">${escapeHtml(trendLabel)}</span>
             </div>
           </div>
+          <div class="alerts-slot" style="${alertsHtml ? "" : "display:none"}">${alertsHtml}</div>
+          <div class="metrics-slot" style="${metricsHtml ? "" : "display:none"}">${metricsHtml}</div>
           <div class="tile-bottom-chips">
             <div class="tile-chips-left">
               ${showPrecip ? `<span class="tile-chip tile-chip-precip" ${this._moreInfoAttrs(cfg.entity_precip)}>💧 ${escapeHtml(precipTxt)}</span>` : ""}
@@ -2005,6 +2235,7 @@ class ZambrettiWeatherCard extends HTMLElement {
             </div>
             <span class="tile-chip tile-chip-pressure" ${pressureMoreInfo}>⏱ ${pNow != null ? `${pNow.toFixed(1)} hPa` : "—"}</span>
           </div>
+          <div class="ledger-slot" style="${ledgerHtml ? "" : "display:none"}">${ledgerHtml}</div>
         </div>
       `;
     } else if (isVintage) {
@@ -2031,8 +2262,10 @@ class ZambrettiWeatherCard extends HTMLElement {
           <div class="vintage-readout">
             <div class="vintage-main-bar">
               <div class="vintage-forecast-title" ${this._moreInfoAttrs(cfg.entity_zambretti)}>${escapeHtml(zLabel)}</div>
-              ${showSager ? `<div class="vintage-sager-sub" ${this._moreInfoAttrs(cfg.entity_sager)}><span class="vintage-badge">Sager</span> <span class="v-sager-lbl">${escapeHtml(sLabel)}</span></div>` : ""}
+              ${showSager ? `<div class="vintage-sager-sub" ${this._moreInfoAttrs(cfg.entity_sager)}><span class="vintage-badge">Sager</span> <span class="v-sager-lbl">${escapeHtml(sLabel)}</span> <span class="confidence-slot">${confidenceHtml}</span></div>` : `<div class="vintage-sager-sub"><span class="confidence-slot">${confidenceHtml}</span></div>`}
             </div>
+            <div class="alerts-slot" style="${alertsHtml ? "" : "display:none"}">${alertsHtml}</div>
+            <div class="metrics-slot" style="${metricsHtml ? "" : "display:none"}">${metricsHtml}</div>
             <div class="vintage-metrics-grid">
               <div class="vintage-metric-box" ${pressureMoreInfo}>
                 <div class="vintage-metric-lbl">${escapeHtml(VL.current || "Current")}</div>
@@ -2052,6 +2285,7 @@ class ZambrettiWeatherCard extends HTMLElement {
           ${windStr ? `<span class="footer-wind" ${this._moreInfoAttrs(windSpeedEntityId)}>💨 ${escapeHtml(windStr)}</span>` : ""}
           ${showPrecip ? `<span class="footer-precip" ${this._moreInfoAttrs(cfg.entity_precip)}>💧 ${escapeHtml(precipLabel)}: ${escapeHtml(precipTxt)}</span>` : ""}
         </div>
+        <div class="ledger-slot" style="${ledgerHtml ? "" : "display:none"}">${ledgerHtml}</div>
       `;
     } else {
       const gridCols = showPrecip ? "1fr 1fr" : "1fr";
@@ -2061,7 +2295,7 @@ class ZambrettiWeatherCard extends HTMLElement {
             <div class="main-icon">${icon}</div>
             <div class="main-info">
               <div class="main-label">${escapeHtml(zLabel)}</div>
-              <div class="main-sub">Zambretti</div>
+              <div class="main-sub"><span>Zambretti</span><span class="confidence-slot">${confidenceHtml}</span></div>
             </div>
           </div>
           ${showPrecip ? `
@@ -2072,12 +2306,15 @@ class ZambrettiWeatherCard extends HTMLElement {
           ${showForecasts ? `
           <div class="cell forecast-row">${fCells}</div>` : ""}
         </div>
+        <div class="alerts-slot" style="${alertsHtml ? "" : "display:none"}">${alertsHtml}</div>
+        <div class="metrics-slot" style="${metricsHtml ? "" : "display:none"}">${metricsHtml}</div>
         <div class="footer">
           ${windStr ? `<span class="footer-wind" ${this._moreInfoAttrs(windSpeedEntityId)}>💨 ${escapeHtml(windStr)}</span>` : ""}
           ${showSager ? `
           <span class="footer-badge">Sager</span>
           <span class="footer-text" ${this._moreInfoAttrs(cfg.entity_sager)}>${escapeHtml(sLabel)}</span>` : ""}
         </div>
+        <div class="ledger-slot" style="${ledgerHtml ? "" : "display:none"}">${ledgerHtml}</div>
       `;
     }
 
@@ -2125,6 +2362,7 @@ class ZambrettiWeatherCard extends HTMLElement {
     if (!this._hass || !this._rendered) return;
     const cfg = this._config;
     const L   = this._labels();
+    const E   = this._extras();
     const sr  = this.shadowRoot;
     const isVintage = cfg.card_style === "vintage";
     const isTile = cfg.card_style === "tile";
@@ -2293,6 +2531,19 @@ class ZambrettiWeatherCard extends HTMLElement {
       if (el.textContent !== lbl) el.textContent = lbl;
     });
 
+    if (cfg.show_metrics !== false) {
+      const fcPressEls = sr.querySelectorAll(".fc-press");
+      const fEntityIds = [cfg.entity_6h, cfg.entity_12h, cfg.entity_24h];
+      fcPressEls.forEach((el, i) => {
+        const pPred = !isUnavail ? this._readNum(fEntityIds[i], "predicted_pressure_hpa") : null;
+        const txt = pPred != null ? `${pPred.toFixed(0)} hPa` : "";
+        if (el.textContent !== txt) el.textContent = txt;
+      });
+    }
+
+    // Patch alerts, confidence, snow/fog/dew metrics, and verification ledger
+    this._patchExtras(L, E, zState, isUnavail);
+
     // Patch precip gauge only if value changed (in modern view)
     if (precip !== this._lastPrecip) {
       const pw = sr.querySelector(".precip-widget");
@@ -2376,9 +2627,100 @@ class ZambrettiWeatherCard extends HTMLElement {
         letter-spacing:-0.01em; text-shadow:0 1px 6px rgba(0,0,0,0.35);
       }
       .main-sub {
+        display:flex; align-items:center; gap:8px; flex-wrap:wrap;
         font-size:${subFsz}rem; font-weight:600;
         letter-spacing:0.08em; text-transform:uppercase;
-        opacity:0.58; margin-top:4px;
+        opacity:0.78; margin-top:4px;
+      }
+      .tile-title-row {
+        display:flex; align-items:center; gap:6px; min-width:0;
+      }
+      .confidence-badge {
+        display:inline-flex; align-items:center; gap:3px;
+        font-size:${(0.66*s).toFixed(2)}rem; font-weight:700;
+        letter-spacing:0.02em; text-transform:none;
+        padding:1px 7px; border-radius:999px;
+        border:1px solid rgba(255,255,255,0.24);
+        background:rgba(0,0,0,0.26); color:#f8fafc;
+        white-space:nowrap; flex-shrink:0;
+      }
+      .confidence-badge.conf-high { border-color:rgba(134,239,172,0.5); color:#bbf7d0; }
+      .confidence-badge.conf-mid  { border-color:rgba(253,224,71,0.5); color:#fef08a; }
+      .confidence-badge.conf-low  { border-color:rgba(252,165,165,0.5); color:#fecaca; }
+
+      .mi-btn {
+        appearance:none; -webkit-appearance:none;
+        font:inherit; color:inherit; background:transparent;
+        border:none; margin:0; padding:0;
+        cursor:pointer; min-block-size:24px;
+      }
+      .alerts-slot, .metrics-slot, .ledger-slot {
+        display:flex; align-items:center; flex-wrap:wrap; gap:6px;
+      }
+      .alerts-slot {
+        padding:${compact ? "6px 10px" : "8px 14px"};
+        background:rgba(127,29,29,0.28);
+        border-top:1px solid rgba(248,113,113,0.25);
+      }
+      .metrics-slot {
+        padding:${compact ? "5px 10px" : "7px 14px"};
+        background:rgba(0,0,0,0.12);
+        border-top:1px solid rgba(255,255,255,0.08);
+      }
+      .ledger-slot {
+        padding:${compact ? "5px 12px 7px" : "7px 16px 9px"};
+        background:rgba(0,0,0,0.26);
+        border-top:1px solid rgba(255,255,255,0.08);
+      }
+      .tile-container .alerts-slot,
+      .tile-container .metrics-slot,
+      .tile-container .ledger-slot {
+        background:transparent; border-top:none; padding:6px 0 0;
+      }
+      .vintage-readout .alerts-slot,
+      .vintage-readout .metrics-slot {
+        justify-content:center; border-top:none; background:transparent; padding:0;
+      }
+      .alert-pill, .metric-pill, .ledger-pill {
+        display:inline-flex; align-items:center; gap:5px;
+        font-size:${(0.70*s).toFixed(2)}rem; font-weight:700; line-height:1.2;
+        padding:3px 9px; border-radius:999px;
+        border:1px solid rgba(255,255,255,0.22);
+        background:rgba(0,0,0,0.34); color:#ffffff;
+        white-space:nowrap;
+      }
+      .alert-pill.alert-storm,
+      .alert-pill.alert-pressure {
+        background:rgba(220,38,38,0.36); border-color:rgba(248,113,113,0.60); color:#fee2e2;
+      }
+      .alert-pill.alert-frost {
+        background:rgba(14,165,233,0.32); border-color:rgba(125,211,252,0.55); color:#e0f2fe;
+      }
+      .alert-pill.alert-fog {
+        background:rgba(100,116,139,0.42); border-color:rgba(203,213,225,0.50); color:#f1f5f9;
+      }
+      .metric-pill.metric-snow {
+        background:rgba(56,189,248,0.20); border-color:rgba(125,211,252,0.38); color:#e0f2fe;
+      }
+      .metric-pill.metric-fog {
+        background:rgba(148,163,184,0.22); border-color:rgba(203,213,225,0.38); color:#f1f5f9;
+      }
+      .metric-pill.metric-consensus {
+        background:rgba(245,158,11,0.24); border-color:rgba(252,211,77,0.45); color:#fef3c7;
+      }
+      .ledger-pill {
+        font-size:${(0.68*s).toFixed(2)}rem; font-weight:600;
+        background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);
+      }
+      .ledger-pill.ledger-hit-hit {
+        background:rgba(22,163,74,0.28); border-color:rgba(134,239,172,0.45); color:#dcfce7;
+      }
+      .ledger-pill.ledger-hit-miss {
+        background:rgba(220,38,38,0.26); border-color:rgba(252,165,165,0.45); color:#fee2e2;
+      }
+      .fc-press {
+        font-size:${(0.70*s).toFixed(2)}rem; font-weight:600; font-family:monospace;
+        color:rgba(255,255,255,0.68); margin-top:1px;
       }
 
       .precip-cell {

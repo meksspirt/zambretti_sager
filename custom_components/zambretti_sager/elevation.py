@@ -109,8 +109,12 @@ async def async_resolve_elevation(
         try:
             lat_f = float(latitude)
             lon_f = float(longitude)
-            if abs(lat_f - float(ha_lat)) < 0.005 and abs(lon_f - float(ha_lon)) < 0.005:
-                elev_val = float(ha_elevation)
+            elev_val = float(ha_elevation)
+            if (
+                elev_val > 0
+                and abs(lat_f - float(ha_lat)) < 0.005
+                and abs(lon_f - float(ha_lon)) < 0.005
+            ):
                 _LOGGER.info(
                     "Coordinates match Home Assistant home location, using local elevation: %.1f m",
                     elev_val,

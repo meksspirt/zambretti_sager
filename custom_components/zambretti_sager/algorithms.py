@@ -21,7 +21,7 @@ ZAMBRETTI_MAPPING: Final[dict[int, str]] = {
     6: "unsettled_rain_later",
     7: "rain_at_times_worse_later",
     8: "rain_at_times_becoming_very_unsettled",
-    9: "very_unsettled_rain",
+    9: "stormy_much_rain",
     # Steady pressure
     10: "settled_fine",
     11: "fine_weather",
@@ -325,14 +325,14 @@ def classify_wmo_pressure_tendency(
     if net > eps:
         if first < -eps and second > eps:
             return 3
-        if second < first:
+        if second >= -eps and second < first:
             return 1
         return 2
 
     if net < -eps:
         if first > eps and second < -eps:
             return 8
-        if second > first:
+        if second <= eps and second > first:
             return 6
         return 7
 
@@ -376,8 +376,9 @@ def calculate_fog_probability(
     temperature: float | None,
     humidity: float | None,
     wind_speed: float | None = None,
+    is_night: bool = False,
 ) -> int | None:
-    """Estimate fog probability (0-100%) from humidity, dew point spread and wind."""
+    """Estimate fog probability (0-100%) from humidity, dew point spread, wind, and night."""
     if temperature is None or humidity is None:
         return None
 
@@ -388,22 +389,25 @@ def calculate_fog_probability(
 
     score = 0
     if humidity >= 98:
-        score += 45
+        score += 50
     elif humidity >= 95:
-        score += 35
+        score += 38
     elif humidity >= 90:
-        score += 20
+        score += 22
     elif humidity >= 85:
         score += 10
 
     if spread <= 0.5:
-        score += 35
+        score += 40
     elif spread <= 1.5:
         score += 25
     elif spread <= 3.0:
         score += 12
     elif spread >= 6.0:
         score -= 10
+
+    if is_night:
+        score += 10
 
     if wind_speed is not None:
         if wind_speed < 1.0:
@@ -414,6 +418,79 @@ def calculate_fog_probability(
             score -= 20
 
     return int(round(max(0.0, min(100.0, float(score)))))
+
+
+def calculate_apparent_temperature(
+    temperature: float | None,
+    humidity: float | None = None,
+    wind_speed: float | None = None,
+) -> float | None:
+    """Calculate apparent ("feels like") temperature in °C.
+
+    Uses the Environment Canada / NOAA Wind Chill formula when T <= 10 °C and
+    wind >= 4.8 km/h (1.33 m/s), and the Rothfusz Heat Index regression when
+    T >= 26.7 °C and humidity >= 40%. Returns the dry-bulb temperature otherwise.
+    """
+    if temperature is None:
+        return None
+
+    if temperature <= 10.0 and wind_speed is not None:
+        wind_kmh = wind_speed * 3.6
+        if wind_kmh >= 4.8:
+            v16 = wind_kmh**0.16
+            chill = 13.12 + 0.6215 * temperature - 11.37 * v16 + 0.3965 * temperature * v16
+            return round(chill, 1)
+
+    if temperature >= 26.7 and humidity is not None and humidity >= 40.0:
+        tf = temperature * 9.0 / 5.0 + 32.0
+        rh = max(0.0, min(100.0, humidity))
+        hi = (
+            -42.379
+            + 2.04901523 * tf
+            + 10.14333127 * rh
+            - 0.22475541 * tf * rh
+            - 0.00683783 * tf * tf
+            - 0.05481717 * rh * rh
+            + 0.00122874 * tf * tf * rh
+            + 0.00085282 * tf * rh * rh
+            - 0.00000199 * tf * tf * rh * rh
+        )
+        return round((hi - 32.0) * 5.0 / 9.0, 1)
+
+    return round(temperature, 1)
+
+
+def calculate_cloud_base(
+    temperature: float | None,
+    dew_point: float | None,
+) -> int | None:
+    """Estimate cumulus cloud base height (LCL) in meters via Espy's formula."""
+    if temperature is None or dew_point is None:
+        return None
+    spread = max(0.0, temperature - dew_point)
+    return int(round(125.0 * spread))
+
+
+def calculate_barometric_stress(
+    delta_3h: float | None,
+    pressure_change_24h: float | None = None,
+    trend_r2: float | None = None,
+) -> int | None:
+    """Estimate biometeorological barometric stress index (0-100%).
+
+    Combines 3-hour pressure change rate, 24-hour pressure swing, and
+    regression instability (1 - R²) when a measurable trend is present.
+    """
+    if delta_3h is None:
+        return None
+
+    score = min(55.0, abs(delta_3h) * 14.0)
+    if pressure_change_24h is not None:
+        score += min(30.0, abs(pressure_change_24h) * 2.0)
+    if trend_r2 is not None and abs(delta_3h) >= 0.5:
+        score += (1.0 - max(0.0, min(1.0, trend_r2))) * 15.0
+
+    return int(round(max(0.0, min(100.0, score))))
 
 
 def linear_pressure_trend(
@@ -565,12 +642,14 @@ def calculate_precipitation_probability(
     humidity: float | None = None,
     temperature: float | None = None,
     wind_speed: float | None = None,
+    precip_bias: float = 0.0,
 ) -> int:
     """Calculate precipitation probability percentage.
 
-    Combines pressure level, 3-hour trend, relative humidity and (when
-    available) the dew point spread. ``wind_speed`` is accepted for future
-    tuning but does not change the result yet.
+    Combines pressure level, 3-hour trend, relative humidity, optional dew-point
+    spread, wind speed (strong winds boost frontal rain odds; calm high
+    pressure slightly lowers them), and an optional station-calibrated
+    probability bias.
     """
     if p_now < 1000:
         base_prob = 90
@@ -623,8 +702,28 @@ def calculate_precipitation_probability(
             elif spread >= 6.0:
                 dew_point_modifier = -5
 
+    wind_modifier = 0
+    if wind_speed is not None:
+        if wind_speed >= 12.0:
+            wind_modifier = 10
+        elif wind_speed >= 8.0:
+            wind_modifier = 5
+        elif wind_speed < 1.5 and p_now >= 1015 and delta_hpa >= -1.0:
+            wind_modifier = -5
+
     return round(
-        max(0, min(100, base_prob + trend_modifier + humidity_modifier + dew_point_modifier))
+        max(
+            0,
+            min(
+                100,
+                base_prob
+                + trend_modifier
+                + humidity_modifier
+                + dew_point_modifier
+                + wind_modifier
+                + round(precip_bias),
+            ),
+        )
     )
 
 
@@ -661,12 +760,47 @@ def get_trend_label(delta_hpa: float) -> str:
     }.get(trend, "→ Steady")
 
 
+def get_season_sign(month: int | None, latitude: float | None = None) -> int:
+    """Return +1 for summer, -1 for winter, or 0 for transition months/unknown."""
+    if month is None:
+        return 0
+    is_southern = latitude is not None and latitude < 0
+    is_summer = month in (6, 7, 8) if not is_southern else month in (12, 1, 2)
+    is_winter = month in (12, 1, 2) if not is_southern else month in (6, 7, 8)
+    if is_summer:
+        return 1
+    if is_winter:
+        return -1
+    return 0
+
+
+def get_wind_adjustment_sign(
+    wind_degrees: float | None,
+    latitude: float | None = None,
+) -> int:
+    """Return +1 for polar/dry wind, -1 for equatorial/moist wind, or 0."""
+    if wind_degrees is None:
+        return 0
+    compass = wind_degrees_to_compass(wind_degrees)
+    quadrant = WIND_QUADRANTS.get(compass)
+    if not quadrant:
+        return 0
+    is_southern = latitude is not None and latitude < 0
+    if quadrant == "northerly":
+        return -1 if is_southern else 1
+    if quadrant == "southerly":
+        return 1 if is_southern else -1
+    return 0
+
+
 def calculate_zambretti_index(
     p_now: float,
     delta_hpa: float,
     month: int | None = None,
     wind_degrees: float | None = None,
     latitude: float | None = None,
+    seasonal_factor: float = 1.0,
+    wind_factor: float = 1.0,
 ) -> int:
     """Calculate Zambretti index (1–32) from pressure, trend, season, and wind.
 
@@ -676,34 +810,11 @@ def calculate_zambretti_index(
         with inverted seasons in the Southern Hemisphere (latitude < 0)
       - Wind direction refinement: polar/continental winds boost effective pressure (+1.5 hPa),
         equatorial/oceanic winds reduce effective pressure (-1.5 hPa)
+      - Optional station-calibrated multipliers ``seasonal_factor`` and ``wind_factor``.
     """
     p_eff = p_now
-
-    # Seasonal adjustment
-    if month is not None:
-        is_southern = latitude is not None and latitude < 0
-        is_summer = month in (6, 7, 8) if not is_southern else month in (12, 1, 2)
-        is_winter = month in (12, 1, 2) if not is_southern else month in (6, 7, 8)
-        if is_summer:
-            p_eff += 1.0
-        elif is_winter:
-            p_eff -= 1.0
-
-    # Wind direction adjustment
-    if wind_degrees is not None:
-        compass = wind_degrees_to_compass(wind_degrees)
-        quadrant = WIND_QUADRANTS.get(compass)
-        if quadrant:
-            if latitude is not None and latitude < 0:
-                if quadrant == "northerly":
-                    p_eff -= 1.5  # Warm/moist air from equator in SH
-                elif quadrant == "southerly":
-                    p_eff += 1.5  # Cold/dry polar air in SH
-            else:
-                if quadrant == "southerly":
-                    p_eff -= 1.5  # Warm/moist oceanic air in NH
-                elif quadrant == "northerly":
-                    p_eff += 1.5  # Cold/dry continental air in NH
+    p_eff += get_season_sign(month, latitude) * 1.0 * seasonal_factor
+    p_eff += get_wind_adjustment_sign(wind_degrees, latitude) * 1.5 * wind_factor
 
     if delta_hpa <= -1.6:  # Falling
         z = round(127 - 0.12 * p_eff)
@@ -792,6 +903,8 @@ def calculate_extrapolations(
     latitude: float | None = None,
     trend_rate_3h: float | None = None,
     damping: float = DAMPING_EXPONENT,
+    seasonal_factor: float = 1.0,
+    wind_factor: float = 1.0,
 ) -> dict[int, ExtrapolatedForecast]:
     """Calculate extrapolated pressure and Zambretti states for 6h, 12h, and 24h horizons.
 
@@ -835,6 +948,8 @@ def calculate_extrapolations(
             month=month,
             wind_degrees=wind_degrees,
             latitude=latitude,
+            seasonal_factor=seasonal_factor,
+            wind_factor=wind_factor,
         ),
         "stable",
     )
@@ -849,6 +964,8 @@ def calculate_extrapolations(
             month=month,
             wind_degrees=wind_degrees,
             latitude=latitude,
+            seasonal_factor=seasonal_factor,
+            wind_factor=wind_factor,
         ),
         "stable",
     )
@@ -863,6 +980,8 @@ def calculate_extrapolations(
             month=month,
             wind_degrees=wind_degrees,
             latitude=latitude,
+            seasonal_factor=seasonal_factor,
+            wind_factor=wind_factor,
         ),
         "stable",
     )

@@ -12,11 +12,11 @@
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "use_sea_level_correction": "Włącz korekcję ciśnienia na poziom morza",
           "location": "Lokalizacja",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Czujnik deszczu (opcjonalnie)",
+          "falling_rapid_threshold": "Próg gwałtownego spadku ciśnienia",
+          "storm_precip_threshold": "Próg opadów dla ostrzeżenia burzowego",
+          "frost_temp_threshold": "Próg temperatury dla przymrozków",
+          "fog_humidity_threshold": "Próg wilgotności dla mgły"
         },
         "data_description": {
           "pressure_sensor": "Wybierz czujnik ciśnienia barometrycznego",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Opcjonalnie: poprawia dokładność prawdopodobieństwa opadów",
           "use_sea_level_correction": "Włącz przy czujniku ciśnienia bezwzględnego powyżej poziomu morza",
           "location": "Kliknij na mapie, aby obliczyć wysokość",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Opcjonalnie: używany przez rejestr weryfikacji prognoz i ocenę prawdopodobieństwa deszczu",
+          "falling_rapid_threshold": "Spadek ciśnienia w ciągu 3 godzin (hPa) wyzwalający alert szybkiego spadku",
+          "storm_precip_threshold": "Prawdopodobieństwo opadów (%), powyżej którego pojawia się ostrzeżenie burzowe",
+          "frost_temp_threshold": "Temperatura (°C), przy której lub poniżej której zgłaszane jest ryzyko przymrozków",
+          "fog_humidity_threshold": "Wilgotność względna (%) wymagana wraz z modelem mgły do alertu o mgle"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "use_sea_level_correction": "Włącz korekcję ciśnienia na poziom morza",
           "location": "Lokalizacja",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Czujnik deszczu (opcjonalnie)",
+          "falling_rapid_threshold": "Próg gwałtownego spadku ciśnienia",
+          "storm_precip_threshold": "Próg opadów dla ostrzeżenia burzowego",
+          "frost_temp_threshold": "Próg temperatury dla przymrozków",
+          "fog_humidity_threshold": "Próg wilgotności dla mgły"
         },
         "data_description": {
           "pressure_sensor": "Wybierz czujnik ciśnienia barometrycznego",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Opcjonalnie: poprawia dokładność prawdopodobieństwa opadów",
           "use_sea_level_correction": "Włącz przy czujniku ciśnienia bezwzględnego powyżej poziomu morza",
           "location": "Kliknij na mapie, aby obliczyć wysokość",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Opcjonalnie: używany przez rejestr weryfikacji prognoz i ocenę prawdopodobieństwa deszczu",
+          "falling_rapid_threshold": "Spadek ciśnienia w ciągu 3 godzin (hPa) wyzwalający alert szybkiego spadku",
+          "storm_precip_threshold": "Prawdopodobieństwo opadów (%), powyżej którego pojawia się ostrzeżenie burzowe",
+          "frost_temp_threshold": "Temperatura (°C), przy której lub poniżej której zgłaszane jest ryzyko przymrozków",
+          "fog_humidity_threshold": "Wilgotność względna (%) wymagana wraz z modelem mgły do alertu o mgle"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Ta stacja pogodowa jest już skonfigurowana",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Stacja pogodowa została pomyślnie ponownie skonfigurowana"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "use_sea_level_correction": "Włącz korekcję ciśnienia na poziom morza",
           "location": "Lokalizacja",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Czujnik deszczu (opcjonalnie)",
+          "falling_rapid_threshold": "Próg gwałtownego spadku ciśnienia",
+          "storm_precip_threshold": "Próg opadów dla ostrzeżenia burzowego",
+          "frost_temp_threshold": "Próg temperatury dla przymrozków",
+          "fog_humidity_threshold": "Próg wilgotności dla mgły"
         },
         "data_description": {
           "pressure_sensor": "Wybierz czujnik ciśnienia barometrycznego",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Opcjonalnie: poprawia dokładność prawdopodobieństwa opadów",
           "use_sea_level_correction": "Włącz przy czujniku ciśnienia bezwzględnego powyżej poziomu morza",
           "location": "Kliknij na mapie, aby obliczyć wysokość",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Opcjonalnie: używany przez rejestr weryfikacji prognoz i ocenę prawdopodobieństwa deszczu",
+          "falling_rapid_threshold": "Spadek ciśnienia w ciągu 3 godzin (hPa) wyzwalający alert szybkiego spadku",
+          "storm_precip_threshold": "Prawdopodobieństwo opadów (%), powyżej którego pojawia się ostrzeżenie burzowe",
+          "frost_temp_threshold": "Temperatura (°C), przy której lub poniżej której zgłaszane jest ryzyko przymrozków",
+          "fog_humidity_threshold": "Wilgotność względna (%) wymagana wraz z modelem mgły do alertu o mgle"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Prognoza Zambretti",
         "state": {
           "settled_fine": "Ładna, stabilna pogoda",
           "fine_weather": "Ładna pogoda",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Prognoza Sagera",
         "state": {
           "sager_fair_improving": "Ładna pogoda, poprawa",
           "sager_fair_tending_to_deteriorate": "Ładna pogoda, tendencja do pogorszenia",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Prognoza Zambretti 6 godz.",
         "state": {
           "settled_fine": "Ładna, stabilna pogoda",
           "fine_weather": "Ładna pogoda",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Prognoza Zambretti 12 godz.",
         "state": {
           "settled_fine": "Ładna, stabilna pogoda",
           "fine_weather": "Ładna pogoda",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Prognoza Zambretti 24 godz.",
         "state": {
           "settled_fine": "Ładna, stabilna pogoda",
           "fine_weather": "Ładna pogoda",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Prawdopodobieństwo opadów"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Ostatnia aktualizacja"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Ciśnienie na poziomie morza"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Ciśnienie stacyjne"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Trend ciśnienia (3 godz.)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Zmiana ciśnienia (24 godz.)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "Tendencja ciśnienia WMO"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Prawdopodobieństwo śniegu"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Prawdopodobieństwo mgły"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Pewność prognozy"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Rozbieżność modeli"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Trafność prognozy (24 godz.)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Ostatnia weryfikacja prognozy",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Trafiona",
+          "miss": "Nietrafiona"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Tłumienie adaptacyjne"
+      },
+      "apparent_temperature": {
+        "name": "Temperatura odczuwalna"
+      },
+      "cloud_base": {
+        "name": "Podstawa chmur (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Obciążenie barometryczne"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Stacja pogodowa"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Gwałtowny spadek ciśnienia"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Ostrzeżenie burzowe"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Ryzyko przymrozków"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Ryzyko mgły"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Nieprawidłowa wartość ciśnienia dla {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Prognoza się zmieniła",
+      "horizon_changed": "Horyzont prognozy się zmienił",
+      "pressure_drop": "Alert gwałtownego spadku ciśnienia"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Resetuj kalibrację prognozy",
+      "description": "Czyści historię weryfikacji i przywraca domyślne współczynniki kalibracji adaptacyjnej.",
+      "fields": {
+        "entry_id": {
+          "name": "Wpis konfiguracji",
+          "description": "Opcjonalny wpis. W przypadku braku resetuje wszystkie stacje."
+        }
+      }
     }
   }
 }

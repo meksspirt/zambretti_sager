@@ -12,11 +12,11 @@
           "humidity_sensor": "Senzor vlhkosti (volitelné)",
           "use_sea_level_correction": "Povolit korekci tlaku na hladinu moře",
           "location": "Poloha",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Senzor deště (volitelné)",
+          "falling_rapid_threshold": "Práh rychlého poklesu tlaku",
+          "storm_precip_threshold": "Práh srážek pro varování před bouřkou",
+          "frost_temp_threshold": "Teplotní práh pro mráz",
+          "fog_humidity_threshold": "Práh vlhkosti pro mlhu"
         },
         "data_description": {
           "pressure_sensor": "Vyberte barometrický senzor tlaku",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Volitelné: zlepšuje přesnost pravděpodobnosti srážek",
           "use_sea_level_correction": "Povolte při použití absolutního senzoru nad hladinou moře",
           "location": "Klikněte na mapu pro výpočet nadmořské výšky",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Volitelné: používá se pro registr ověřování předpovědí a kontrolu pravděpodobnosti deště",
+          "falling_rapid_threshold": "Pokles tlaku za 3 hodiny (hPa), který spustí upozornění na rychlý pokles",
+          "storm_precip_threshold": "Pravděpodobnost srážek (%), nad kterou se zobrazí varování před bouřkou",
+          "frost_temp_threshold": "Teplota (°C), při které nebo pod kterou je hlášeno riziko mrazu",
+          "fog_humidity_threshold": "Relativní vlhkost (%) vyžadovaná spolu s modelem mlhy pro upozornění na mlhu"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Senzor vlhkosti (volitelné)",
           "use_sea_level_correction": "Povolit korekci tlaku na hladinu moře",
           "location": "Poloha",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Senzor deště (volitelné)",
+          "falling_rapid_threshold": "Práh rychlého poklesu tlaku",
+          "storm_precip_threshold": "Práh srážek pro varování před bouřkou",
+          "frost_temp_threshold": "Teplotní práh pro mráz",
+          "fog_humidity_threshold": "Práh vlhkosti pro mlhu"
         },
         "data_description": {
           "pressure_sensor": "Vyberte barometrický senzor tlaku",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Volitelné: zlepšuje přesnost pravděpodobnosti srážek",
           "use_sea_level_correction": "Povolte při použití absolutního senzoru nad hladinou moře",
           "location": "Klikněte na mapu pro výpočet nadmořské výšky",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Volitelné: používá se pro registr ověřování předpovědí a kontrolu pravděpodobnosti deště",
+          "falling_rapid_threshold": "Pokles tlaku za 3 hodiny (hPa), který spustí upozornění na rychlý pokles",
+          "storm_precip_threshold": "Pravděpodobnost srážek (%), nad kterou se zobrazí varování před bouřkou",
+          "frost_temp_threshold": "Teplota (°C), při které nebo pod kterou je hlášeno riziko mrazu",
+          "fog_humidity_threshold": "Relativní vlhkost (%) vyžadovaná spolu s modelem mlhy pro upozornění na mlhu"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Tato meteorologická stanice je již nakonfigurována",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Meteorologická stanice byla úspěšně přenastavena"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Senzor vlhkosti (volitelné)",
           "use_sea_level_correction": "Povolit korekci tlaku na hladinu moře",
           "location": "Poloha",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Senzor deště (volitelné)",
+          "falling_rapid_threshold": "Práh rychlého poklesu tlaku",
+          "storm_precip_threshold": "Práh srážek pro varování před bouřkou",
+          "frost_temp_threshold": "Teplotní práh pro mráz",
+          "fog_humidity_threshold": "Práh vlhkosti pro mlhu"
         },
         "data_description": {
           "pressure_sensor": "Vyberte barometrický senzor tlaku",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Volitelné: zlepšuje přesnost pravděpodobnosti srážek",
           "use_sea_level_correction": "Povolte při použití absolutního senzoru nad hladinou moře",
           "location": "Klikněte na mapu pro výpočet nadmořské výšky",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Volitelné: používá se pro registr ověřování předpovědí a kontrolu pravděpodobnosti deště",
+          "falling_rapid_threshold": "Pokles tlaku za 3 hodiny (hPa), který spustí upozornění na rychlý pokles",
+          "storm_precip_threshold": "Pravděpodobnost srážek (%), nad kterou se zobrazí varování před bouřkou",
+          "frost_temp_threshold": "Teplota (°C), při které nebo pod kterou je hlášeno riziko mrazu",
+          "fog_humidity_threshold": "Relativní vlhkost (%) vyžadovaná spolu s modelem mlhy pro upozornění na mlhu"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Předpověď Zambretti",
         "state": {
           "settled_fine": "Pěkně, stabilně",
           "fine_weather": "Pěkné počasí",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Předpověď Sager",
         "state": {
           "sager_fair_improving": "Pěkné počasí, zlepšení",
           "sager_fair_tending_to_deteriorate": "Pěkně, tendence ke zhoršení",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Předpověď Zambretti 6 h",
         "state": {
           "settled_fine": "Pěkně, stabilně",
           "fine_weather": "Pěkné počasí",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Předpověď Zambretti 12 h",
         "state": {
           "settled_fine": "Pěkně, stabilně",
           "fine_weather": "Pěkné počasí",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Předpověď Zambretti 24 h",
         "state": {
           "settled_fine": "Pěkně, stabilně",
           "fine_weather": "Pěkné počasí",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Pravděpodobnost srážek"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Poslední aktualizace"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Tlak přepočtený na hladinu moře"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Staniční tlak"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Trend tlaku (3 h)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Změna tlaku (24 h)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "Tlaková tendence WMO"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Pravděpodobnost sněžení"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Pravděpodobnost mlhy"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Spolehlivost předpovědi"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Rozptyl modelů"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Úspěšnost předpovědi (24 h)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Poslední ověření předpovědi",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Úspěch",
+          "miss": "Neúspěch"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Adaptivní tlumení"
+      },
+      "apparent_temperature": {
+        "name": "Pocitová teplota"
+      },
+      "cloud_base": {
+        "name": "Základna oblačnosti (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometrická zátěž"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Meteorologická stanice"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Rychlý pokles tlaku"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Varování před bouřkou"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Riziko mrazu"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Riziko mlhy"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Neplatný stav tlaku pro {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Předpověď se změnila",
+      "horizon_changed": "Horizont předpovědi se změnil",
+      "pressure_drop": "Upozornění na rychlý pokles tlaku"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Resetovat kalibraci předpovědi",
+      "description": "Vymaže historii ověřování a obnoví výchozí hodnoty všech adaptivních koeficientů.",
+      "fields": {
+        "entry_id": {
+          "name": "Položka konfigurace",
+          "description": "Volitelná položka. Pokud není zadána, resetuje všechny stanice."
+        }
+      }
     }
   }
 }

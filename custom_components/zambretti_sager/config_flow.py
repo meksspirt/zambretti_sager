@@ -330,13 +330,9 @@ class ZambrettiSagerOptionsFlowHandler(config_entries.OptionsFlow):
             ) or user_input.get(CONF_LONGITUDE) != _get_entry_value(
                 self.config_entry, CONF_LONGITUDE
             ):
-                new_options.pop(CONF_ELEVATION, None)
-                if CONF_ELEVATION in self.config_entry.data:
-                    updated_data = dict(self.config_entry.data)
-                    updated_data.pop(CONF_ELEVATION, None)
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry, data=updated_data
-                    )
+                # Store None in options so async_create_coordinator re-resolves
+                # elevation for the new coordinates in a single reload.
+                new_options[CONF_ELEVATION] = None
             return self.async_create_entry(title="", data=new_options)
 
         entry = self.config_entry

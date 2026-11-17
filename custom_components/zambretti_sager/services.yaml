@@ -1,0 +1,8 @@
+reset_calibration:
+  fields:
+    entry_id:
+      required: false
+      example: "01JABC123DEF456GHI789"
+      selector:
+        config_entry:
+          integration: zambretti_sager

@@ -9,9 +9,14 @@ import pytest
 
 from custom_components.zambretti_sager.forecast_engine import ForecastData
 from custom_components.zambretti_sager.ledger import (
+    CALIBRATION_MIN_SAMPLES,
     DAMPING_MAX,
+    DAMPING_STEP,
     MAX_RECORDS,
     MIN_CALIBRATION_DELTA,
+    PRECIP_BIAS_STEP,
+    SEASONAL_FACTOR_STEP,
+    WIND_FACTOR_STEP,
     ForecastLedger,
 )
 
@@ -120,22 +125,36 @@ async def test_ledger_marks_miss_on_large_pressure_error():
 
 @pytest.mark.asyncio
 async def test_ledger_adaptive_calibration_moves_damping():
-    """Test damping grows when the real trend overshoots the prediction."""
+    """Test damping waits for CALIBRATION_MIN_SAMPLES, respects sign, and adapts."""
     ledger = ForecastLedger(None, "entry", store=FakeStore())
     now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
     initial = ledger.damping
 
-    await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1014.0), now)
-    await ledger.async_verify(1025.0, "fine_weather", now + datetime.timedelta(hours=25))
+    # First two samples warm up the minimum sample gate without moving damping.
+    for idx in range(CALIBRATION_MIN_SAMPLES - 1):
+        t = now + datetime.timedelta(days=idx * 2)
+        await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1014.0), t)
+        await ledger.async_verify(1025.0, "fine_weather", t + datetime.timedelta(hours=25))
+        assert ledger.damping == pytest.approx(initial)
 
-    assert ledger.damping == pytest.approx(initial + 0.02)
-    assert ledger.calibration_samples == 1
+    # Third sample unlocks calibration: actual overshoot (+15 vs +4) raises damping.
+    t3 = now + datetime.timedelta(days=4)
+    await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1014.0), t3)
+    await ledger.async_verify(1025.0, "fine_weather", t3 + datetime.timedelta(hours=25))
+    assert ledger.calibration_samples == 3
+    assert ledger.damping == pytest.approx(initial + DAMPING_STEP)
 
-    # A much smaller actual change lowers damping again.
-    now2 = now + datetime.timedelta(days=2)
-    await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1025.0), now2)
-    await ledger.async_verify(1010.5, "fine_weather", now2 + datetime.timedelta(hours=25))
+    # A much smaller same-sign actual change lowers damping again.
+    t4 = now + datetime.timedelta(days=6)
+    await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1025.0), t4)
+    await ledger.async_verify(1010.5, "fine_weather", t4 + datetime.timedelta(hours=25))
     assert ledger.damping == pytest.approx(initial)
+
+    # Opposite-sign trend reversal (predicted +4, actual -8) reduces damping, not increases it.
+    t5 = now + datetime.timedelta(days=8)
+    await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1014.0), t5)
+    await ledger.async_verify(1002.0, "fine_weather", t5 + datetime.timedelta(hours=25))
+    assert ledger.damping == pytest.approx(initial - DAMPING_STEP)
 
 
 @pytest.mark.asyncio
@@ -155,19 +174,34 @@ async def test_ledger_ignores_small_trends_for_calibration():
 
 @pytest.mark.asyncio
 async def test_ledger_persists_and_reloads_state():
-    """Test records and damping survive a restart."""
+    """Test records and calibrated factors survive a restart."""
     store = FakeStore()
     ledger = ForecastLedger(None, "entry", store=store)
     now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
-    await ledger.async_record(_forecast(predicted_24h=1014.0), now)
-    await ledger.async_verify(1025.0, "fine_weather", now + datetime.timedelta(hours=25))
+    for idx in range(CALIBRATION_MIN_SAMPLES):
+        t = now + datetime.timedelta(days=idx * 2)
+        await ledger.async_record(
+            _forecast(predicted_24h=1014.0, precip=30),
+            t,
+            wind_adjustment_sign=-1,
+            season_sign=-1,
+        )
+        await ledger.async_verify(
+            1025.0,
+            "fine_weather",
+            t + datetime.timedelta(hours=25),
+            rain=True,
+        )
 
     assert store.saved is not None
     reloaded = ForecastLedger(None, "entry", store=FakeStore(store.saved))
     await reloaded.async_load()
-    assert reloaded.verified_count == 1
-    assert reloaded.damping == pytest.approx(0.67)
+    assert reloaded.verified_count == CALIBRATION_MIN_SAMPLES
+    assert reloaded.damping == pytest.approx(0.65 + DAMPING_STEP)
     assert reloaded.damping <= DAMPING_MAX
+    assert reloaded.wind_factor == pytest.approx(1.0 + WIND_FACTOR_STEP)
+    assert reloaded.seasonal_factor == pytest.approx(1.0 + SEASONAL_FACTOR_STEP)
+    assert reloaded.precip_bias == pytest.approx(PRECIP_BIAS_STEP)
 
 
 @pytest.mark.asyncio
@@ -239,3 +273,88 @@ async def test_ledger_skips_missing_pressure_and_caps_records():
 
     assert len(ledger._records) == MAX_RECORDS
     assert await ledger.async_verify(None, "fine_weather", now) == 0
+
+
+@pytest.mark.asyncio
+async def test_ledger_observe_rain_tracks_rain_across_window():
+    """Test rain observed earlier in the 24h window counts even if dry at verification."""
+    store = FakeStore()
+    ledger = ForecastLedger(None, "entry", store=store)
+    now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
+
+    await ledger.async_record(_forecast(predicted_24h=1008.0, precip=80), now)
+    await ledger.async_observe_rain(False, now + datetime.timedelta(hours=2))
+    await ledger.async_observe_rain(True, now + datetime.timedelta(hours=10))
+    await ledger.async_observe_rain(False, now + datetime.timedelta(hours=20))
+
+    # At T+25h it is dry and actual_state is None (as passed by the coordinator),
+    # yet the forecast is a hit because pressure matched and rain occurred in-window.
+    verified = await ledger.async_verify(
+        1008.5,
+        None,
+        now + datetime.timedelta(hours=25),
+        rain=False,
+    )
+    assert verified == 1
+    assert ledger.last_hit == "hit"
+    assert ledger._records[0].rain_observed is True
+    assert ledger._records[0].actual_state is None
+
+
+@pytest.mark.asyncio
+async def test_ledger_calibrates_wind_seasonal_and_precip_bias():
+    """Test wind_factor, seasonal_factor, and precip_bias adapt in both directions."""
+    ledger = ForecastLedger(None, "entry", store=FakeStore())
+    now = datetime.datetime(2026, 7, 1, 12, 0, tzinfo=datetime.UTC)
+
+    # Polar/summer fair bias (+1) repeatedly under-predicts rain -> lower multipliers & raise bias.
+    for idx in range(CALIBRATION_MIN_SAMPLES):
+        t = now + datetime.timedelta(days=idx * 2)
+        await ledger.async_record(
+            _forecast(predicted_24h=1015.0, precip=20),
+            t,
+            wind_adjustment_sign=1,
+            season_sign=1,
+        )
+        await ledger.async_verify(1014.0, None, t + datetime.timedelta(hours=25), rain=True)
+
+    assert ledger.wind_factor == pytest.approx(1.0 - WIND_FACTOR_STEP)
+    assert ledger.seasonal_factor == pytest.approx(1.0 - SEASONAL_FACTOR_STEP)
+    assert ledger.precip_bias == pytest.approx(PRECIP_BIAS_STEP)
+
+    # False wet alarms with high pressure overshoot raise +1 multipliers and lower precip_bias.
+    t_dry = now + datetime.timedelta(days=10)
+    await ledger.async_record(
+        _forecast(predicted_24h=1010.0, precip=75),
+        t_dry,
+        wind_adjustment_sign=1,
+        season_sign=1,
+    )
+    await ledger.async_verify(1015.0, None, t_dry + datetime.timedelta(hours=25), rain=False)
+    assert ledger.wind_factor == pytest.approx(1.0)
+    assert ledger.seasonal_factor == pytest.approx(1.0)
+    assert ledger.precip_bias == pytest.approx(0.0)
+
+    # Moist/winter (-1) over-predicting wet when actually dry lowers -1 multipliers.
+    t_w = now + datetime.timedelta(days=12)
+    for idx in range(CALIBRATION_MIN_SAMPLES):
+        t = t_w + datetime.timedelta(days=idx * 2)
+        await ledger.async_record(
+            _forecast(predicted_24h=1005.0, precip=70),
+            t,
+            wind_adjustment_sign=-1,
+            season_sign=-1,
+        )
+        await ledger.async_verify(1010.0, None, t + datetime.timedelta(hours=25), rain=False)
+
+    assert ledger.wind_factor < 1.0
+    assert ledger.seasonal_factor < 1.0
+    assert ledger.precip_bias < 0.0
+
+    # Reset clears records and restores all default calibration parameters
+    await ledger.async_reset()
+    assert ledger._records == []
+    assert ledger.damping == pytest.approx(0.65)
+    assert ledger.wind_factor == pytest.approx(1.0)
+    assert ledger.seasonal_factor == pytest.approx(1.0)
+    assert ledger.precip_bias == pytest.approx(0.0)

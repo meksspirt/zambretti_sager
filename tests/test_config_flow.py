@@ -335,14 +335,12 @@ async def test_options_flow_clears_cached_elevation_on_coordinate_change():
     assert res_same["type"] == "create_entry"
     options_flow.hass.config_entries.async_update_entry.assert_not_called()
 
-    # Changed coordinates -> clears cached elevation from entry.data
+    # Changed coordinates -> clears cached elevation in options (single reload)
     changed_input = {
         CONF_PRESSURE_SENSOR: "sensor.barometer",
         CONF_LOCATION: {"latitude": 51.0, "longitude": 16.0},
     }
     res_changed = await options_flow.async_step_init(user_input=changed_input)
     assert res_changed["type"] == "create_entry"
-    assert "elevation" not in res_changed["data"]
-    options_flow.hass.config_entries.async_update_entry.assert_called_once()
-    updated_data = options_flow.hass.config_entries.async_update_entry.call_args[1]["data"]
-    assert "elevation" not in updated_data
+    assert res_changed["data"]["elevation"] is None
+    options_flow.hass.config_entries.async_update_entry.assert_not_called()

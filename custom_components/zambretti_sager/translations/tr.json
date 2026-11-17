@@ -12,11 +12,11 @@
           "humidity_sensor": "Nem sensörü (isteğe bağlı)",
           "use_sea_level_correction": "Deniz seviyesi basınç düzeltmesini etkinleştir",
           "location": "Konum",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Yağmur sensörü (isteğe bağlı)",
+          "falling_rapid_threshold": "Hızlı basınç düşüşü eşiği",
+          "storm_precip_threshold": "Fırtına yağış olasılığı eşiği",
+          "frost_temp_threshold": "Don sıcaklığı eşiği",
+          "fog_humidity_threshold": "Sis nem eşiği"
         },
         "data_description": {
           "pressure_sensor": "Barometrik basınç sensörünüzü seçin",
@@ -26,11 +26,11 @@
           "humidity_sensor": "İsteğe bağlı: yağış olasılığı doğruluğunu artırır",
           "use_sea_level_correction": "Deniz seviyesinin üzerinde mutlak basınç sensörü kullanıyorsanız etkinleştirin",
           "location": "Yüksekliği hesaplamak için haritaya tıklayın",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "İsteğe bağlı: tahmin doğrulama günlüğü ve yağmur olasılığı kontrolleri tarafından kullanılır",
+          "falling_rapid_threshold": "Hızlı düşüş uyarısını tetikleyen 3 saatlik basınç düşüşü (hPa)",
+          "storm_precip_threshold": "Üzerinde fırtına uyarısı verilen yağış olasılığı (%)",
+          "frost_temp_threshold": "Don riskinin bildirildiği veya altındaki sıcaklık (°C)",
+          "fog_humidity_threshold": "Sis riski uyarısı için sis modeliyle birlikte gereken bağıl nem (%)"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Nem sensörü (isteğe bağlı)",
           "use_sea_level_correction": "Deniz seviyesi basınç düzeltmesini etkinleştir",
           "location": "Konum",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Yağmur sensörü (isteğe bağlı)",
+          "falling_rapid_threshold": "Hızlı basınç düşüşü eşiği",
+          "storm_precip_threshold": "Fırtına yağış olasılığı eşiği",
+          "frost_temp_threshold": "Don sıcaklığı eşiği",
+          "fog_humidity_threshold": "Sis nem eşiği"
         },
         "data_description": {
           "pressure_sensor": "Barometrik basınç sensörünüzü seçin",
@@ -58,11 +58,11 @@
           "humidity_sensor": "İsteğe bağlı: yağış olasılığı doğruluğunu artırır",
           "use_sea_level_correction": "Deniz seviyesinin üzerinde mutlak basınç sensörü kullanıyorsanız etkinleştirin",
           "location": "Yüksekliği hesaplamak için haritaya tıklayın",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "İsteğe bağlı: tahmin doğrulama günlüğü ve yağmur olasılığı kontrolleri tarafından kullanılır",
+          "falling_rapid_threshold": "Hızlı düşüş uyarısını tetikleyen 3 saatlik basınç düşüşü (hPa)",
+          "storm_precip_threshold": "Üzerinde fırtına uyarısı verilen yağış olasılığı (%)",
+          "frost_temp_threshold": "Don riskinin bildirildiği veya altındaki sıcaklık (°C)",
+          "fog_humidity_threshold": "Sis riski uyarısı için sis modeliyle birlikte gereken bağıl nem (%)"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Bu hava istasyonu zaten yapılandırılmış",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Hava istasyonu başarıyla yeniden yapılandırıldı"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Nem sensörü (isteğe bağlı)",
           "use_sea_level_correction": "Deniz seviyesi basınç düzeltmesini etkinleştir",
           "location": "Konum",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Yağmur sensörü (isteğe bağlı)",
+          "falling_rapid_threshold": "Hızlı basınç düşüşü eşiği",
+          "storm_precip_threshold": "Fırtına yağış olasılığı eşiği",
+          "frost_temp_threshold": "Don sıcaklığı eşiği",
+          "fog_humidity_threshold": "Sis nem eşiği"
         },
         "data_description": {
           "pressure_sensor": "Barometrik basınç sensörünüzü seçin",
@@ -102,11 +102,11 @@
           "humidity_sensor": "İsteğe bağlı: yağış olasılığı doğruluğunu artırır",
           "use_sea_level_correction": "Deniz seviyesinin üzerinde mutlak basınç sensörü kullanıyorsanız etkinleştirin",
           "location": "Yüksekliği hesaplamak için haritaya tıklayın",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "İsteğe bağlı: tahmin doğrulama günlüğü ve yağmur olasılığı kontrolleri tarafından kullanılır",
+          "falling_rapid_threshold": "Hızlı düşüş uyarısını tetikleyen 3 saatlik basınç düşüşü (hPa)",
+          "storm_precip_threshold": "Üzerinde fırtına uyarısı verilen yağış olasılığı (%)",
+          "frost_temp_threshold": "Don riskinin bildirildiği veya altındaki sıcaklık (°C)",
+          "fog_humidity_threshold": "Sis riski uyarısı için sis modeliyle birlikte gereken bağıl nem (%)"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti tahmini",
         "state": {
           "settled_fine": "Güzel, stabil",
           "fine_weather": "Güzel hava",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager tahmini",
         "state": {
           "sager_fair_improving": "Güzel hava, düzeliyor",
           "sager_fair_tending_to_deteriorate": "Güzel hava, kötüleşme eğilimi",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti tahmini 6 sa",
         "state": {
           "settled_fine": "Güzel, stabil",
           "fine_weather": "Güzel hava",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti tahmini 12 sa",
         "state": {
           "settled_fine": "Güzel, stabil",
           "fine_weather": "Güzel hava",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti tahmini 24 sa",
         "state": {
           "settled_fine": "Güzel, stabil",
           "fine_weather": "Güzel hava",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Yağış olasılığı"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Son güncelleme"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Deniz seviyesi basıncı"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "İstasyon basıncı"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Basınç eğilimi (3 sa)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Basınç değişimi (24 sa)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO basınç eğilimi"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Kar olasılığı"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Sis olasılığı"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Tahmin güveni"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Model sapması"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Tahmin doğruluğu (24 sa)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Son tahmin sonucu",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Tuttu",
+          "miss": "Tutmadı"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Uyarlanabilir sönümleme"
+      },
+      "apparent_temperature": {
+        "name": "Hissedilen sıcaklık"
+      },
+      "cloud_base": {
+        "name": "Bulut tabanı (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometrik yük"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Hava istasyonu"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Basınç hızla düşüyor"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Fırtına uyarısı"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Don riski"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Sis riski"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "{entity_id} için geçersiz basınç durumu"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Tahmin değişti",
+      "horizon_changed": "Tahmin ufku değişti",
+      "pressure_drop": "Hızlı basınç düşüşü uyarısı"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Tahmin kalibrasyonunu sıfırla",
+      "description": "Doğrulama geçmişini temizler ve tüm uyarlanabilir kalibrasyon katsayılarını sıfırlar.",
+      "fields": {
+        "entry_id": {
+          "name": "Yapılandırma girişi",
+          "description": "İsteğe bağlı giriş. Belirtilmezse tüm istasyonları sıfırlar."
+        }
+      }
     }
   }
 }

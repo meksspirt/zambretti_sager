@@ -239,6 +239,9 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
       ${this._toggle("sw-sager",     t.showSager,     t.showSagerH,    c.show_sager     !== false)}
       ${this._toggle("sw-precip",    t.showPrecip,    t.showPrecipH,   c.show_precip    !== false)}
       ${this._toggle("sw-forecasts", t.showForecasts, t.showForecastH, c.show_forecasts !== false)}
+      ${this._toggle("sw-alerts",    t.showAlerts  || "Show weather alerts",                 t.showAlertsH  || "Active warning chips for storm, rapid pressure fall, frost, and fog", c.show_alerts !== false)}
+      ${this._toggle("sw-metrics",   t.showMetrics || "Show confidence, snow/fog & dew point", t.showMetricsH || "Confidence badge, snow/fog probability, dew point, and forecast pressure", c.show_metrics !== false)}
+      ${this._toggle("sw-ledger",    t.showLedger  || "Show 24h verification & calibration", t.showLedgerH  || "24h forecast accuracy rate, last result, and adaptive damping", c.show_ledger !== false)}
       ${this._toggle("sw-trend",     t.showTrend    || "Show forecast trend timeline", t.showTrendH    || "Horizontal strip of past Zambretti states with icons and times", !!c.show_trend)}
       ${this._toggle("sw-history",   t.showHistory  || "Show 24h history chart",      t.showHistoryH  || "Pressure & precipitation chart for the last 24 hours",            !!c.show_history)}
     `;
@@ -404,6 +407,9 @@ class ZambrettiWeatherCardEditor extends HTMLElement {
       "sw-sager":      "show_sager",
       "sw-precip":     "show_precip",
       "sw-forecasts":  "show_forecasts",
+      "sw-alerts":     "show_alerts",
+      "sw-metrics":    "show_metrics",
+      "sw-ledger":     "show_ledger",
       "sw-auto-theme": "auto_theme",
       "sw-trend":      "show_trend",
       "sw-history":    "show_history",

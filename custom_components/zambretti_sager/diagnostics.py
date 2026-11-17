@@ -57,6 +57,9 @@ async def async_get_config_entry_diagnostics(
             "snow_probability": data.snow_probability,
             "fog_probability": data.fog_probability,
             "dew_point": data.dew_point,
+            "apparent_temperature": data.apparent_temperature,
+            "cloud_base": data.cloud_base,
+            "barometric_stress": data.barometric_stress,
             "wind_degrees": data.wind_degrees,
             "wind_direction": data.wind_direction,
             "wind_speed": data.wind_speed,
@@ -69,6 +72,9 @@ async def async_get_config_entry_diagnostics(
             "last_forecast_hit": data.last_forecast_hit,
             "calibration_samples": data.calibration_samples,
             "adaptive_damping": data.adaptive_damping,
+            "wind_factor": data.wind_factor,
+            "seasonal_factor": data.seasonal_factor,
+            "precip_bias": data.precip_bias,
             "last_updated": data.last_updated.isoformat() if data.last_updated else None,
         }
 

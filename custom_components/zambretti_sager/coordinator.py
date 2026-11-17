@@ -14,7 +14,11 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import SpeedConverter, TemperatureConverter
 
-from .algorithms import linear_pressure_trend
+from .algorithms import (
+    get_season_sign,
+    get_wind_adjustment_sign,
+    linear_pressure_trend,
+)
 from .const import (
     CONF_ELEVATION,
     CONF_FALLING_RAPID_THRESHOLD,
@@ -100,10 +104,12 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         self._last_pressure_id: str | None = None
         self._last_watcher_refresh: datetime.datetime | None = None
 
-        # In-memory rolling history buffer
+        # In-memory rolling history buffer (plus raw hPa buffer for temperature-consistent MSLP)
         self._history_buffer = PressureHistoryBuffer()
+        self._raw_history_buffer = PressureHistoryBuffer()
         self._history_warmed = False
         self._last_history_fallback: datetime.datetime | None = None
+        self._last_rain_total: float | None = None
 
         # State tracking for clean, low-frequency logging
         self._last_logged_zambretti: str | None = None
@@ -131,6 +137,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             self._sea_level_warning_logged = False
             self._last_pressure_id = new_pressure_id
             self._history_buffer.clear()
+            self._raw_history_buffer.clear()
             self._history_warmed = False
             self._last_history_fallback = None
             self._first_forecast_logged = False
@@ -173,11 +180,14 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             if CONF_LONGITUDE in entry.options
             else entry.data.get(CONF_LONGITUDE)
         )
-        self.rain_id = (
+        new_rain_id = (
             entry.options.get(CONF_RAIN_SENSOR)
             if CONF_RAIN_SENSOR in entry.options
             else entry.data.get(CONF_RAIN_SENSOR)
         )
+        if new_rain_id != getattr(self, "rain_id", None):
+            self._last_rain_total = None
+        self.rain_id = new_rain_id
 
         # Alert thresholds (options flow overrides the integration defaults)
         self.falling_rapid_threshold = float(
@@ -294,24 +304,31 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             temperature=temperature, is_sea_level=is_sea_level
         )
 
-        # Warm history buffer on first run with a single recorder query
+        # Warm history buffer on first run with a single recorder query (raw hPa)
         if not self._history_warmed:
             await async_warm_history_buffer(
                 self.hass,
                 self.pressure_id,
-                self._history_buffer,
+                self._raw_history_buffer,
                 hours=BUFFER_WARM_HOURS,
-                pressure_corrector=corrector,
+                pressure_corrector=None,
             )
             self._history_warmed = True
             _LOGGER.info(
                 "History buffer initialized with %d points from recorder for %s",
-                len(self._history_buffer),
+                len(self._raw_history_buffer),
                 self.pressure_id,
             )
 
-        # Append current reading and prune buffer
-        self._history_buffer.append(now_dt, p_now)
+        # Append current raw reading and keep sea-level history normalized to current
+        # temperature so diurnal outdoor warming/cooling never fabricates a pressure trend.
+        self._raw_history_buffer.append(now_dt, p_now_raw)
+        if len(self._raw_history_buffer) > 1 or not len(self._history_buffer):
+            self._history_buffer.clear()
+            for ts, raw_p in self._raw_history_buffer.entries:
+                self._history_buffer.append(ts, corrector(raw_p))
+        else:
+            self._history_buffer.append(now_dt, p_now)
 
         history_pressures = await self._fetch_history_pressures(
             now_dt, pressure_corrector=corrector
@@ -364,23 +381,38 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             trend_rate_3h=trend_rate_3h,
             trend_r2=trend_r2,
             calibration_damping=self._ledger.damping,
+            calibration_wind_factor=self._ledger.wind_factor,
+            calibration_seasonal_factor=self._ledger.seasonal_factor,
+            calibration_precip_bias=self._ledger.precip_bias,
             timestamp=now_dt,
         )
 
         forecast_data = ForecastEngine.compute(observations)
 
-        # Verify previously issued forecasts, then record this one.
+        # Track rain across active forecast windows, verify matured forecasts,
+        # then record this snapshot. Do not pass a future forecast state as
+        # actual_state; verification checks observed pressure and rain.
+        await self._ledger.async_observe_rain(rain, now_dt)
         await self._ledger.async_verify(
             forecast_data.p_now,
-            forecast_data.zambretti_state,
+            None,
             now_dt,
             rain=rain,
         )
-        await self._ledger.async_record(forecast_data, now_dt, rain=rain)
+        await self._ledger.async_record(
+            forecast_data,
+            now_dt,
+            rain=rain,
+            wind_adjustment_sign=get_wind_adjustment_sign(wind, self.latitude),
+            season_sign=get_season_sign(now_dt.month, self.latitude),
+        )
         forecast_data.forecast_accuracy = self._ledger.accuracy
         forecast_data.last_forecast_hit = self._ledger.last_hit
         forecast_data.calibration_samples = self._ledger.calibration_samples
         forecast_data.adaptive_damping = self._ledger.damping
+        forecast_data.wind_factor = self._ledger.wind_factor
+        forecast_data.seasonal_factor = self._ledger.seasonal_factor
+        forecast_data.precip_bias = self._ledger.precip_bias
 
         self._fire_events(forecast_data)
 
@@ -532,9 +564,28 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             return False
 
         try:
-            return float(raw) > 0
+            val = float(raw)
         except (TypeError, ValueError):
             return None
+
+        attrs = getattr(state, "attributes", None) or {}
+        state_class = str(attrs.get("state_class", "")).lower()
+        unit = str(attrs.get("unit_of_measurement", "")).lower().strip()
+        device_class = str(attrs.get("device_class", "")).lower()
+        is_cumulative = state_class in ("total", "total_increasing") or (
+            device_class == "precipitation" and unit in ("mm", "cm", "in")
+        )
+        if is_cumulative:
+            prev = self._last_rain_total
+            self._last_rain_total = val
+            if prev is None:
+                return False
+            if val < prev:
+                # Counter reset (e.g. midnight daily reset)
+                return val > 0
+            return val > prev
+
+        return val > 0
 
     @staticmethod
     def _pressure_age_seconds(pressure_state, now: datetime.datetime) -> float | None:

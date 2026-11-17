@@ -12,11 +12,11 @@
           "humidity_sensor": "濕度感測器（選填）",
           "use_sea_level_correction": "啟用海平面氣壓校正",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨感測器（選填）",
+          "falling_rapid_threshold": "氣壓驟降閾值",
+          "storm_precip_threshold": "暴風雨降水機率閾值",
+          "frost_temp_threshold": "霜凍溫度閾值",
+          "fog_humidity_threshold": "濃霧濕度閾值"
         },
         "data_description": {
           "pressure_sensor": "選擇您的大氣壓感測器",
@@ -26,11 +26,11 @@
           "humidity_sensor": "選填：提高降水機率準確度",
           "use_sea_level_correction": "若使用海平面以上的絕對氣壓感測器請啟用",
           "location": "在地圖上點擊以計算海拔高度",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "選填：用於預報驗證紀錄與降雨機率檢查",
+          "falling_rapid_threshold": "觸發氣壓驟降警報的 3 小時氣壓降幅（hPa）",
+          "storm_precip_threshold": "觸發暴風雨警報的降水機率（%）閾值",
+          "frost_temp_threshold": "達到或低於此溫度（°C）時回報霜凍風險",
+          "fog_humidity_threshold": "搭配濃霧模型觸發濃霧風險警報所需的相對濕度（%）"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "濕度感測器（選填）",
           "use_sea_level_correction": "啟用海平面氣壓校正",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨感測器（選填）",
+          "falling_rapid_threshold": "氣壓驟降閾值",
+          "storm_precip_threshold": "暴風雨降水機率閾值",
+          "frost_temp_threshold": "霜凍溫度閾值",
+          "fog_humidity_threshold": "濃霧濕度閾值"
         },
         "data_description": {
           "pressure_sensor": "選擇您的大氣壓感測器",
@@ -58,11 +58,11 @@
           "humidity_sensor": "選填：提高降水機率準確度",
           "use_sea_level_correction": "若使用海平面以上的絕對氣壓感測器請啟用",
           "location": "在地圖上點擊以計算海拔高度",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "選填：用於預報驗證紀錄與降雨機率檢查",
+          "falling_rapid_threshold": "觸發氣壓驟降警報的 3 小時氣壓降幅（hPa）",
+          "storm_precip_threshold": "觸發暴風雨警報的降水機率（%）閾值",
+          "frost_temp_threshold": "達到或低於此溫度（°C）時回報霜凍風險",
+          "fog_humidity_threshold": "搭配濃霧模型觸發濃霧風險警報所需的相對濕度（%）"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "此氣象站已設定",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "氣象站已成功重新設定"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "濕度感測器（選填）",
           "use_sea_level_correction": "啟用海平面氣壓校正",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨感測器（選填）",
+          "falling_rapid_threshold": "氣壓驟降閾值",
+          "storm_precip_threshold": "暴風雨降水機率閾值",
+          "frost_temp_threshold": "霜凍溫度閾值",
+          "fog_humidity_threshold": "濃霧濕度閾值"
         },
         "data_description": {
           "pressure_sensor": "選擇您的大氣壓感測器",
@@ -102,11 +102,11 @@
           "humidity_sensor": "選填：提高降水機率準確度",
           "use_sea_level_correction": "若使用海平面以上的絕對氣壓感測器請啟用",
           "location": "在地圖上點擊以計算海拔高度",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "選填：用於預報驗證紀錄與降雨機率檢查",
+          "falling_rapid_threshold": "觸發氣壓驟降警報的 3 小時氣壓降幅（hPa）",
+          "storm_precip_threshold": "觸發暴風雨警報的降水機率（%）閾值",
+          "frost_temp_threshold": "達到或低於此溫度（°C）時回報霜凍風險",
+          "fog_humidity_threshold": "搭配濃霧模型觸發濃霧風險警報所需的相對濕度（%）"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti 預報",
         "state": {
           "settled_fine": "晴朗穩定",
           "fine_weather": "天氣良好",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager 預報",
         "state": {
           "sager_fair_improving": "天氣良好，改善中",
           "sager_fair_tending_to_deteriorate": "目前良好，趨於轉差",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti 6小時預報",
         "state": {
           "settled_fine": "晴朗穩定",
           "fine_weather": "天氣良好",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti 12小時預報",
         "state": {
           "settled_fine": "晴朗穩定",
           "fine_weather": "天氣良好",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti 24小時預報",
         "state": {
           "settled_fine": "晴朗穩定",
           "fine_weather": "天氣良好",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "降水機率"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "最後更新"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "海平面氣壓"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "測站氣壓"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "氣壓趨勢（3小時）"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "氣壓變化（24小時）"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO 氣壓傾向"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "降雪機率"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "濃霧機率"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "預報信心度"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "模型分歧度"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "預報準確率（24小時）"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "上次預報命中",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "命中",
+          "miss": "未命中"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "自適應阻尼"
+      },
+      "apparent_temperature": {
+        "name": "體感溫度"
+      },
+      "cloud_base": {
+        "name": "雲底高度 (LCL)"
+      },
+      "barometric_stress": {
+        "name": "氣壓負荷指數"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "氣象站"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "氣壓驟降"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "暴風雨警報"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "霜凍風險"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "濃霧風險"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "{entity_id} 的氣壓狀態無效"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "天氣預報已變更",
+      "horizon_changed": "多時段預報已變更",
+      "pressure_drop": "氣壓驟降警報"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "重設預報校準",
+      "description": "清除已儲存的驗證紀錄並將所有自適應校準係數重設為預設值。",
+      "fields": {
+        "entry_id": {
+          "name": "設定項目",
+          "description": "選填設定項目。省略時將重設所有氣象站。"
+        }
+      }
     }
   }
 }

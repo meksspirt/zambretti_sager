@@ -12,11 +12,11 @@
           "humidity_sensor": "습도 센서 (선택)",
           "use_sea_level_correction": "해수면 기압 보정 사용",
           "location": "위치",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "강수 센서 (선택)",
+          "falling_rapid_threshold": "급격한 기압 하강 임계값",
+          "storm_precip_threshold": "폭풍 강수 확률 임계값",
+          "frost_temp_threshold": "서리 온도 임계값",
+          "fog_humidity_threshold": "안개 습도 임계값"
         },
         "data_description": {
           "pressure_sensor": "기압 센서를 선택하세요",
@@ -26,11 +26,11 @@
           "humidity_sensor": "선택: 강수 확률 정확도 향상",
           "use_sea_level_correction": "해수면 위 절대 기압 센서 사용 시 활성화",
           "location": "지도를 클릭하여 고도 계산",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "선택 사항: 예보 검증 기록 및 강수 확률 확인에 사용됩니다",
+          "falling_rapid_threshold": "급격한 기압 하강 알림을 발생시키는 3시간 기압 하강폭(hPa)",
+          "storm_precip_threshold": "폭풍 경보가 발령되는 강수 확률(%) 기준",
+          "frost_temp_threshold": "서리 위험을 보고하는 기준 온도(°C) 이하 값",
+          "fog_humidity_threshold": "안개 위험 경보를 위해 안개 모델과 함께 필요한 상대 습도(%)"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "습도 센서 (선택)",
           "use_sea_level_correction": "해수면 기압 보정 사용",
           "location": "위치",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "강수 센서 (선택)",
+          "falling_rapid_threshold": "급격한 기압 하강 임계값",
+          "storm_precip_threshold": "폭풍 강수 확률 임계값",
+          "frost_temp_threshold": "서리 온도 임계값",
+          "fog_humidity_threshold": "안개 습도 임계값"
         },
         "data_description": {
           "pressure_sensor": "기압 센서를 선택하세요",
@@ -58,11 +58,11 @@
           "humidity_sensor": "선택: 강수 확률 정확도 향상",
           "use_sea_level_correction": "해수면 위 절대 기압 센서 사용 시 활성화",
           "location": "지도를 클릭하여 고도 계산",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "선택 사항: 예보 검증 기록 및 강수 확률 확인에 사용됩니다",
+          "falling_rapid_threshold": "급격한 기압 하강 알림을 발생시키는 3시간 기압 하강폭(hPa)",
+          "storm_precip_threshold": "폭풍 경보가 발령되는 강수 확률(%) 기준",
+          "frost_temp_threshold": "서리 위험을 보고하는 기준 온도(°C) 이하 값",
+          "fog_humidity_threshold": "안개 위험 경보를 위해 안개 모델과 함께 필요한 상대 습도(%)"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "이 기상 관측소는 이미 설정되어 있습니다",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "기상 관측소가 성공적으로 재구성되었습니다"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "습도 센서 (선택)",
           "use_sea_level_correction": "해수면 기압 보정 사용",
           "location": "위치",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "강수 센서 (선택)",
+          "falling_rapid_threshold": "급격한 기압 하강 임계값",
+          "storm_precip_threshold": "폭풍 강수 확률 임계값",
+          "frost_temp_threshold": "서리 온도 임계값",
+          "fog_humidity_threshold": "안개 습도 임계값"
         },
         "data_description": {
           "pressure_sensor": "기압 센서를 선택하세요",
@@ -102,11 +102,11 @@
           "humidity_sensor": "선택: 강수 확률 정확도 향상",
           "use_sea_level_correction": "해수면 위 절대 기압 센서 사용 시 활성화",
           "location": "지도를 클릭하여 고도 계산",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "선택 사항: 예보 검증 기록 및 강수 확률 확인에 사용됩니다",
+          "falling_rapid_threshold": "급격한 기압 하강 알림을 발생시키는 3시간 기압 하강폭(hPa)",
+          "storm_precip_threshold": "폭풍 경보가 발령되는 강수 확률(%) 기준",
+          "frost_temp_threshold": "서리 위험을 보고하는 기준 온도(°C) 이하 값",
+          "fog_humidity_threshold": "안개 위험 경보를 위해 안개 모델과 함께 필요한 상대 습도(%)"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "잠브레티 예보",
         "state": {
           "settled_fine": "맑고 안정적",
           "fine_weather": "좋은 날씨",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "세이거 예보",
         "state": {
           "sager_fair_improving": "좋은 날씨, 개선",
           "sager_fair_tending_to_deteriorate": "좋음, 악화 경향",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "잠브레티 6시간 예보",
         "state": {
           "settled_fine": "맑고 안정적",
           "fine_weather": "좋은 날씨",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "잠브레티 12시간 예보",
         "state": {
           "settled_fine": "맑고 안정적",
           "fine_weather": "좋은 날씨",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "잠브레티 24시간 예보",
         "state": {
           "settled_fine": "맑고 안정적",
           "fine_weather": "좋은 날씨",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "강수 확률"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "마지막 업데이트"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "해면 기압"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "관측소 기압"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "기압 추세 (3시간)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "기압 변화 (24시간)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO 기압 경향"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "적설 확률"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "안개 확률"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "예보 신뢰도"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "모델 편차"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "예보 정확도 (24시간)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "최근 예보 적중 여부",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "적중",
+          "miss": "빗나감"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "적응형 감쇠 계수"
+      },
+      "apparent_temperature": {
+        "name": "체감 온도"
+      },
+      "cloud_base": {
+        "name": "운저 고도 (LCL)"
+      },
+      "barometric_stress": {
+        "name": "기압 스트레스 지수"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "기상 관측소"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "급격한 기압 하강"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "폭풍 경보"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "서리 위험"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "안개 위험"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "{entity_id}의 기압 상태가 올바르지 않습니다"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "예보가 변경됨",
+      "horizon_changed": "예보 시간대가 변경됨",
+      "pressure_drop": "급격한 기압 하강 알림"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "예보 보정 초기화",
+      "description": "저장된 검증 기록을 지우고 모든 적응형 보정 계수를 기본값으로 초기화합니다.",
+      "fields": {
+        "entry_id": {
+          "name": "구성 항목",
+          "description": "선택 항목. 생략하면 모든 관측소를 초기화합니다."
+        }
+      }
     }
   }
 }

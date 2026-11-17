@@ -7,7 +7,7 @@ import logging
 from homeassistant.components import websocket_api
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
@@ -16,6 +16,9 @@ from .coordinator import ZambrettiConfigEntry, async_create_coordinator
 from .frontend import JSModuleRegistration
 
 _LOGGER = logging.getLogger(__name__)
+
+SERVICE_RESET_CALIBRATION = "reset_calibration"
+SERVICE_RESET_SCHEMA = vol.Schema({vol.Optional("entry_id"): cv.string})
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
@@ -68,13 +71,39 @@ async def _async_setup_frontend(hass: HomeAssistant) -> None:
         )
 
 
+async def _async_reset_calibration(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Handle the zambretti_sager.reset_calibration service call."""
+    target_entry_id: str | None = call.data.get("entry_id")
+    entries = hass.config_entries.async_entries(DOMAIN)
+    for entry in entries:
+        if target_entry_id and entry.entry_id != target_entry_id:
+            continue
+        coordinator = getattr(entry, "runtime_data", None)
+        if coordinator is None or not hasattr(coordinator, "_ledger"):
+            continue
+        await coordinator._ledger.async_reset()
+        await coordinator.async_refresh()
+        _LOGGER.info("Reset forecast verification ledger and calibration for %s", entry.title)
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Zambretti & Sager domain.
 
     Called once when Home Assistant loads the integration.
-    Registers the WebSocket version command and the Lovelace JavaScript card.
+    Registers the WebSocket version command, services, and the Lovelace JavaScript card.
     """
     websocket_api.async_register_command(hass, _ws_get_version)
+    if not hass.services.has_service(DOMAIN, SERVICE_RESET_CALIBRATION):
+
+        async def _handle_reset(call: ServiceCall) -> None:
+            await _async_reset_calibration(hass, call)
+
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_RESET_CALIBRATION,
+            _handle_reset,
+            schema=SERVICE_RESET_SCHEMA,
+        )
     await _async_setup_frontend(hass)
     return True
 

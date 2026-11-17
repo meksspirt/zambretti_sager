@@ -988,3 +988,82 @@ def test_coordinator_event_thresholds_respect_options():
     assert coord.storm_precip_threshold == 90
     assert coord.frost_temp_threshold == -1.0
     assert coord.fog_humidity_threshold == 98.0
+
+
+@pytest.mark.asyncio
+async def test_coordinator_diurnal_temperature_does_not_create_false_trend():
+    """Test constant station pressure yields zero delta even when outdoor temp rises."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {
+        "pressure_sensor": "sensor.pressure",
+        "temperature_sensor": "sensor.temp",
+        "use_sea_level_correction": True,
+    }
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=500.0)
+    coord._history_warmed = True
+
+    now = datetime.datetime.now(datetime.UTC)
+    # 3 hours ago, raw pressure was 955.0 hPa (and buffer was filled at 5 °C)
+    coord._raw_history_buffer.append(now - datetime.timedelta(hours=3), 955.0)
+    coord._history_buffer.append(now - datetime.timedelta(hours=3), 1015.4)
+
+    # Now raw pressure is STILL 955.0 hPa, but temperature warmed to 22 °C
+    pressure_state = MagicMock(
+        entity_id="sensor.pressure",
+        state="955.0",
+        attributes={"unit_of_measurement": "hPa"},
+        last_updated=now,
+    )
+    temp_state = MagicMock(
+        entity_id="sensor.temp",
+        state="22.0",
+        attributes={"unit_of_measurement": "°C"},
+    )
+    mock_hass.states.get.side_effect = lambda eid: (
+        pressure_state if eid == "sensor.pressure" else temp_state if eid == "sensor.temp" else None
+    )
+
+    data = await coord._async_update_data()
+    assert data.available is True
+    assert data.delta_3h == 0.0
+
+
+def test_coordinator_cumulative_rain_sensor_tracks_deltas():
+    """Test total_increasing rain sensors only report rain when total increases."""
+    mock_hass = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test"
+    mock_entry.data = {"pressure_sensor": "sensor.p", "rain_sensor": "sensor.rain_daily"}
+    mock_entry.options = {}
+
+    coord = ZambrettiSagerCoordinator(mock_hass, mock_entry, altitude=0.0)
+
+    def _set_rain(val: str) -> None:
+        mock_hass.states.get.return_value = MagicMock(
+            state=val,
+            attributes={
+                "state_class": "total_increasing",
+                "device_class": "precipitation",
+                "unit_of_measurement": "mm",
+            },
+        )
+
+    # First reading establishes baseline (0.4 mm earlier today -> not raining now)
+    _set_rain("0.4")
+    assert coord._get_rain() is False
+    # Unchanged total -> still dry
+    _set_rain("0.4")
+    assert coord._get_rain() is False
+    # Increased total -> actively raining
+    _set_rain("0.6")
+    assert coord._get_rain() is True
+    # Midnight reset to 0.0 -> dry
+    _set_rain("0.0")
+    assert coord._get_rain() is False
+    # Midnight reset with immediate rain 0.1 -> raining
+    _set_rain("0.1")
+    assert coord._get_rain() is True

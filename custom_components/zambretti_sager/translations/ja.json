@@ -12,11 +12,11 @@
           "humidity_sensor": "湿度センサー（任意）",
           "use_sea_level_correction": "海面更正気圧を有効にする",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨センサー（任意）",
+          "falling_rapid_threshold": "急激な気圧低下のしきい値",
+          "storm_precip_threshold": "暴風雨警報の降水確率しきい値",
+          "frost_temp_threshold": "霜注意の温度しきい値",
+          "fog_humidity_threshold": "霧注意の湿度しきい値"
         },
         "data_description": {
           "pressure_sensor": "気圧センサーを選択してください",
@@ -26,11 +26,11 @@
           "humidity_sensor": "任意：降水確率の精度を向上",
           "use_sea_level_correction": "海面より高い場所の絶対気圧センサーを使用する場合に有効化",
           "location": "地図をクリックして標高を計算",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "任意：予報検証台帳および降水確率の確認に使用されます",
+          "falling_rapid_threshold": "急激な気圧低下アラートを発生させる3時間の気圧低下量（hPa）",
+          "storm_precip_threshold": "暴風雨警報を出す降水確率（%）の上限しきい値",
+          "frost_temp_threshold": "霜のリスクを報告する気温（°C）の上限",
+          "fog_humidity_threshold": "霧モデルと併用して霧リスク警報を出すために必要な相対湿度（%）"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "湿度センサー（任意）",
           "use_sea_level_correction": "海面更正気圧を有効にする",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨センサー（任意）",
+          "falling_rapid_threshold": "急激な気圧低下のしきい値",
+          "storm_precip_threshold": "暴風雨警報の降水確率しきい値",
+          "frost_temp_threshold": "霜注意の温度しきい値",
+          "fog_humidity_threshold": "霧注意の湿度しきい値"
         },
         "data_description": {
           "pressure_sensor": "気圧センサーを選択してください",
@@ -58,11 +58,11 @@
           "humidity_sensor": "任意：降水確率の精度を向上",
           "use_sea_level_correction": "海面より高い場所の絶対気圧センサーを使用する場合に有効化",
           "location": "地図をクリックして標高を計算",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "任意：予報検証台帳および降水確率の確認に使用されます",
+          "falling_rapid_threshold": "急激な気圧低下アラートを発生させる3時間の気圧低下量（hPa）",
+          "storm_precip_threshold": "暴風雨警報を出す降水確率（%）の上限しきい値",
+          "frost_temp_threshold": "霜のリスクを報告する気温（°C）の上限",
+          "fog_humidity_threshold": "霧モデルと併用して霧リスク警報を出すために必要な相対湿度（%）"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "この気象ステーションは既に設定されています",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "気象ステーションを再設定しました"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "湿度センサー（任意）",
           "use_sea_level_correction": "海面更正気圧を有効にする",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨センサー（任意）",
+          "falling_rapid_threshold": "急激な気圧低下のしきい値",
+          "storm_precip_threshold": "暴風雨警報の降水確率しきい値",
+          "frost_temp_threshold": "霜注意の温度しきい値",
+          "fog_humidity_threshold": "霧注意の湿度しきい値"
         },
         "data_description": {
           "pressure_sensor": "気圧センサーを選択してください",
@@ -102,11 +102,11 @@
           "humidity_sensor": "任意：降水確率の精度を向上",
           "use_sea_level_correction": "海面より高い場所の絶対気圧センサーを使用する場合に有効化",
           "location": "地図をクリックして標高を計算",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "任意：予報検証台帳および降水確率の確認に使用されます",
+          "falling_rapid_threshold": "急激な気圧低下アラートを発生させる3時間の気圧低下量（hPa）",
+          "storm_precip_threshold": "暴風雨警報を出す降水確率（%）の上限しきい値",
+          "frost_temp_threshold": "霜のリスクを報告する気温（°C）の上限",
+          "fog_humidity_threshold": "霧モデルと併用して霧リスク警報を出すために必要な相対湿度（%）"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "ザンブレッティ予報",
         "state": {
           "settled_fine": "安定した好天",
           "fine_weather": "好天",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "セイガー予報",
         "state": {
           "sager_fair_improving": "好天、改善",
           "sager_fair_tending_to_deteriorate": "好天、悪化傾向",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "ザンブレッティ予報（6時間）",
         "state": {
           "settled_fine": "安定した好天",
           "fine_weather": "好天",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "ザンブレッティ予報（12時間）",
         "state": {
           "settled_fine": "安定した好天",
           "fine_weather": "好天",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "ザンブレッティ予報（24時間）",
         "state": {
           "settled_fine": "安定した好天",
           "fine_weather": "好天",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "降水確率"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "最終更新"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "海面更正気圧"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "現地気圧"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "気圧傾向（3時間）"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "気圧変化（24時間）"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO気圧傾向"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "降雪確率"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "霧の確率"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "予報信頼度"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "モデル間の乖離"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "予報精度（24時間）"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "前回の予報結果",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "的中",
+          "miss": "外れ"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "適応減衰係数"
+      },
+      "apparent_temperature": {
+        "name": "体感温度"
+      },
+      "cloud_base": {
+        "name": "雲底高度 (LCL)"
+      },
+      "barometric_stress": {
+        "name": "気圧ストレス指数"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "気象ステーション"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "気圧の急低下"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "暴風雨警報"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "霜のリスク"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "霧のリスク"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "{entity_id} の気圧値が無効です"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "予報が変化したとき",
+      "horizon_changed": "予測時間軸の予報が変化したとき",
+      "pressure_drop": "急激な気圧低下アラート"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "予報較正をリセット",
+      "description": "検証履歴を消去し、すべての適応較正係数を初期値に戻します。",
+      "fields": {
+        "entry_id": {
+          "name": "設定エントリ",
+          "description": "任意のエントリ。省略するとすべての気象ステーションをリセットします。"
+        }
+      }
     }
   }
 }

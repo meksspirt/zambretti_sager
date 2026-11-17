@@ -167,3 +167,34 @@ def test_forecast_engine_extended_fields():
     assert no_temp.dew_point is None
     assert no_temp.snow_probability is None
     assert no_temp.fog_probability is None
+
+
+def test_forecast_engine_applies_calibration_factors():
+    """Test calibrated wind, seasonal, and precipitation bias feed into ForecastData."""
+    now = datetime.datetime(2026, 7, 15, 12, 0, tzinfo=datetime.UTC)
+    baseline = ForecastEngine.compute(
+        WeatherObservations(
+            p_now=1012.0,
+            p_3h=1012.0,
+            wind_degrees=180.0,
+            humidity=70.0,
+            timestamp=now,
+        )
+    )
+    calibrated = ForecastEngine.compute(
+        WeatherObservations(
+            p_now=1012.0,
+            p_3h=1012.0,
+            wind_degrees=180.0,
+            humidity=70.0,
+            calibration_wind_factor=1.5,
+            calibration_seasonal_factor=0.5,
+            calibration_precip_bias=10.0,
+            timestamp=now,
+        )
+    )
+
+    assert calibrated.wind_factor == 1.5
+    assert calibrated.seasonal_factor == 0.5
+    assert calibrated.precip_bias == 10.0
+    assert calibrated.precip_probability == baseline.precip_probability + 10

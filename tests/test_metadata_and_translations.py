@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from custom_components.zambretti_sager.algorithms import SAGER_OPTIONS, ZAMBRETTI_OPTIONS
+from custom_components.zambretti_sager.device_trigger import TRIGGER_TYPES
 
 INTEGRATION_DIR = Path(__file__).resolve().parent.parent / "custom_components" / "zambretti_sager"
 
@@ -67,6 +68,7 @@ def test_strings_and_all_translations_have_identical_keys():
     strings = json.loads((INTEGRATION_DIR / "strings.json").read_text(encoding="utf-8"))
     expected_keys = _collect_keys(strings)
     assert "exceptions.invalid_pressure.message" in expected_keys
+    assert set(TRIGGER_TYPES).issubset(strings["device_automation"]["trigger_type"])
 
     translations_dir = INTEGRATION_DIR / "translations"
     files = sorted(translations_dir.glob("*.json"))
@@ -90,4 +92,4 @@ def test_compiled_frontend_bundles_exist():
     assert card_bundle.is_file() and card_bundle.stat().st_size > 10_000
     assert editor_bundle.is_file() and editor_bundle.stat().st_size > 5_000
     card_src = card_bundle.read_text(encoding="utf-8")
-    assert "zambretti-weather-card-editor.js?v=2.2.0" in card_src
+    assert "zambretti-weather-card-editor.js?v=2.3.0" in card_src

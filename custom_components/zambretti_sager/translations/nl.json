@@ -12,11 +12,11 @@
           "humidity_sensor": "Vochtigheidssensor (optioneel)",
           "use_sea_level_correction": "Correctie naar zeeniveaudruk inschakelen",
           "location": "Locatie",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regensensor (optioneel)",
+          "falling_rapid_threshold": "Drempel snelle luchtdrukdaling",
+          "storm_precip_threshold": "Neerslagdrempel voor stormwaarschuwing",
+          "frost_temp_threshold": "Temperatuurdrempel voor vorstrisico",
+          "fog_humidity_threshold": "Luchtvochtigheidsdrempel voor mistrisico"
         },
         "data_description": {
           "pressure_sensor": "Selecteer uw barometrische druksensor",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Optioneel: verbetert de neerslagkans",
           "use_sea_level_correction": "Inschakelen bij absolute druksensor boven zeeniveau",
           "location": "Klik op de kaart om de hoogte te berekenen",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Optioneel: gebruikt door het voorspellingsverificatielogboek en regenwaarschijnlijkheidscontroles",
+          "falling_rapid_threshold": "Drukdaling over 3 uur (hPa) die de waarschuwing voor snelle daling activeert",
+          "storm_precip_threshold": "Neerslagkans (%) waarboven een stormwaarschuwing wordt gegeven",
+          "frost_temp_threshold": "Temperatuur (°C) waarop of waaronder vorstrisico wordt gemeld",
+          "fog_humidity_threshold": "Relatieve luchtvochtigheid (%) vereist met het mistmodel voor een mistwaarschuwing"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Vochtigheidssensor (optioneel)",
           "use_sea_level_correction": "Correctie naar zeeniveaudruk inschakelen",
           "location": "Locatie",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regensensor (optioneel)",
+          "falling_rapid_threshold": "Drempel snelle luchtdrukdaling",
+          "storm_precip_threshold": "Neerslagdrempel voor stormwaarschuwing",
+          "frost_temp_threshold": "Temperatuurdrempel voor vorstrisico",
+          "fog_humidity_threshold": "Luchtvochtigheidsdrempel voor mistrisico"
         },
         "data_description": {
           "pressure_sensor": "Selecteer uw barometrische druksensor",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Optioneel: verbetert de neerslagkans",
           "use_sea_level_correction": "Inschakelen bij absolute druksensor boven zeeniveau",
           "location": "Klik op de kaart om de hoogte te berekenen",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Optioneel: gebruikt door het voorspellingsverificatielogboek en regenwaarschijnlijkheidscontroles",
+          "falling_rapid_threshold": "Drukdaling over 3 uur (hPa) die de waarschuwing voor snelle daling activeert",
+          "storm_precip_threshold": "Neerslagkans (%) waarboven een stormwaarschuwing wordt gegeven",
+          "frost_temp_threshold": "Temperatuur (°C) waarop of waaronder vorstrisico wordt gemeld",
+          "fog_humidity_threshold": "Relatieve luchtvochtigheid (%) vereist met het mistmodel voor een mistwaarschuwing"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Deze weerstation is al geconfigureerd",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Weerstation succesvol opnieuw geconfigureerd"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Vochtigheidssensor (optioneel)",
           "use_sea_level_correction": "Correctie naar zeeniveaudruk inschakelen",
           "location": "Locatie",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regensensor (optioneel)",
+          "falling_rapid_threshold": "Drempel snelle luchtdrukdaling",
+          "storm_precip_threshold": "Neerslagdrempel voor stormwaarschuwing",
+          "frost_temp_threshold": "Temperatuurdrempel voor vorstrisico",
+          "fog_humidity_threshold": "Luchtvochtigheidsdrempel voor mistrisico"
         },
         "data_description": {
           "pressure_sensor": "Selecteer uw barometrische druksensor",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Optioneel: verbetert de neerslagkans",
           "use_sea_level_correction": "Inschakelen bij absolute druksensor boven zeeniveau",
           "location": "Klik op de kaart om de hoogte te berekenen",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Optioneel: gebruikt door het voorspellingsverificatielogboek en regenwaarschijnlijkheidscontroles",
+          "falling_rapid_threshold": "Drukdaling over 3 uur (hPa) die de waarschuwing voor snelle daling activeert",
+          "storm_precip_threshold": "Neerslagkans (%) waarboven een stormwaarschuwing wordt gegeven",
+          "frost_temp_threshold": "Temperatuur (°C) waarop of waaronder vorstrisico wordt gemeld",
+          "fog_humidity_threshold": "Relatieve luchtvochtigheid (%) vereist met het mistmodel voor een mistwaarschuwing"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti-voorspelling",
         "state": {
           "settled_fine": "Mooi, stabiel",
           "fine_weather": "Mooi weer",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager-voorspelling",
         "state": {
           "sager_fair_improving": "Mooi weer, verbetering",
           "sager_fair_tending_to_deteriorate": "Mooi weer, neiging tot verslechtering",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti-voorspelling 6 uur",
         "state": {
           "settled_fine": "Mooi, stabiel",
           "fine_weather": "Mooi weer",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti-voorspelling 12 uur",
         "state": {
           "settled_fine": "Mooi, stabiel",
           "fine_weather": "Mooi weer",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti-voorspelling 24 uur",
         "state": {
           "settled_fine": "Mooi, stabiel",
           "fine_weather": "Mooi weer",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Neerslagkans"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Laatste update"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Luchtdruk op zeeniveau"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Stationsdruk"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Luchtdruktrend (3 uur)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Luchtdrukverandering (24 uur)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO-luchtdruktendens"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Sneeuwkans"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Mistkans"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Voorspellingsbetrouwbaarheid"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Modeldivergentie"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Voorspellingsnauwkeurigheid (24 uur)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Laatste voorspellingstreffer",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Raak",
+          "miss": "Mis"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Adaptieve demping"
+      },
+      "apparent_temperature": {
+        "name": "Gevoelstemperatuur"
+      },
+      "cloud_base": {
+        "name": "Wolkenbasis (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometrische belasting"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Weerstation"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Luchtdruk daalt snel"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Stormwaarschuwing"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Vorstrisico"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Mistrisico"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Ongeldige luchtdrukstatus voor {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Voorspelling gewijzigd",
+      "horizon_changed": "Voorspellingshorizon gewijzigd",
+      "pressure_drop": "Waarschuwing voor snelle luchtdrukdaling"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Voorspellingskalibratie resetten",
+      "description": "Wist de verificatiegeschiedenis en zet alle adaptieve kalibratiefactoren terug naar standaard.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuratie-item",
+          "description": "Optioneel item. Reset alle stations indien leeg."
+        }
+      }
     }
   }
 }

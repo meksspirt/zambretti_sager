@@ -8,6 +8,9 @@ import datetime
 from .algorithms import (
     DAMPING_EXPONENT,
     ZAMBRETTI_MAPPING,
+    calculate_apparent_temperature,
+    calculate_barometric_stress,
+    calculate_cloud_base,
     calculate_consensus_forecast,
     calculate_dew_point,
     calculate_extrapolations,
@@ -39,6 +42,9 @@ class ForecastData:
     wind_speed: float | None = None  # Wind speed (m/s)
     humidity: float | None = None  # Relative humidity (%)
     dew_point: float | None = None  # Dew point (°C)
+    apparent_temperature: float | None = None  # Feels-like temperature (°C)
+    cloud_base: int | None = None  # Estimated LCL cloud base (m)
+    barometric_stress: int | None = None  # Biometeorological stress index 0-100%
     altitude: float | None = None  # Station altitude (meters)
     temperature: float = 15.0  # Current temperature (°C)
     temperature_available: bool = False  # True when a real temperature sensor is configured
@@ -73,6 +79,9 @@ class ForecastData:
     last_forecast_hit: str | None = None  # "hit" / "miss"
     calibration_samples: int = 0  # Number of verified forecasts used for calibration
     adaptive_damping: float = DAMPING_EXPONENT  # Calibrated extrapolation damping exponent
+    wind_factor: float = 1.0  # Calibrated wind adjustment multiplier
+    seasonal_factor: float = 1.0  # Calibrated seasonal adjustment multiplier
+    precip_bias: float = 0.0  # Calibrated precipitation probability offset (%)
 
 
 @dataclass(frozen=True)
@@ -99,6 +108,9 @@ class WeatherObservations:
     trend_rate_3h: float | None = None
     trend_r2: float | None = None
     calibration_damping: float = DAMPING_EXPONENT
+    calibration_wind_factor: float = 1.0
+    calibration_seasonal_factor: float = 1.0
+    calibration_precip_bias: float = 0.0
     timestamp: datetime.datetime | None = None
 
 
@@ -118,6 +130,8 @@ class ForecastEngine:
             month=month,
             wind_degrees=obs.wind_degrees,
             latitude=obs.latitude,
+            seasonal_factor=obs.calibration_seasonal_factor,
+            wind_factor=obs.calibration_wind_factor,
         )
         zambretti_state = ZAMBRETTI_MAPPING.get(zambretti_index, "stable")
 
@@ -138,6 +152,8 @@ class ForecastEngine:
                 month=month,
                 wind_degrees=obs.wind_degrees,
                 latitude=obs.latitude,
+                seasonal_factor=obs.calibration_seasonal_factor,
+                wind_factor=obs.calibration_wind_factor,
             )
             regression_state = ZAMBRETTI_MAPPING.get(regression_index, "stable")
 
@@ -157,6 +173,8 @@ class ForecastEngine:
             latitude=obs.latitude,
             trend_rate_3h=obs.trend_rate_3h,
             damping=obs.calibration_damping,
+            seasonal_factor=obs.calibration_seasonal_factor,
+            wind_factor=obs.calibration_wind_factor,
         )
 
         precip_prob = calculate_precipitation_probability(
@@ -165,6 +183,7 @@ class ForecastEngine:
             obs.humidity,
             temperature=obs.temperature if obs.temperature_available else None,
             wind_speed=obs.wind_speed,
+            precip_bias=obs.calibration_precip_bias,
         )
         snow_prob = calculate_snow_probability(
             precip_prob,
@@ -174,10 +193,26 @@ class ForecastEngine:
             obs.temperature if obs.temperature_available else None,
             obs.humidity,
             obs.wind_speed,
+            is_night=obs.is_night,
         )
         dew_point = calculate_dew_point(
             obs.temperature if obs.temperature_available else None,
             obs.humidity,
+        )
+        apparent_temperature = calculate_apparent_temperature(
+            obs.temperature if obs.temperature_available else None,
+            obs.humidity,
+            obs.wind_speed,
+        )
+        cloud_base = calculate_cloud_base(
+            obs.temperature if obs.temperature_available else None,
+            dew_point,
+        )
+        pressure_change_24h = round(obs.p_now - obs.p_24h, 2) if obs.p_24h is not None else None
+        barometric_stress = calculate_barometric_stress(
+            delta_3h,
+            pressure_change_24h,
+            obs.trend_r2,
         )
         wmo_tendency = classify_wmo_pressure_tendency(obs.p_3h, obs.p_1_5h, obs.p_now)
 
@@ -212,6 +247,9 @@ class ForecastEngine:
             wind_speed=round(obs.wind_speed, 1) if obs.wind_speed is not None else None,
             humidity=round(obs.humidity, 1) if obs.humidity is not None else None,
             dew_point=round(dew_point, 1) if dew_point is not None else None,
+            apparent_temperature=apparent_temperature,
+            cloud_base=cloud_base,
+            barometric_stress=barometric_stress,
             altitude=round(obs.altitude, 1) if obs.altitude is not None else None,
             temperature=round(obs.temperature, 1),
             temperature_available=obs.temperature_available,
@@ -219,9 +257,7 @@ class ForecastEngine:
             rain=obs.rain,
             last_updated=obs.timestamp,
             delta_3h=delta_3h,
-            pressure_change_24h=(
-                round(obs.p_now - obs.p_24h, 2) if obs.p_24h is not None else None
-            ),
+            pressure_change_24h=pressure_change_24h,
             trend_label=trend_label,
             trend_rate_3h=obs.trend_rate_3h,
             trend_r2=obs.trend_r2,
@@ -241,4 +277,7 @@ class ForecastEngine:
             snow_probability=snow_prob,
             fog_probability=fog_prob,
             adaptive_damping=obs.calibration_damping,
+            wind_factor=obs.calibration_wind_factor,
+            seasonal_factor=obs.calibration_seasonal_factor,
+            precip_bias=obs.calibration_precip_bias,
         )

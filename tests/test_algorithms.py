@@ -365,3 +365,63 @@ def test_extrapolations_use_regression_rate_and_damping():
     assert extreme[24].predicted_pressure <= 1010.0
     assert extreme[24].predicted_pressure >= 950.0
     assert DAMPING_EXPONENT == 0.65
+
+
+def test_precipitation_probability_uses_wind_speed():
+    """Test strong winds increase and calm high pressure slightly reduces rain odds."""
+    base = calculate_precipitation_probability(1008.0, -1.0, humidity=70.0)
+    breezy = calculate_precipitation_probability(1008.0, -1.0, humidity=70.0, wind_speed=9.0)
+    gale = calculate_precipitation_probability(1008.0, -1.0, humidity=70.0, wind_speed=14.0)
+    assert base < breezy < gale
+
+    high_base = calculate_precipitation_probability(1018.0, 0.5, humidity=60.0)
+    high_calm = calculate_precipitation_probability(1018.0, 0.5, humidity=60.0, wind_speed=0.5)
+    assert high_calm < high_base
+
+    biased = calculate_precipitation_probability(1018.0, 0.5, humidity=60.0, precip_bias=8.0)
+    assert biased == high_base + 8
+
+
+def test_falling_storm_wmo_monotonic_and_fog_night():
+    """Test index 9 maps to storm, WMO 1/6 reject reversals, and night fog reaches 100%."""
+    from custom_components.zambretti_sager.const import ZAMBRETTI_MAPPING
+
+    assert ZAMBRETTI_MAPPING[9] == "stormy_much_rain"
+    # WMO: +3h rising then -1h falling (net +2 > 0.3) is NOT monotonic code 1
+    assert classify_wmo_pressure_tendency(1000.0, 1003.0, 1002.0) == 2
+    # WMO: -3h falling then +1h rising (net -2 < -0.3) is NOT monotonic code 6
+    assert classify_wmo_pressure_tendency(1002.0, 999.0, 1000.0) == 7
+
+    day_fog = calculate_fog_probability(5.0, 100.0, is_night=False)
+    night_fog = calculate_fog_probability(5.0, 100.0, is_night=True)
+    assert day_fog == 90
+    assert night_fog == 100
+
+
+def test_apparent_temperature_cloud_base_and_barometric_stress():
+    """Test Wind Chill, Heat Index, Espy LCL cloud base, and barometric stress."""
+    from custom_components.zambretti_sager.algorithms import (
+        calculate_apparent_temperature,
+        calculate_barometric_stress,
+        calculate_cloud_base,
+    )
+
+    assert calculate_apparent_temperature(None) is None
+    # Wind chill at 0 °C and 5 m/s (18 km/h)
+    chill = calculate_apparent_temperature(0.0, humidity=60.0, wind_speed=5.0)
+    assert chill is not None and chill < 0.0
+    # Heat index at 32 °C and 70% RH
+    heat = calculate_apparent_temperature(32.0, humidity=70.0, wind_speed=1.0)
+    assert heat is not None and heat > 35.0
+    # Mild temperature returns dry-bulb
+    assert calculate_apparent_temperature(18.4, humidity=50.0, wind_speed=2.0) == 18.4
+
+    assert calculate_cloud_base(None, 10.0) is None
+    assert calculate_cloud_base(20.0, 12.0) == 1000
+    assert calculate_cloud_base(10.0, 12.0) == 0
+
+    assert calculate_barometric_stress(None) is None
+    calm = calculate_barometric_stress(0.1, 0.5, 0.9)
+    storm = calculate_barometric_stress(-4.0, -16.0, 0.3)
+    assert calm is not None and storm is not None
+    assert 0 <= calm < 20 and storm >= 85

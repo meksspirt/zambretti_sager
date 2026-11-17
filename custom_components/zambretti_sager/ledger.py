@@ -27,6 +27,23 @@ CALIBRATION_MIN_SAMPLES = 3
 DAMPING_MIN = 0.45
 DAMPING_MAX = 0.85
 DAMPING_STEP = 0.02
+WIND_FACTOR_DEFAULT = 1.0
+WIND_FACTOR_MIN = 0.25
+WIND_FACTOR_MAX = 1.75
+WIND_FACTOR_STEP = 0.05
+SEASONAL_FACTOR_DEFAULT = 1.0
+SEASONAL_FACTOR_MIN = 0.25
+SEASONAL_FACTOR_MAX = 1.75
+SEASONAL_FACTOR_STEP = 0.05
+PRECIP_BIAS_DEFAULT = 0.0
+PRECIP_BIAS_MIN = -15.0
+PRECIP_BIAS_MAX = 15.0
+PRECIP_BIAS_STEP = 2.0
+
+
+def _clamp(value: float, low: float, high: float, precision: int = 3) -> float:
+    """Clamp ``value`` to ``[low, high]`` and round to ``precision`` decimals."""
+    return round(max(low, min(high, value)), precision)
 
 
 @dataclass
@@ -44,6 +61,9 @@ class LedgerRecord:
     delta_3h: float | None
     temperature: float | None = None
     rain: bool | None = None
+    rain_observed: bool | None = None
+    wind_adjustment_sign: int = 0
+    season_sign: int = 0
     verified: bool = False
     hit: bool | None = None
     pressure_error: float | None = None
@@ -54,9 +74,9 @@ class ForecastLedger:
     """Persistent 24-hour forecast verification ledger.
 
     Records a forecast at most once every six hours and verifies it 24 hours
-    later against the observed pressure, the current forecast severity and,
-    optionally, a rain sensor. Verified records also tune the extrapolation
-    damping exponent (adaptive calibration).
+    later against the observed pressure and, optionally, an observed rain window.
+    Verified records also tune the extrapolation damping exponent, wind and
+    seasonal adjustment multipliers, and precipitation probability bias.
     """
 
     def __init__(
@@ -69,10 +89,28 @@ class ForecastLedger:
         self._store = store or Store(hass, STORAGE_VERSION, f"{DOMAIN}.{entry_id}.ledger")
         self._records: list[LedgerRecord] = []
         self._damping = DAMPING_EXPONENT
+        self._wind_factor = WIND_FACTOR_DEFAULT
+        self._seasonal_factor = SEASONAL_FACTOR_DEFAULT
+        self._precip_bias = PRECIP_BIAS_DEFAULT
         self._loaded = False
         self._dirty = False
 
     # ── Persistence ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _load_clamped(
+        stored: dict[str, Any],
+        key: str,
+        default: float,
+        low: float,
+        high: float,
+        precision: int = 3,
+    ) -> float:
+        """Read and clamp a persisted numeric calibration factor."""
+        try:
+            return _clamp(float(stored.get(key, default)), low, high, precision)
+        except (TypeError, ValueError):
+            return default
 
     async def async_load(self) -> None:
         """Load ledger records from storage once."""
@@ -99,10 +137,22 @@ class ForecastLedger:
             except TypeError:
                 continue
 
-        try:
-            self._damping = self._clamp_damping(float(stored.get("damping", DAMPING_EXPONENT)))
-        except (TypeError, ValueError):
-            self._damping = DAMPING_EXPONENT
+        self._damping = self._load_clamped(
+            stored, "damping", DAMPING_EXPONENT, DAMPING_MIN, DAMPING_MAX
+        )
+        self._wind_factor = self._load_clamped(
+            stored, "wind_factor", WIND_FACTOR_DEFAULT, WIND_FACTOR_MIN, WIND_FACTOR_MAX
+        )
+        self._seasonal_factor = self._load_clamped(
+            stored,
+            "seasonal_factor",
+            SEASONAL_FACTOR_DEFAULT,
+            SEASONAL_FACTOR_MIN,
+            SEASONAL_FACTOR_MAX,
+        )
+        self._precip_bias = self._load_clamped(
+            stored, "precip_bias", PRECIP_BIAS_DEFAULT, PRECIP_BIAS_MIN, PRECIP_BIAS_MAX, 1
+        )
 
     async def async_save(self) -> None:
         """Persist the ledger if it changed."""
@@ -110,6 +160,9 @@ class ForecastLedger:
             return
         payload: dict[str, Any] = {
             "damping": self._damping,
+            "wind_factor": self._wind_factor,
+            "seasonal_factor": self._seasonal_factor,
+            "precip_bias": self._precip_bias,
             "records": [asdict(record) for record in self._records],
         }
         try:
@@ -118,6 +171,17 @@ class ForecastLedger:
         except Exception as err:  # noqa: BLE001 - storage is optional
             _LOGGER.debug("Could not persist forecast ledger: %s", err)
 
+    async def async_reset(self) -> None:
+        """Clear all verification records and restore default calibration factors."""
+        await self.async_load()
+        self._records.clear()
+        self._damping = DAMPING_EXPONENT
+        self._wind_factor = WIND_FACTOR_DEFAULT
+        self._seasonal_factor = SEASONAL_FACTOR_DEFAULT
+        self._precip_bias = PRECIP_BIAS_DEFAULT
+        self._dirty = True
+        await self.async_save()
+
     # ── Recording and verification ───────────────────────────────────────
 
     async def async_record(
@@ -125,6 +189,8 @@ class ForecastLedger:
         forecast: ForecastData,
         now: datetime.datetime,
         rain: bool | None = None,
+        wind_adjustment_sign: int = 0,
+        season_sign: int = 0,
     ) -> None:
         """Record the current forecast when the six-hour sampling window allows."""
         await self.async_load()
@@ -152,12 +218,45 @@ class ForecastLedger:
             delta_3h=forecast.delta_3h,
             temperature=forecast.temperature if forecast.temperature_available else None,
             rain=rain,
+            wind_adjustment_sign=wind_adjustment_sign,
+            season_sign=season_sign,
         )
         self._records.append(record)
         if len(self._records) > MAX_RECORDS:
             del self._records[: len(self._records) - MAX_RECORDS]
         self._dirty = True
         await self.async_save()
+
+    async def async_observe_rain(
+        self,
+        rain: bool | None,
+        now: datetime.datetime,
+    ) -> None:
+        """Record rain observations across all open 24-hour forecast windows."""
+        await self.async_load()
+        if rain is None:
+            return
+
+        changed = False
+        newly_wet = False
+        for record in self._records:
+            if record.verified:
+                continue
+            issued = self._parse_time(record.issued_at)
+            if issued is None or now < issued or now - issued >= VERIFY_AFTER:
+                continue
+            if rain is True and record.rain_observed is not True:
+                record.rain_observed = True
+                changed = True
+                newly_wet = True
+            elif rain is False and record.rain_observed is None:
+                record.rain_observed = False
+                changed = True
+
+        if changed:
+            self._dirty = True
+        if newly_wet:
+            await self.async_save()
 
     async def async_verify(
         self,
@@ -167,6 +266,11 @@ class ForecastLedger:
         rain: bool | None = None,
     ) -> int:
         """Verify records older than 24 hours.
+
+        Evaluates predicted 24-hour pressure against ``actual_pressure``,
+        any observed rain during the 24-hour window (from
+        :meth:`async_observe_rain` or ``rain`` at verification time), and
+        ``actual_state`` when an explicit observed state is supplied.
 
         Returns:
             Number of records verified in this call.
@@ -195,13 +299,25 @@ class ForecastLedger:
                 pressure_hit = abs(pressure_error) <= PRESSURE_HIT_TOLERANCE
 
             state_hit = True
-            if predicted_severity is not None and actual_severity is not None:
+            if (
+                actual_state is not None
+                and predicted_severity is not None
+                and actual_severity is not None
+            ):
                 state_hit = abs(predicted_severity - actual_severity) <= 1
 
+            observed_rain = record.rain_observed
+            if rain is True:
+                observed_rain = True
+            elif observed_rain is None:
+                observed_rain = rain
+            if observed_rain is not None:
+                record.rain_observed = observed_rain
+
             rain_hit = True
-            if rain is not None and record.precip_probability is not None:
+            if observed_rain is not None and record.precip_probability is not None:
                 predicted_rain = record.precip_probability >= 50
-                rain_hit = predicted_rain == rain
+                rain_hit = predicted_rain == observed_rain
 
             record.verified = True
             record.hit = bool(pressure_hit and state_hit and rain_hit)
@@ -225,14 +341,52 @@ class ForecastLedger:
         return self._damping
 
     @property
+    def wind_factor(self) -> float:
+        """Return the calibrated wind adjustment multiplier."""
+        return self._wind_factor
+
+    @property
+    def seasonal_factor(self) -> float:
+        """Return the calibrated seasonal adjustment multiplier."""
+        return self._seasonal_factor
+
+    @property
+    def precip_bias(self) -> float:
+        """Return the calibrated precipitation probability offset (%)."""
+        return self._precip_bias
+
+    @property
     def calibration_samples(self) -> int:
-        """Return the number of verified forecasts usable for calibration."""
+        """Return the number of verified forecasts usable for trend calibration."""
         return sum(
             1
             for record in self._records
             if record.verified
             and record.predicted_delta_24h is not None
             and abs(record.predicted_delta_24h) >= MIN_CALIBRATION_DELTA
+        )
+
+    @property
+    def _wind_samples(self) -> int:
+        """Return the number of verified forecasts with active wind adjustment."""
+        return sum(
+            1 for record in self._records if record.verified and record.wind_adjustment_sign != 0
+        )
+
+    @property
+    def _seasonal_samples(self) -> int:
+        """Return the number of verified forecasts with active seasonal offset."""
+        return sum(1 for record in self._records if record.verified and record.season_sign != 0)
+
+    @property
+    def _rain_samples(self) -> int:
+        """Return the number of verified forecasts with observed rain status."""
+        return sum(
+            1
+            for record in self._records
+            if record.verified
+            and record.rain_observed is not None
+            and record.precip_probability is not None
         )
 
     @property
@@ -269,31 +423,128 @@ class ForecastLedger:
             "last_hit": self.last_hit,
             "calibration_samples": self.calibration_samples,
             "damping": self.damping,
+            "wind_factor": self.wind_factor,
+            "seasonal_factor": self.seasonal_factor,
+            "precip_bias": self.precip_bias,
         }
 
     # ── Internals ────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _nudge_signed_factor(
+        current: float,
+        sign: int,
+        missed_wet: bool,
+        false_wet: bool,
+        pressure_diff: float | None,
+        rain_observed: bool | None,
+        step: float,
+        low: float,
+        high: float,
+    ) -> float:
+        """Adjust a directional bias multiplier (+1 fair, -1 unsettled)."""
+        stronger_bad = missed_wet or (
+            pressure_diff is not None and pressure_diff < -PRESSURE_HIT_TOLERANCE
+        )
+        stronger_good = false_wet or (
+            rain_observed is not True
+            and pressure_diff is not None
+            and pressure_diff > PRESSURE_HIT_TOLERANCE
+        )
+
+        if sign < 0:
+            if stronger_bad:
+                return _clamp(current + step, low, high)
+            if stronger_good:
+                return _clamp(current - step, low, high)
+        elif sign > 0:
+            if stronger_bad:
+                return _clamp(current - step, low, high)
+            if stronger_good:
+                return _clamp(current + step, low, high)
+        return current
+
     def _update_calibration(self, record: LedgerRecord, actual_pressure: float) -> None:
-        """Nudge the damping exponent based on the verified 24h trend error."""
+        """Update damping, wind/seasonal multipliers, and rain bias from verified outcomes."""
+        # 1. Trend damping (sign-aware, gated on CALIBRATION_MIN_SAMPLES)
         if (
-            record.predicted_delta_24h is None
-            or abs(record.predicted_delta_24h) < MIN_CALIBRATION_DELTA
+            self.calibration_samples >= CALIBRATION_MIN_SAMPLES
+            and record.predicted_delta_24h is not None
+            and abs(record.predicted_delta_24h) >= MIN_CALIBRATION_DELTA
         ):
-            return
+            actual_delta = actual_pressure - record.p_now
+            if actual_delta * record.predicted_delta_24h > 0:
+                predicted_magnitude = abs(record.predicted_delta_24h)
+                actual_magnitude = abs(actual_delta)
+                if actual_magnitude > predicted_magnitude + 0.5:
+                    self._damping = self._clamp_damping(self._damping + DAMPING_STEP)
+                elif actual_magnitude < predicted_magnitude - 0.5:
+                    self._damping = self._clamp_damping(self._damping - DAMPING_STEP)
+            elif abs(actual_delta) > 0.5:
+                # Trend reversed direction within 24h -> reduce extrapolation aggressiveness.
+                self._damping = self._clamp_damping(self._damping - DAMPING_STEP)
 
-        actual_delta = actual_pressure - record.p_now
-        predicted_magnitude = abs(record.predicted_delta_24h)
-        actual_magnitude = abs(actual_delta)
+        missed_wet = (
+            record.rain_observed is True
+            and record.precip_probability is not None
+            and record.precip_probability < 50
+        )
+        false_wet = (
+            record.rain_observed is False
+            and record.precip_probability is not None
+            and record.precip_probability >= 50
+        )
+        pressure_diff = (
+            actual_pressure - record.predicted_p_24h if record.predicted_p_24h is not None else None
+        )
 
-        if actual_magnitude > predicted_magnitude + 0.5:
-            self._damping = self._clamp_damping(self._damping + DAMPING_STEP)
-        elif actual_magnitude < predicted_magnitude - 0.5:
-            self._damping = self._clamp_damping(self._damping - DAMPING_STEP)
+        # 2. Wind adjustment multiplier
+        if record.wind_adjustment_sign != 0 and self._wind_samples >= CALIBRATION_MIN_SAMPLES:
+            self._wind_factor = self._nudge_signed_factor(
+                self._wind_factor,
+                record.wind_adjustment_sign,
+                missed_wet,
+                false_wet,
+                pressure_diff,
+                record.rain_observed,
+                WIND_FACTOR_STEP,
+                WIND_FACTOR_MIN,
+                WIND_FACTOR_MAX,
+            )
+
+        # 3. Seasonal offset multiplier
+        if record.season_sign != 0 and self._seasonal_samples >= CALIBRATION_MIN_SAMPLES:
+            self._seasonal_factor = self._nudge_signed_factor(
+                self._seasonal_factor,
+                record.season_sign,
+                missed_wet,
+                false_wet,
+                pressure_diff,
+                record.rain_observed,
+                SEASONAL_FACTOR_STEP,
+                SEASONAL_FACTOR_MIN,
+                SEASONAL_FACTOR_MAX,
+            )
+
+        # 4. Precipitation probability bias
+        if (
+            record.rain_observed is not None
+            and record.precip_probability is not None
+            and self._rain_samples >= CALIBRATION_MIN_SAMPLES
+        ):
+            if missed_wet:
+                self._precip_bias = _clamp(
+                    self._precip_bias + PRECIP_BIAS_STEP, PRECIP_BIAS_MIN, PRECIP_BIAS_MAX, 1
+                )
+            elif false_wet:
+                self._precip_bias = _clamp(
+                    self._precip_bias - PRECIP_BIAS_STEP, PRECIP_BIAS_MIN, PRECIP_BIAS_MAX, 1
+                )
 
     @staticmethod
     def _clamp_damping(value: float) -> float:
         """Clamp the damping exponent to a safe physical range."""
-        return round(max(DAMPING_MIN, min(DAMPING_MAX, value)), 3)
+        return _clamp(value, DAMPING_MIN, DAMPING_MAX)
 
     @staticmethod
     def _parse_time(value: str) -> datetime.datetime | None:

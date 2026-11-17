@@ -30,6 +30,36 @@ async def test_ws_get_version():
 
 
 @pytest.mark.asyncio
+async def test_reset_calibration_service():
+    """Test zambretti_sager.reset_calibration resets matching or all entries."""
+    from custom_components.zambretti_sager import _async_reset_calibration
+
+    entry_a = MagicMock(entry_id="a", title="A")
+    entry_a.runtime_data = MagicMock()
+    entry_a.runtime_data._ledger.async_reset = AsyncMock()
+    entry_a.runtime_data.async_refresh = AsyncMock()
+
+    entry_b = MagicMock(entry_id="b", title="B")
+    entry_b.runtime_data = MagicMock()
+    entry_b.runtime_data._ledger.async_reset = AsyncMock()
+    entry_b.runtime_data.async_refresh = AsyncMock()
+
+    mock_hass = MagicMock()
+    mock_hass.config_entries.async_entries.return_value = [entry_a, entry_b]
+
+    # Targeted reset
+    await _async_reset_calibration(mock_hass, MagicMock(data={"entry_id": "a"}))
+    entry_a.runtime_data._ledger.async_reset.assert_awaited_once()
+    entry_a.runtime_data.async_refresh.assert_awaited_once()
+    entry_b.runtime_data._ledger.async_reset.assert_not_called()
+
+    # Global reset (no entry_id)
+    await _async_reset_calibration(mock_hass, MagicMock(data={}))
+    assert entry_a.runtime_data._ledger.async_reset.await_count == 2
+    entry_b.runtime_data._ledger.async_reset.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_async_setup():
     """Test async_setup registers websocket command and frontend resources."""
     mock_hass = MagicMock()

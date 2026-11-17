@@ -12,11 +12,11 @@
           "humidity_sensor": "Páratartalom-érzékelő (opcionális)",
           "use_sea_level_correction": "Tengerszint feletti nyomáskorrekció engedélyezése",
           "location": "Hely",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Esőérzékelő (opcionális)",
+          "falling_rapid_threshold": "Gyors nyomásesés küszöbértéke",
+          "storm_precip_threshold": "Viharjelzési csapadékküszöb",
+          "frost_temp_threshold": "Fagyveszély hőmérsékleti küszöb",
+          "fog_humidity_threshold": "Ködveszély páratartalom-küszöb"
         },
         "data_description": {
           "pressure_sensor": "Válassza ki a barometrikus nyomásérzékelőt",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Opcionális: javítja a csapadék valószínűségét",
           "use_sea_level_correction": "Engedélyezze abszolút nyomásérzékelő esetén tengerszint felett",
           "location": "Kattintson a térképre a magasság számításához",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Opcionális: az előrejelzés-ellenőrző napló és az esővalószínűség ellenőrzése használja",
+          "falling_rapid_threshold": "3 óra alatti nyomásesés (hPa), amely kiváltja a gyors esés riasztást",
+          "storm_precip_threshold": "Csapadékvalószínűség (%), amely felett viharriasztás jelenik meg",
+          "frost_temp_threshold": "Hőmérséklet (°C), amelyen vagy amely alatt fagyveszélyt jelez",
+          "fog_humidity_threshold": "Relatív páratartalom (%), amely a ködmodellel együtt ködriasztáshoz szükséges"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Páratartalom-érzékelő (opcionális)",
           "use_sea_level_correction": "Tengerszint feletti nyomáskorrekció engedélyezése",
           "location": "Hely",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Esőérzékelő (opcionális)",
+          "falling_rapid_threshold": "Gyors nyomásesés küszöbértéke",
+          "storm_precip_threshold": "Viharjelzési csapadékküszöb",
+          "frost_temp_threshold": "Fagyveszély hőmérsékleti küszöb",
+          "fog_humidity_threshold": "Ködveszély páratartalom-küszöb"
         },
         "data_description": {
           "pressure_sensor": "Válassza ki a barometrikus nyomásérzékelőt",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Opcionális: javítja a csapadék valószínűségét",
           "use_sea_level_correction": "Engedélyezze abszolút nyomásérzékelő esetén tengerszint felett",
           "location": "Kattintson a térképre a magasság számításához",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Opcionális: az előrejelzés-ellenőrző napló és az esővalószínűség ellenőrzése használja",
+          "falling_rapid_threshold": "3 óra alatti nyomásesés (hPa), amely kiváltja a gyors esés riasztást",
+          "storm_precip_threshold": "Csapadékvalószínűség (%), amely felett viharriasztás jelenik meg",
+          "frost_temp_threshold": "Hőmérséklet (°C), amelyen vagy amely alatt fagyveszélyt jelez",
+          "fog_humidity_threshold": "Relatív páratartalom (%), amely a ködmodellel együtt ködriasztáshoz szükséges"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Ez az időjárás-állomás már be van állítva",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Az időjárás-állomás újrakonfigurálása sikeres volt"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Páratartalom-érzékelő (opcionális)",
           "use_sea_level_correction": "Tengerszint feletti nyomáskorrekció engedélyezése",
           "location": "Hely",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Esőérzékelő (opcionális)",
+          "falling_rapid_threshold": "Gyors nyomásesés küszöbértéke",
+          "storm_precip_threshold": "Viharjelzési csapadékküszöb",
+          "frost_temp_threshold": "Fagyveszély hőmérsékleti küszöb",
+          "fog_humidity_threshold": "Ködveszély páratartalom-küszöb"
         },
         "data_description": {
           "pressure_sensor": "Válassza ki a barometrikus nyomásérzékelőt",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Opcionális: javítja a csapadék valószínűségét",
           "use_sea_level_correction": "Engedélyezze abszolút nyomásérzékelő esetén tengerszint felett",
           "location": "Kattintson a térképre a magasság számításához",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Opcionális: az előrejelzés-ellenőrző napló és az esővalószínűség ellenőrzése használja",
+          "falling_rapid_threshold": "3 óra alatti nyomásesés (hPa), amely kiváltja a gyors esés riasztást",
+          "storm_precip_threshold": "Csapadékvalószínűség (%), amely felett viharriasztás jelenik meg",
+          "frost_temp_threshold": "Hőmérséklet (°C), amelyen vagy amely alatt fagyveszélyt jelez",
+          "fog_humidity_threshold": "Relatív páratartalom (%), amely a ködmodellel együtt ködriasztáshoz szükséges"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti-előrejelzés",
         "state": {
           "settled_fine": "Szép, stabil",
           "fine_weather": "Szép idő",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager-előrejelzés",
         "state": {
           "sager_fair_improving": "Szép idő, javul",
           "sager_fair_tending_to_deteriorate": "Szép idő, romlásra hajlik",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti-előrejelzés 6 óra",
         "state": {
           "settled_fine": "Szép, stabil",
           "fine_weather": "Szép idő",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti-előrejelzés 12 óra",
         "state": {
           "settled_fine": "Szép, stabil",
           "fine_weather": "Szép idő",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti-előrejelzés 24 óra",
         "state": {
           "settled_fine": "Szép, stabil",
           "fine_weather": "Szép idő",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Csapadék valószínűsége"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Utolsó frissítés"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Tengerszinti légnyomás"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Állomásnyomás"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Nyomástrend (3 óra)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Nyomásváltozás (24 óra)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO nyomástendencia"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Havazás valószínűsége"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Köd valószínűsége"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Előrejelzési megbízhatóság"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Modelleltérés"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Előrejelzési pontosság (24 óra)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Utolsó előrejelzés találata",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Találat",
+          "miss": "Téves"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Adaptív csillapítás"
+      },
+      "apparent_temperature": {
+        "name": "Hőérzet"
+      },
+      "cloud_base": {
+        "name": "Felhőalap (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometrikus terhelés"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Időjárás-állomás"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Gyorsan csökkenő légnyomás"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Viharriasztás"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Fagyveszély"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Ködveszély"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Érvénytelen nyomásállapot: {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Az előrejelzés megváltozott",
+      "horizon_changed": "Az előrejelzési horizont megváltozott",
+      "pressure_drop": "Gyors nyomásesés riasztás"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Előrejelzési kalibráció visszaállítása",
+      "description": "Törli az ellenőrzési előzményeket és visszaállítja az adaptív kalibrációs tényezőket.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurációs bejegyzés",
+          "description": "Opcionális bejegyzés. Ha üres, minden állomást visszaállít."
+        }
+      }
     }
   }
 }

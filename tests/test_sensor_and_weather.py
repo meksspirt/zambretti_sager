@@ -155,7 +155,7 @@ async def test_weather_entity(mock_coordinator):
     assert forecast[0]["condition"] is not None
     assert forecast[0]["native_temperature"] == 21.5
     assert forecast[0]["native_pressure"] == 1020.8
-    assert forecast[0]["precipitation_probability"] == 10
+    assert 0 <= forecast[0]["precipitation_probability"] <= 100
     assert forecast[0]["wind_speed"] == 3.5
     assert forecast[0]["wind_bearing"] == 270.0
 
@@ -190,7 +190,7 @@ async def test_sensor_async_setup_entry(mock_coordinator):
         added.extend(entities)
 
     await sensor.async_setup_entry(MagicMock(), entry, mock_add)
-    assert len(added) == 19
+    assert len(added) == 22
 
 
 @pytest.mark.asyncio
@@ -305,3 +305,82 @@ def test_sensor_unavailable_paths(mock_coordinator):
     trend_sensor = _sensor(mock_coordinator, "pressure_trend_3h")
     assert trend_sensor.available is False
     assert trend_sensor.native_value is None
+
+    # Unavailable coordinator data must make sensors unavailable even with available_fn.
+    mock_coordinator.data = ForecastData(
+        available=False,
+        p_now=1013.0,
+        delta_3h=-1.0,
+        forecast_accuracy=85,
+    )
+    assert trend_sensor.available is False
+    assert trend_sensor.extra_state_attributes == {}
+    assert _sensor(mock_coordinator, "forecast_accuracy_24h").available is False
+
+
+def test_pressure_delta_sensors_use_pressure_device_class(mock_coordinator):
+    """Test pressure delta sensors expose SensorDeviceClass.PRESSURE for HA unit conversion."""
+    assert _sensor(mock_coordinator, "pressure_trend_3h").device_class == SensorDeviceClass.PRESSURE
+    assert (
+        _sensor(mock_coordinator, "pressure_change_24h").device_class == SensorDeviceClass.PRESSURE
+    )
+
+
+def test_backwards_compatibility_sensor_classes(mock_coordinator):
+    """Test legacy sensor subclasses remain importable and functional."""
+    from custom_components.zambretti_sager.sensor import (
+        LastUpdateSensor,
+        PrecipitationProbability,
+        SagerSensor,
+        WeatherSensorBase,
+        ZambrettiForecast6h,
+        ZambrettiForecast12h,
+        ZambrettiForecast24h,
+        ZambrettiSensor,
+    )
+
+    assert WeatherSensorBase(mock_coordinator).translation_key == "zambretti_forecast"
+    assert ZambrettiSensor(mock_coordinator).translation_key == "zambretti_forecast"
+    assert SagerSensor(mock_coordinator).translation_key == "sager_forecast"
+    assert ZambrettiForecast6h(mock_coordinator).translation_key == "zambretti_forecast_6h"
+    assert ZambrettiForecast12h(mock_coordinator).translation_key == "zambretti_forecast_12h"
+    assert ZambrettiForecast24h(mock_coordinator).translation_key == "zambretti_forecast_24h"
+    assert PrecipitationProbability(mock_coordinator).native_value == 10
+    assert LastUpdateSensor(mock_coordinator).translation_key == "last_update"
+
+
+@pytest.mark.asyncio
+async def test_weather_snow_fog_dew_point_and_horizon_precip(mock_coordinator):
+    """Test weather entity exposes dew point, snow/fog conditions, and horizon precip."""
+    mock_coordinator.data.dew_point = 12.1
+    mock_coordinator.data.snow_probability = 80
+    mock_coordinator.data.temperature = -2.0
+    mock_coordinator.data.temperature_available = True
+    mock_coordinator.data.consensus_state = "unsettled_rain_later"
+    weather = ZambrettiWeather(mock_coordinator)
+    assert weather.native_dew_point == 12.1
+    assert weather.condition == "snowy"
+
+    mock_coordinator.data.temperature = 2.0
+    mock_coordinator.data.snow_probability = 35
+    assert weather.condition == "snowy-rainy"
+
+    mock_coordinator.data.consensus_state = "fine_weather"
+    mock_coordinator.data.snow_probability = 0
+    mock_coordinator.data.fog_probability = 85
+    assert weather.condition == "fog"
+
+    mock_coordinator.data.fog_probability = 10
+    mock_coordinator.data.predicted_p_6h = 995.0
+    mock_coordinator.data.predicted_p_24h = 1030.0
+    hourly = await weather.async_forecast_hourly()
+    assert hourly is not None
+    assert hourly[0]["precipitation_probability"] > hourly[2]["precipitation_probability"]
+
+    mock_coordinator.data.apparent_temperature = -6.5
+    mock_coordinator.data.cloud_base = 850
+    mock_coordinator.data.barometric_stress = 42
+    assert weather.native_apparent_temperature == -6.5
+    assert _sensor(mock_coordinator, "apparent_temperature").native_value == -6.5
+    assert _sensor(mock_coordinator, "cloud_base").native_value == 850
+    assert _sensor(mock_coordinator, "barometric_stress").native_value == 42

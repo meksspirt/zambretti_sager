@@ -12,11 +12,11 @@
           "humidity_sensor": "Fuktighetssensor (valfritt)",
           "use_sea_level_correction": "Aktivera korrigering till havsnivåtryck",
           "location": "Plats",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regnsensor (valfritt)",
+          "falling_rapid_threshold": "Tröskel för snabbt tryckfall",
+          "storm_precip_threshold": "Nederbördströskel för stormvarning",
+          "frost_temp_threshold": "Temperaturtröskel för frostrisk",
+          "fog_humidity_threshold": "Fuktighetströskel för dimrisk"
         },
         "data_description": {
           "pressure_sensor": "Välj din barometriska trycksensor",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Valfritt: förbättrar nederbördsannolikheten",
           "use_sea_level_correction": "Aktivera vid absolut trycksensor över havsnivå",
           "location": "Klicka på kartan för att beräkna höjd",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Valfritt: används av prognosverifieringsloggen och kontroller av regnsannolikhet",
+          "falling_rapid_threshold": "Tryckfall under 3 timmar (hPa) som utlöser varningen för snabbt fall",
+          "storm_precip_threshold": "Nederbördssannolikhet (%) över vilken en stormvarning utfärdas",
+          "frost_temp_threshold": "Temperatur (°C) vid eller under vilken frostrisk rapporteras",
+          "fog_humidity_threshold": "Relativ luftfuktighet (%) som krävs med dimmodellen för en dimvarning"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Fuktighetssensor (valfritt)",
           "use_sea_level_correction": "Aktivera korrigering till havsnivåtryck",
           "location": "Plats",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regnsensor (valfritt)",
+          "falling_rapid_threshold": "Tröskel för snabbt tryckfall",
+          "storm_precip_threshold": "Nederbördströskel för stormvarning",
+          "frost_temp_threshold": "Temperaturtröskel för frostrisk",
+          "fog_humidity_threshold": "Fuktighetströskel för dimrisk"
         },
         "data_description": {
           "pressure_sensor": "Välj din barometriska trycksensor",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Valfritt: förbättrar nederbördsannolikheten",
           "use_sea_level_correction": "Aktivera vid absolut trycksensor över havsnivå",
           "location": "Klicka på kartan för att beräkna höjd",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Valfritt: används av prognosverifieringsloggen och kontroller av regnsannolikhet",
+          "falling_rapid_threshold": "Tryckfall under 3 timmar (hPa) som utlöser varningen för snabbt fall",
+          "storm_precip_threshold": "Nederbördssannolikhet (%) över vilken en stormvarning utfärdas",
+          "frost_temp_threshold": "Temperatur (°C) vid eller under vilken frostrisk rapporteras",
+          "fog_humidity_threshold": "Relativ luftfuktighet (%) som krävs med dimmodellen för en dimvarning"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Denna väderstation är redan konfigurerad",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Väderstationen har konfigurerats om"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Fuktighetssensor (valfritt)",
           "use_sea_level_correction": "Aktivera korrigering till havsnivåtryck",
           "location": "Plats",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regnsensor (valfritt)",
+          "falling_rapid_threshold": "Tröskel för snabbt tryckfall",
+          "storm_precip_threshold": "Nederbördströskel för stormvarning",
+          "frost_temp_threshold": "Temperaturtröskel för frostrisk",
+          "fog_humidity_threshold": "Fuktighetströskel för dimrisk"
         },
         "data_description": {
           "pressure_sensor": "Välj din barometriska trycksensor",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Valfritt: förbättrar nederbördsannolikheten",
           "use_sea_level_correction": "Aktivera vid absolut trycksensor över havsnivå",
           "location": "Klicka på kartan för att beräkna höjd",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Valfritt: används av prognosverifieringsloggen och kontroller av regnsannolikhet",
+          "falling_rapid_threshold": "Tryckfall under 3 timmar (hPa) som utlöser varningen för snabbt fall",
+          "storm_precip_threshold": "Nederbördssannolikhet (%) över vilken en stormvarning utfärdas",
+          "frost_temp_threshold": "Temperatur (°C) vid eller under vilken frostrisk rapporteras",
+          "fog_humidity_threshold": "Relativ luftfuktighet (%) som krävs med dimmodellen för en dimvarning"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti-prognos",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint väder",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager-prognos",
         "state": {
           "sager_fair_improving": "Fint väder, förbättras",
           "sager_fair_tending_to_deteriorate": "Fint väder, tendens att försämras",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti-prognos 6 tim",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint väder",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti-prognos 12 tim",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint väder",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti-prognos 24 tim",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint väder",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Nederbördssannolikhet"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Senaste uppdatering"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Lufttryck vid havsnivå"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Stationstryck"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Trycktrend (3 tim)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Tryckförändring (24 tim)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO-trycktendens"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Snösannolikhet"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Dimsannolikhet"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Prognostillförlitlighet"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Modellavvikelse"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Prognosträffsäkerhet (24 tim)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Senaste prognosutfall",
         "state": {
-          "hit": "Hit",
+          "hit": "Träff",
           "miss": "Miss"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Adaptiv dämpning"
+      },
+      "apparent_temperature": {
+        "name": "Känns som-temperatur"
+      },
+      "cloud_base": {
+        "name": "Molnbas (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometrisk belastning"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Väderstation"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Trycket faller snabbt"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Stormvarning"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Frostrisk"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Dimrisk"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Ogiltigt tryckvärde för {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Prognosen ändrades",
+      "horizon_changed": "Prognoshorisonten ändrades",
+      "pressure_drop": "Varning om snabbt tryckfall"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Återställ prognoskalibrering",
+      "description": "Rensar verifieringshistorik och återställer alla adaptiva kalibreringsfaktorer.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurationspost",
+          "description": "Valfri post. Återställer alla stationer om den utelämnas."
+        }
+      }
     }
   }
 }

@@ -175,6 +175,15 @@
       "fog_probability": {
         "default": "mdi:weather-fog"
       },
+      "apparent_temperature": {
+        "default": "mdi:thermometer"
+      },
+      "cloud_base": {
+        "default": "mdi:cloud-outline"
+      },
+      "barometric_stress": {
+        "default": "mdi:heart-pulse"
+      },
       "forecast_confidence": {
         "default": "mdi:shield-check"
       },
@@ -216,6 +225,11 @@
       "weather_station": {
         "default": "mdi:weather-partly-cloudy"
       }
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "service": "mdi:restore"
     }
   }
 }

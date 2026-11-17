@@ -137,15 +137,23 @@ def test_fog_risk_requires_humidity_and_model():
     )
     assert weak_model.is_on is False
 
+    missing_humidity = _sensor(
+        _coordinator(_base(humidity=None, fog_probability=None)),
+        "fog_risk",
+    )
+    assert missing_humidity.is_on is None
+
 
 def test_binary_sensor_unavailable_without_data():
     """Test binary sensors report no state when the coordinator has no data."""
     coordinator = _coordinator(_base())
     coordinator.data = None
     assert _sensor(coordinator, "storm_warning").is_on is None
+    assert _sensor(coordinator, "storm_warning").extra_state_attributes == {}
 
     coordinator.data = _base(available=False)
     assert _sensor(coordinator, "fog_risk").is_on is None
+    assert _sensor(coordinator, "fog_risk").extra_state_attributes == {}
 
 
 @pytest.mark.asyncio

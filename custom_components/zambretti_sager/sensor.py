@@ -12,7 +12,12 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory
+from homeassistant.const import (
+    PERCENTAGE,
+    EntityCategory,
+    UnitOfLength,
+    UnitOfTemperature,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -65,6 +70,12 @@ def _get_base_attrs(d: ForecastData | None) -> dict:
         attrs["humidity_%"] = d.humidity
     if d.dew_point is not None:
         attrs["dew_point"] = d.dew_point
+    if d.apparent_temperature is not None:
+        attrs["apparent_temperature"] = d.apparent_temperature
+    if d.cloud_base is not None:
+        attrs["cloud_base_m"] = d.cloud_base
+    if d.barometric_stress is not None:
+        attrs["barometric_stress"] = d.barometric_stress
     if d.temperature_available:
         attrs["temperature"] = d.temperature
     if d.wind_degrees is not None:
@@ -159,6 +170,7 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="pressure_trend_3h",
         translation_key="pressure_trend_3h",
+        device_class=SensorDeviceClass.PRESSURE,
         native_unit_of_measurement=HPA,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:trending-neutral",
@@ -168,6 +180,7 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
     ZambrettiSensorEntityDescription(
         key="pressure_change_24h",
         translation_key="pressure_change_24h",
+        device_class=SensorDeviceClass.PRESSURE,
         native_unit_of_measurement=HPA,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:gauge",
@@ -210,6 +223,34 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         icon="mdi:weather-fog",
         value_fn=lambda d: d.fog_probability if d.available else None,
         available_fn=lambda d: d.fog_probability is not None,
+    ),
+    ZambrettiSensorEntityDescription(
+        key="apparent_temperature",
+        translation_key="apparent_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda d: d.apparent_temperature if d.available else None,
+        available_fn=lambda d: d.apparent_temperature is not None,
+    ),
+    ZambrettiSensorEntityDescription(
+        key="cloud_base",
+        translation_key="cloud_base",
+        device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.METERS,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:cloud-outline",
+        value_fn=lambda d: d.cloud_base if d.available else None,
+        available_fn=lambda d: d.cloud_base is not None,
+    ),
+    ZambrettiSensorEntityDescription(
+        key="barometric_stress",
+        translation_key="barometric_stress",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:heart-pulse",
+        value_fn=lambda d: d.barometric_stress if d.available else None,
+        available_fn=lambda d: d.barometric_stress is not None,
     ),
     ZambrettiSensorEntityDescription(
         key="forecast_confidence",
@@ -261,7 +302,12 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         icon="mdi:tune",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.adaptive_damping if d.available else None,
-        attrs_fn=lambda d, _: {"calibration_samples": d.calibration_samples},
+        attrs_fn=lambda d, _: {
+            "calibration_samples": d.calibration_samples,
+            "wind_factor": d.wind_factor,
+            "seasonal_factor": d.seasonal_factor,
+            "precip_bias": d.precip_bias,
+        },
     ),
     # ── Timestamp ───────────────────────────────────────────────────────
     ZambrettiSensorEntityDescription(
@@ -273,6 +319,8 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
         available_fn=lambda d: d.last_updated is not None,
     ),
 )
+
+_DESCRIPTIONS_BY_KEY = {desc.key: desc for desc in SENSOR_DESCRIPTIONS}
 
 
 async def async_setup_entry(
@@ -305,6 +353,9 @@ class WeatherSensor(ZambrettiEntity, SensorEntity):
             "wind_speed",
             "humidity_%",
             "dew_point",
+            "apparent_temperature",
+            "cloud_base_m",
+            "barometric_stress",
             "temperature",
             "altitude_m",
             "trend_rate_3h",
@@ -316,6 +367,9 @@ class WeatherSensor(ZambrettiEntity, SensorEntity):
             "rain",
             "is_night",
             "calibration_samples",
+            "wind_factor",
+            "seasonal_factor",
+            "precip_bias",
         }
     )
 
@@ -331,12 +385,14 @@ class WeatherSensor(ZambrettiEntity, SensorEntity):
     @property
     def available(self) -> bool:
         """Return True when the coordinator has valid data."""
+        if not super().available:
+            return False
         d = self.data
         if d is None:
             return False
         if self.entity_description.available_fn is not None:
             return self.entity_description.available_fn(d)
-        return super().available
+        return True
 
     @property
     def native_value(self) -> Any:
@@ -350,6 +406,79 @@ class WeatherSensor(ZambrettiEntity, SensorEntity):
     def extra_state_attributes(self) -> dict:
         """Return extra attributes via description attrs_fn."""
         d = self.data
-        if d and self.entity_description.attrs_fn is not None:
+        if d and d.available and self.entity_description.attrs_fn is not None:
             return self.entity_description.attrs_fn(d, self.coordinator)
         return {}
+
+
+# ── Backwards compatibility aliases & subclasses ─────────────────────────
+
+
+class WeatherSensorBase(WeatherSensor):
+    """Backwards-compatible base class alias."""
+
+    def __init__(
+        self,
+        coordinator: ZambrettiSagerCoordinator,
+        description: ZambrettiSensorEntityDescription | None = None,
+    ) -> None:
+        """Initialize the base sensor."""
+        if description is None:
+            description = _DESCRIPTIONS_BY_KEY["zambretti"]
+        super().__init__(coordinator, description)
+
+
+class ZambrettiSensor(WeatherSensor):
+    """Current Zambretti forecast sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the Zambretti sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["zambretti"])
+
+
+class SagerSensor(WeatherSensor):
+    """Sager forecast sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the Sager sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["sager"])
+
+
+class ZambrettiForecast6h(WeatherSensor):
+    """6-hour Zambretti forecast sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the 6-hour forecast sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["zambretti_6h"])
+
+
+class ZambrettiForecast12h(WeatherSensor):
+    """12-hour Zambretti forecast sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the 12-hour forecast sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["zambretti_12h"])
+
+
+class ZambrettiForecast24h(WeatherSensor):
+    """24-hour Zambretti forecast sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the 24-hour forecast sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["zambretti_24h"])
+
+
+class PrecipitationProbability(WeatherSensor):
+    """Precipitation probability sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the precipitation probability sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["precipitation_probability"])
+
+
+class LastUpdateSensor(WeatherSensor):
+    """Last update timestamp sensor."""
+
+    def __init__(self, coordinator: ZambrettiSagerCoordinator) -> None:
+        """Initialize the last update sensor."""
+        super().__init__(coordinator, _DESCRIPTIONS_BY_KEY["last_update"])

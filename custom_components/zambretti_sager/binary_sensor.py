@@ -51,7 +51,7 @@ def _frost_risk(d: ForecastData, coord: ZambrettiSagerCoordinator) -> bool | Non
 def _fog_risk(d: ForecastData, coord: ZambrettiSagerCoordinator) -> bool | None:
     """Return True when humidity and the fog model both indicate fog risk."""
     if d.fog_probability is None or d.humidity is None:
-        return False
+        return None
     return bool(
         d.humidity >= coord.fog_humidity_threshold and d.fog_probability >= FOG_PROBABILITY_MIN
     )
@@ -147,6 +147,6 @@ class ZambrettiBinarySensor(ZambrettiEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict:
         """Return diagnostic attributes for the alert."""
         d = self.data
-        if d and self.entity_description.attrs_fn is not None:
+        if d and d.available and self.entity_description.attrs_fn is not None:
             return self.entity_description.attrs_fn(d, self.coordinator)
         return {}

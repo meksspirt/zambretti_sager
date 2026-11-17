@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
+from .algorithms import calculate_precipitation_probability
 from .coordinator import ZambrettiConfigEntry, ZambrettiSagerCoordinator
 from .entity import ZambrettiEntity
 
@@ -77,19 +78,56 @@ class ZambrettiWeather(ZambrettiEntity, WeatherEntity):
         """Initialize the weather entity."""
         super().__init__(coordinator, "weather")
 
+    def _resolve_condition(
+        self,
+        state: str | None,
+        *,
+        is_night: bool = False,
+    ) -> str | None:
+        """Map a Zambretti state to a Home Assistant weather condition."""
+        d = self.data
+        if not d or not state:
+            return None
+        cond = ZAMBRETTI_TO_CONDITION.get(state)
+        if cond == "sunny" and is_night:
+            return "clear-night"
+        if cond in ("rainy", "lightning-rainy") and d.temperature_available:
+            if d.temperature <= 1.0 or (
+                d.snow_probability is not None and d.snow_probability >= 60
+            ):
+                return "snowy"
+            if d.temperature < 3.5 and d.snow_probability is not None and d.snow_probability >= 25:
+                return "snowy-rainy"
+        if (
+            cond in ("sunny", "clear-night", "partlycloudy", "cloudy")
+            and d.fog_probability is not None
+            and d.fog_probability >= 70
+        ):
+            return "fog"
+        return cond
+
     @property
     def condition(self) -> str | None:
         """Return the current weather condition from the consensus state."""
         d = self.data
         if not d or not d.available:
             return None
-        state = d.consensus_state or d.zambretti_state
-        if not state:
-            return None
-        cond = ZAMBRETTI_TO_CONDITION.get(state)
-        if cond == "sunny" and d.is_night:
-            return "clear-night"
-        return cond
+        return self._resolve_condition(
+            d.consensus_state or d.zambretti_state,
+            is_night=d.is_night,
+        )
+
+    @property
+    def native_dew_point(self) -> float | None:
+        """Return the current dew point temperature."""
+        d = self.data
+        return d.dew_point if d else None
+
+    @property
+    def native_apparent_temperature(self) -> float | None:
+        """Return the current apparent ("feels like") temperature."""
+        d = self.data
+        return d.apparent_temperature if d else None
 
     @property
     def native_temperature(self) -> float | None:
@@ -161,8 +199,20 @@ class ZambrettiWeather(ZambrettiEntity, WeatherEntity):
         items: list[Forecast] = []
 
         for hours, state, p_pred in forecast_defs:
-            cond = ZAMBRETTI_TO_CONDITION.get(state) if state else None
+            cond = self._resolve_condition(state, is_night=False)
             forecast_time = (now + timedelta(hours=hours)).isoformat()
+
+            precip_prob = d.precip_probability
+            if p_pred is not None and d.p_now is not None:
+                horizon_delta_3h = (p_pred - d.p_now) / (hours / 3.0)
+                precip_prob = calculate_precipitation_probability(
+                    p_pred,
+                    horizon_delta_3h,
+                    d.humidity,
+                    temperature=d.temperature if d.temperature_available else None,
+                    wind_speed=d.wind_speed,
+                    precip_bias=d.precip_bias,
+                )
 
             forecast_dict: dict = {
                 "datetime": forecast_time,
@@ -171,8 +221,8 @@ class ZambrettiWeather(ZambrettiEntity, WeatherEntity):
             }
             if d.temperature_available:
                 forecast_dict["native_temperature"] = d.temperature
-            if d.precip_probability is not None:
-                forecast_dict["precipitation_probability"] = d.precip_probability
+            if precip_prob is not None:
+                forecast_dict["precipitation_probability"] = precip_prob
             if d.wind_speed is not None:
                 forecast_dict["wind_speed"] = d.wind_speed
             if d.wind_degrees is not None:

@@ -30,6 +30,24 @@ async def test_resolve_elevation_primary_coords():
 
 
 @pytest.mark.asyncio
+async def test_resolve_elevation_zero_ha_elevation_queries_api():
+    """Test home coordinates with ha_elevation == 0 still query external API."""
+    mock_hass = AsyncMock()
+    mock_hass.config.latitude = 55.75
+    mock_hass.config.longitude = 37.61
+    mock_hass.config.elevation = 0.0
+
+    with patch(
+        "custom_components.zambretti_sager.elevation.get_elevation_from_api",
+        new_callable=AsyncMock,
+        return_value=156.0,
+    ) as mock_api:
+        res = await async_resolve_elevation(mock_hass, latitude=55.75, longitude=37.61)
+        assert res == 156.0
+        mock_api.assert_awaited_once_with(mock_hass, 55.75, 37.61)
+
+
+@pytest.mark.asyncio
 async def test_resolve_elevation_api_fails_uses_ha_fallback():
     """Test fallback to HA elevation when API lookup fails."""
     mock_hass = AsyncMock()

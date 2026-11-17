@@ -12,11 +12,11 @@
           "humidity_sensor": "湿度传感器（可选）",
           "use_sea_level_correction": "启用海平面气压校正",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨传感器（可选）",
+          "falling_rapid_threshold": "气压骤降阈值",
+          "storm_precip_threshold": "暴风雨降水概率阈值",
+          "frost_temp_threshold": "霜冻温度阈值",
+          "fog_humidity_threshold": "大雾湿度阈值"
         },
         "data_description": {
           "pressure_sensor": "选择您的大气压传感器",
@@ -26,11 +26,11 @@
           "humidity_sensor": "可选：提高降水概率准确度",
           "use_sea_level_correction": "若使用海平面以上的绝对气压传感器请启用",
           "location": "在地图上点击以计算海拔高度",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "可选：用于预报验证台账和降雨概率检查",
+          "falling_rapid_threshold": "触发气压骤降警报的 3 小时气压降幅（hPa）",
+          "storm_precip_threshold": "触发暴风雨预警的降水概率（%）阈值",
+          "frost_temp_threshold": "达到或低于该温度（°C）时报告霜冻风险",
+          "fog_humidity_threshold": "与大雾模型配合触发大雾风险警报所需的相对湿度（%）"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "湿度传感器（可选）",
           "use_sea_level_correction": "启用海平面气压校正",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨传感器（可选）",
+          "falling_rapid_threshold": "气压骤降阈值",
+          "storm_precip_threshold": "暴风雨降水概率阈值",
+          "frost_temp_threshold": "霜冻温度阈值",
+          "fog_humidity_threshold": "大雾湿度阈值"
         },
         "data_description": {
           "pressure_sensor": "选择您的大气压传感器",
@@ -58,11 +58,11 @@
           "humidity_sensor": "可选：提高降水概率准确度",
           "use_sea_level_correction": "若使用海平面以上的绝对气压传感器请启用",
           "location": "在地图上点击以计算海拔高度",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "可选：用于预报验证台账和降雨概率检查",
+          "falling_rapid_threshold": "触发气压骤降警报的 3 小时气压降幅（hPa）",
+          "storm_precip_threshold": "触发暴风雨预警的降水概率（%）阈值",
+          "frost_temp_threshold": "达到或低于该温度（°C）时报告霜冻风险",
+          "fog_humidity_threshold": "与大雾模型配合触发大雾风险警报所需的相对湿度（%）"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "该气象站已配置",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "气象站重新配置成功"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "湿度传感器（可选）",
           "use_sea_level_correction": "启用海平面气压校正",
           "location": "位置",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "降雨传感器（可选）",
+          "falling_rapid_threshold": "气压骤降阈值",
+          "storm_precip_threshold": "暴风雨降水概率阈值",
+          "frost_temp_threshold": "霜冻温度阈值",
+          "fog_humidity_threshold": "大雾湿度阈值"
         },
         "data_description": {
           "pressure_sensor": "选择您的大气压传感器",
@@ -102,11 +102,11 @@
           "humidity_sensor": "可选：提高降水概率准确度",
           "use_sea_level_correction": "若使用海平面以上的绝对气压传感器请启用",
           "location": "在地图上点击以计算海拔高度",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "可选：用于预报验证台账和降雨概率检查",
+          "falling_rapid_threshold": "触发气压骤降警报的 3 小时气压降幅（hPa）",
+          "storm_precip_threshold": "触发暴风雨预警的降水概率（%）阈值",
+          "frost_temp_threshold": "达到或低于该温度（°C）时报告霜冻风险",
+          "fog_humidity_threshold": "与大雾模型配合触发大雾风险警报所需的相对湿度（%）"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti 预报",
         "state": {
           "settled_fine": "晴朗稳定",
           "fine_weather": "天气良好",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager 预报",
         "state": {
           "sager_fair_improving": "天气良好，改善中",
           "sager_fair_tending_to_deteriorate": "目前良好，趋于转差",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti 6小时预报",
         "state": {
           "settled_fine": "晴朗稳定",
           "fine_weather": "天气良好",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti 12小时预报",
         "state": {
           "settled_fine": "晴朗稳定",
           "fine_weather": "天气良好",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti 24小时预报",
         "state": {
           "settled_fine": "晴朗稳定",
           "fine_weather": "天气良好",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "降水概率"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "最后更新"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "海平面气压"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "测站气压"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "气压趋势（3小时）"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "气压变化（24小时）"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO 气压倾向"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "降雪概率"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "大雾概率"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "预报置信度"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "模型分歧度"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "预报准确率（24小时）"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "上次预报命中",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "命中",
+          "miss": "未命中"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "自适应阻尼"
+      },
+      "apparent_temperature": {
+        "name": "体感温度"
+      },
+      "cloud_base": {
+        "name": "云底高度 (LCL)"
+      },
+      "barometric_stress": {
+        "name": "气压负荷指数"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "气象站"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "气压骤降"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "暴风雨预警"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "霜冻风险"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "大雾风险"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "{entity_id} 的气压状态无效"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "天气预报已变化",
+      "horizon_changed": "多时段预报已变化",
+      "pressure_drop": "气压骤降警报"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "重置预报校准",
+      "description": "清除已保存的验证历史记录并将所有自适应校准系数重置为默认值。",
+      "fields": {
+        "entry_id": {
+          "name": "配置条目",
+          "description": "可选配置条目。省略时将重置所有气象站。"
+        }
+      }
     }
   }
 }

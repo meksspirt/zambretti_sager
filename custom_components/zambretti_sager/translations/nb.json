@@ -12,11 +12,11 @@
           "humidity_sensor": "Fuktighetssensor (valgfritt)",
           "use_sea_level_correction": "Aktiver korreksjon til havnivåtrykk",
           "location": "Plassering",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regnsensor (valgfritt)",
+          "falling_rapid_threshold": "Terskel for raskt trykkfall",
+          "storm_precip_threshold": "Nedbørsterskel for stormvarsel",
+          "frost_temp_threshold": "Temperaturterskel for frostrisiko",
+          "fog_humidity_threshold": "Fuktighetsterskel for tåkerisiko"
         },
         "data_description": {
           "pressure_sensor": "Velg din barometriske trykksensor",
@@ -26,11 +26,11 @@
           "humidity_sensor": "Valgfritt: forbedrer nedbørssannsynligheten",
           "use_sea_level_correction": "Aktiver ved absolutt trykksensor over havnivå",
           "location": "Klikk på kartet for å beregne høyde",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Valgfritt: brukes av prognoseverifiseringsloggen og sjekk av regnsannsynlighet",
+          "falling_rapid_threshold": "Trykkfall over 3 timer (hPa) som utløser varsel om raskt fall",
+          "storm_precip_threshold": "Nedbørssannsynlighet (%) over hvilken stormvarsel utløses",
+          "frost_temp_threshold": "Temperatur (°C) ved eller under som frostrisiko rapporteres",
+          "fog_humidity_threshold": "Relativ luftfuktighet (%) som kreves med tåkemodellen for tåkevarsel"
         }
       },
       "reconfigure": {
@@ -44,11 +44,11 @@
           "humidity_sensor": "Fuktighetssensor (valgfritt)",
           "use_sea_level_correction": "Aktiver korreksjon til havnivåtrykk",
           "location": "Plassering",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regnsensor (valgfritt)",
+          "falling_rapid_threshold": "Terskel for raskt trykkfall",
+          "storm_precip_threshold": "Nedbørsterskel for stormvarsel",
+          "frost_temp_threshold": "Temperaturterskel for frostrisiko",
+          "fog_humidity_threshold": "Fuktighetsterskel for tåkerisiko"
         },
         "data_description": {
           "pressure_sensor": "Velg din barometriske trykksensor",
@@ -58,11 +58,11 @@
           "humidity_sensor": "Valgfritt: forbedrer nedbørssannsynligheten",
           "use_sea_level_correction": "Aktiver ved absolutt trykksensor over havnivå",
           "location": "Klikk på kartet for å beregne høyde",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Valgfritt: brukes av prognoseverifiseringsloggen og sjekk av regnsannsynlighet",
+          "falling_rapid_threshold": "Trykkfall over 3 timer (hPa) som utløser varsel om raskt fall",
+          "storm_precip_threshold": "Nedbørssannsynlighet (%) over hvilken stormvarsel utløses",
+          "frost_temp_threshold": "Temperatur (°C) ved eller under som frostrisiko rapporteres",
+          "fog_humidity_threshold": "Relativ luftfuktighet (%) som kreves med tåkemodellen for tåkevarsel"
         }
       }
     },
@@ -72,7 +72,7 @@
     },
     "abort": {
       "already_configured": "Denne værstasjonen er allerede konfigurert",
-      "reconfigure_successful": "Weather station reconfigured successfully"
+      "reconfigure_successful": "Værstasjonen ble konfigurert på nytt"
     }
   },
   "options": {
@@ -88,11 +88,11 @@
           "humidity_sensor": "Fuktighetssensor (valgfritt)",
           "use_sea_level_correction": "Aktiver korreksjon til havnivåtrykk",
           "location": "Plassering",
-          "rain_sensor": "Rain Sensor (optional)",
-          "falling_rapid_threshold": "Rapid Pressure Drop Threshold",
-          "storm_precip_threshold": "Storm Precipitation Threshold",
-          "frost_temp_threshold": "Frost Temperature Threshold",
-          "fog_humidity_threshold": "Fog Humidity Threshold"
+          "rain_sensor": "Regnsensor (valgfritt)",
+          "falling_rapid_threshold": "Terskel for raskt trykkfall",
+          "storm_precip_threshold": "Nedbørsterskel for stormvarsel",
+          "frost_temp_threshold": "Temperaturterskel for frostrisiko",
+          "fog_humidity_threshold": "Fuktighetsterskel for tåkerisiko"
         },
         "data_description": {
           "pressure_sensor": "Velg din barometriske trykksensor",
@@ -102,11 +102,11 @@
           "humidity_sensor": "Valgfritt: forbedrer nedbørssannsynligheten",
           "use_sea_level_correction": "Aktiver ved absolutt trykksensor over havnivå",
           "location": "Klikk på kartet for å beregne høyde",
-          "rain_sensor": "Optional: used by the forecast verification ledger and rain probability checks",
-          "falling_rapid_threshold": "Pressure drop over 3 hours (hPa) that triggers the rapid-fall alert",
-          "storm_precip_threshold": "Precipitation probability (%) above which a storm warning is raised",
-          "frost_temp_threshold": "Temperature (°C) at or below which frost risk is reported",
-          "fog_humidity_threshold": "Relative humidity (%) required with the fog model for a fog risk alert"
+          "rain_sensor": "Valgfritt: brukes av prognoseverifiseringsloggen og sjekk av regnsannsynlighet",
+          "falling_rapid_threshold": "Trykkfall over 3 timer (hPa) som utløser varsel om raskt fall",
+          "storm_precip_threshold": "Nedbørssannsynlighet (%) over hvilken stormvarsel utløses",
+          "frost_temp_threshold": "Temperatur (°C) ved eller under som frostrisiko rapporteres",
+          "fog_humidity_threshold": "Relativ luftfuktighet (%) som kreves med tåkemodellen for tåkevarsel"
         }
       }
     }
@@ -114,7 +114,7 @@
   "entity": {
     "sensor": {
       "zambretti_forecast": {
-        "name": "Zambretti Forecast",
+        "name": "Zambretti-prognose",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint vær",
@@ -146,7 +146,7 @@
         }
       },
       "sager_forecast": {
-        "name": "Sager Forecast",
+        "name": "Sager-prognose",
         "state": {
           "sager_fair_improving": "Fint vær, forbedres",
           "sager_fair_tending_to_deteriorate": "Fint vær, tendens til forverring",
@@ -162,7 +162,7 @@
         }
       },
       "zambretti_forecast_6h": {
-        "name": "Zambretti Forecast 6h",
+        "name": "Zambretti-prognose 6 t",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint vær",
@@ -194,7 +194,7 @@
         }
       },
       "zambretti_forecast_12h": {
-        "name": "Zambretti Forecast 12h",
+        "name": "Zambretti-prognose 12 t",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint vær",
@@ -226,7 +226,7 @@
         }
       },
       "zambretti_forecast_24h": {
-        "name": "Zambretti Forecast 24h",
+        "name": "Zambretti-prognose 24 t",
         "state": {
           "settled_fine": "Fint, stabilt",
           "fine_weather": "Fint vær",
@@ -258,75 +258,103 @@
         }
       },
       "precipitation_probability": {
-        "name": "Precipitation Probability"
+        "name": "Nedbørssannsynlighet"
       },
       "last_update": {
-        "name": "Last Update"
+        "name": "Siste oppdatering"
       },
       "sea_level_pressure": {
-        "name": "Sea Level Pressure"
+        "name": "Lufttrykk ved havnivå"
       },
       "station_pressure": {
-        "name": "Station Pressure"
+        "name": "Stasjonstrykk"
       },
       "pressure_trend_3h": {
-        "name": "Pressure Trend (3h)"
+        "name": "Trykktrend (3 t)"
       },
       "pressure_change_24h": {
-        "name": "Pressure Change (24h)"
+        "name": "Trykkendring (24 t)"
       },
       "wmo_tendency_code": {
-        "name": "WMO Pressure Tendency"
+        "name": "WMO-trykktendens"
       },
       "snow_probability": {
-        "name": "Snow Probability"
+        "name": "Snøsannsynlighet"
       },
       "fog_probability": {
-        "name": "Fog Probability"
+        "name": "Tåkesannsynlighet"
       },
       "forecast_confidence": {
-        "name": "Forecast Confidence"
+        "name": "Prognosetillit"
       },
       "model_divergence": {
-        "name": "Model Divergence"
+        "name": "Modellavvik"
       },
       "forecast_accuracy_24h": {
-        "name": "Forecast Accuracy (24h)"
+        "name": "Prognosenøyaktighet (24 t)"
       },
       "last_forecast_hit": {
-        "name": "Last Forecast Hit",
+        "name": "Siste prognosetreff",
         "state": {
-          "hit": "Hit",
-          "miss": "Miss"
+          "hit": "Treff",
+          "miss": "Bom"
         }
       },
       "adaptive_damping": {
-        "name": "Adaptive Damping"
+        "name": "Adaptiv demping"
+      },
+      "apparent_temperature": {
+        "name": "Følt temperatur"
+      },
+      "cloud_base": {
+        "name": "Skybase (LCL)"
+      },
+      "barometric_stress": {
+        "name": "Barometrisk belastning"
       }
     },
     "weather": {
       "weather_station": {
-        "name": "Weather Station"
+        "name": "Værstasjon"
       }
     },
     "binary_sensor": {
       "pressure_falling_rapidly": {
-        "name": "Pressure Falling Rapidly"
+        "name": "Trykket faller raskt"
       },
       "storm_warning": {
-        "name": "Storm Warning"
+        "name": "Stormvarsel"
       },
       "frost_risk": {
-        "name": "Frost Risk"
+        "name": "Frostrisiko"
       },
       "fog_risk": {
-        "name": "Fog Risk"
+        "name": "Tåkerisiko"
       }
     }
   },
   "exceptions": {
     "invalid_pressure": {
-      "message": "Invalid pressure state for {entity_id}"
+      "message": "Ugyldig trykktilstand for {entity_id}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "forecast_changed": "Prognosen ble endret",
+      "horizon_changed": "Prognosehorisonten ble endret",
+      "pressure_drop": "Varsel om raskt trykkfall"
+    }
+  },
+  "services": {
+    "reset_calibration": {
+      "name": "Tilbakestill prognosekalibrering",
+      "description": "Tømmer verifiseringshistorikk og tilbakestiller alle adaptive kalibreringsfaktorer.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurasjonsoppføring",
+          "description": "Valgfri oppføring. Tilbakestiller alle stasjoner hvis utelatt."
+        }
+      }
     }
   }
 }
