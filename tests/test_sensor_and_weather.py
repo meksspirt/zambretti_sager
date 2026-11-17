@@ -256,3 +256,52 @@ def test_sensor_helpers_and_base_class(mock_coordinator):
     mock_coordinator.data.is_night = True
     attrs = _get_base_attrs(mock_coordinator.data)
     assert attrs["is_night"] is True
+
+
+def test_base_attrs_include_all_optional_observations():
+    """Test every optional observation is exported on the main sensor."""
+    snapshot = ForecastData(
+        available=True,
+        p_now=1013.0,
+        p_3h=1012.0,
+        p_6h=1010.0,
+        p_12h=1008.0,
+        p_24h=1005.0,
+        raw_pressure=1009.0,
+        pressure_change_24h=-8.0,
+        trend_rate_3h=-0.4,
+        trend_r2=0.91,
+        dew_point=6.0,
+        consensus_state="fine_weather",
+        model_divergence=12,
+        confidence=88,
+        wmo_tendency_code=2,
+        rain=False,
+    )
+
+    attrs = _get_base_attrs(snapshot)
+
+    assert attrs["station_pressure_hpa"] == 1009.0
+    assert attrs["pressure_24h_ago"] == 1005.0
+    assert attrs["pressure_change_24h"] == -8.0
+    assert attrs["trend_rate_3h"] == -0.4
+    assert attrs["trend_r2"] == 0.91
+    assert attrs["dew_point"] == 6.0
+    assert attrs["consensus_state"] == "fine_weather"
+    assert attrs["model_divergence"] == 12
+    assert attrs["confidence"] == 88
+    assert attrs["wmo_tendency_code"] == 2
+    assert attrs["rain"] is False
+
+
+def test_sensor_unavailable_paths(mock_coordinator):
+    """Test sensors with no data or no value for their metric."""
+    mock_coordinator.data = None
+    sensor = _sensor(mock_coordinator, "sea_level_pressure")
+    assert sensor.available is False
+    assert sensor.native_value is None
+
+    mock_coordinator.data = ForecastData(available=True, p_now=1013.0)
+    trend_sensor = _sensor(mock_coordinator, "pressure_trend_3h")
+    assert trend_sensor.available is False
+    assert trend_sensor.native_value is None

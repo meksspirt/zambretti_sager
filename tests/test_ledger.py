@@ -10,6 +10,7 @@ import pytest
 from custom_components.zambretti_sager.forecast_engine import ForecastData
 from custom_components.zambretti_sager.ledger import (
     DAMPING_MAX,
+    MAX_RECORDS,
     MIN_CALIBRATION_DELTA,
     ForecastLedger,
 )
@@ -186,3 +187,55 @@ async def test_ledger_survives_broken_storage():
     await ledger.async_record(_forecast(), now)
     assert len(ledger._records) == 1
     await ledger.async_save()
+
+
+@pytest.mark.asyncio
+async def test_ledger_tolerates_corrupt_storage_payloads():
+    """Test non-dict payloads, invalid records, and bad damping values are ignored."""
+    not_a_dict = ForecastLedger(None, "entry", store=FakeStore([1]))
+    await not_a_dict.async_load()
+    assert not_a_dict.verified_count == 0
+    assert not_a_dict.damping == pytest.approx(0.65)
+
+    corrupt = ForecastLedger(
+        None,
+        "entry",
+        store=FakeStore(
+            {
+                "records": [
+                    "not-a-record",
+                    {"issued_at": "2026-01-01T00:00:00+00:00"},
+                ],
+                "damping": "not-a-number",
+            }
+        ),
+    )
+    await corrupt.async_load()
+    assert corrupt.verified_count == 0
+    assert corrupt.damping == pytest.approx(0.65)
+
+
+def test_ledger_parse_time_handles_invalid_values():
+    """Test malformed and naive timestamps."""
+    assert ForecastLedger._parse_time("not-a-date") is None
+    assert ForecastLedger._parse_time(123) is None
+
+    parsed = ForecastLedger._parse_time("2026-01-01T00:00:00")
+    assert parsed is not None
+    assert parsed.tzinfo == datetime.UTC
+
+
+@pytest.mark.asyncio
+async def test_ledger_skips_missing_pressure_and_caps_records():
+    """Test pressure-less forecasts are skipped and the record list is bounded."""
+    ledger = ForecastLedger(None, "entry", store=FakeStore())
+    now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
+
+    await ledger.async_record(ForecastData(available=True), now)
+    assert ledger._records == []
+
+    for hours in range(0, MAX_RECORDS * 6 + 12, 6):
+        await ledger.async_record(_forecast(), now + datetime.timedelta(hours=hours))
+
+    assert len(ledger._records) == MAX_RECORDS
+    assert await ledger.async_verify(None, "fine_weather", now) == 0
