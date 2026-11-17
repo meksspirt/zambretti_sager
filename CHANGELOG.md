@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.2.0] - 2026-11-17
 
 ### Forecast Verification, Ensemble Consensus & Alerts
 
