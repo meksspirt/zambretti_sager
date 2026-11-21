@@ -82,6 +82,7 @@ class ForecastData:
     wind_factor: float = 1.0  # Calibrated wind adjustment multiplier
     seasonal_factor: float = 1.0  # Calibrated seasonal adjustment multiplier
     precip_bias: float = 0.0  # Calibrated precipitation probability offset (%)
+    pressure_bias: float = 0.0  # Calibrated 24h pressure offset (hPa)
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,7 @@ class WeatherObservations:
     calibration_wind_factor: float = 1.0
     calibration_seasonal_factor: float = 1.0
     calibration_precip_bias: float = 0.0
+    calibration_pressure_bias: float = 0.0
     timestamp: datetime.datetime | None = None
 
 
@@ -175,6 +177,9 @@ class ForecastEngine:
             damping=obs.calibration_damping,
             seasonal_factor=obs.calibration_seasonal_factor,
             wind_factor=obs.calibration_wind_factor,
+            p_24h=obs.p_24h,
+            trend_r2=obs.trend_r2,
+            pressure_bias=obs.calibration_pressure_bias,
         )
 
         precip_prob = calculate_precipitation_probability(
@@ -280,4 +285,5 @@ class ForecastEngine:
             wind_factor=obs.calibration_wind_factor,
             seasonal_factor=obs.calibration_seasonal_factor,
             precip_bias=obs.calibration_precip_bias,
+            pressure_bias=obs.calibration_pressure_bias,
         )

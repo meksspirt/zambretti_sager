@@ -19,7 +19,11 @@ _LOGGER = logging.getLogger(__name__)
 STORAGE_VERSION = 1
 RECORD_INTERVAL = datetime.timedelta(hours=6)
 VERIFY_AFTER = datetime.timedelta(hours=24)
-PRESSURE_HIT_TOLERANCE = 2.0
+PRESSURE_HIT_TOLERANCE = 4.0
+CALIBRATION_PRESSURE_TOLERANCE = 2.0
+INTERMEDIATE_HIT_TOLERANCE = 2.5
+MAX_VOLATILITY_TOLERANCE = 6.5
+DIRECTIONAL_HIT_MAX_ERROR = 8.0
 MIN_CALIBRATION_DELTA = 1.0
 MAX_RECORDS = 200
 MAX_ACCURACY_ENTRIES = 60
@@ -39,6 +43,10 @@ PRECIP_BIAS_DEFAULT = 0.0
 PRECIP_BIAS_MIN = -15.0
 PRECIP_BIAS_MAX = 15.0
 PRECIP_BIAS_STEP = 2.0
+PRESSURE_BIAS_DEFAULT = 0.0
+PRESSURE_BIAS_MIN = -6.0
+PRESSURE_BIAS_MAX = 6.0
+PRESSURE_BIAS_STEP = 0.5
 
 
 def _clamp(value: float, low: float, high: float, precision: int = 3) -> float:
@@ -68,6 +76,11 @@ class LedgerRecord:
     hit: bool | None = None
     pressure_error: float | None = None
     actual_state: str | None = None
+    predicted_p_6h: float | None = None
+    predicted_p_12h: float | None = None
+    zambretti_24h: str | None = None
+    p_6h_observed: float | None = None
+    p_12h_observed: float | None = None
 
 
 class ForecastLedger:
@@ -76,7 +89,8 @@ class ForecastLedger:
     Records a forecast at most once every six hours and verifies it 24 hours
     later against the observed pressure and, optionally, an observed rain window.
     Verified records also tune the extrapolation damping exponent, wind and
-    seasonal adjustment multipliers, and precipitation probability bias.
+    seasonal adjustment multipliers, precipitation probability bias, and
+    24-hour pressure bias.
     """
 
     def __init__(
@@ -92,6 +106,7 @@ class ForecastLedger:
         self._wind_factor = WIND_FACTOR_DEFAULT
         self._seasonal_factor = SEASONAL_FACTOR_DEFAULT
         self._precip_bias = PRECIP_BIAS_DEFAULT
+        self._pressure_bias = PRESSURE_BIAS_DEFAULT
         self._loaded = False
         self._dirty = False
 
@@ -153,6 +168,34 @@ class ForecastLedger:
         self._precip_bias = self._load_clamped(
             stored, "precip_bias", PRECIP_BIAS_DEFAULT, PRECIP_BIAS_MIN, PRECIP_BIAS_MAX, 1
         )
+        self._pressure_bias = self._load_clamped(
+            stored,
+            "pressure_bias",
+            PRESSURE_BIAS_DEFAULT,
+            PRESSURE_BIAS_MIN,
+            PRESSURE_BIAS_MAX,
+            2,
+        )
+
+        # Retroactively re-score persisted verified records under current criteria.
+        for record in self._records:
+            if (
+                not record.verified
+                or record.predicted_p_24h is None
+                or record.pressure_error is None
+            ):
+                continue
+            actual_p = record.predicted_p_24h + record.pressure_error
+            new_hit = self._evaluate_record_hit(
+                record,
+                actual_p,
+                record.actual_state,
+                record.rain_observed,
+                record.pressure_error,
+            )
+            if new_hit != record.hit:
+                record.hit = new_hit
+                self._dirty = True
 
     async def async_save(self) -> None:
         """Persist the ledger if it changed."""
@@ -163,6 +206,7 @@ class ForecastLedger:
             "wind_factor": self._wind_factor,
             "seasonal_factor": self._seasonal_factor,
             "precip_bias": self._precip_bias,
+            "pressure_bias": self._pressure_bias,
             "records": [asdict(record) for record in self._records],
         }
         try:
@@ -179,6 +223,7 @@ class ForecastLedger:
         self._wind_factor = WIND_FACTOR_DEFAULT
         self._seasonal_factor = SEASONAL_FACTOR_DEFAULT
         self._precip_bias = PRECIP_BIAS_DEFAULT
+        self._pressure_bias = PRESSURE_BIAS_DEFAULT
         self._dirty = True
         await self.async_save()
 
@@ -220,12 +265,43 @@ class ForecastLedger:
             rain=rain,
             wind_adjustment_sign=wind_adjustment_sign,
             season_sign=season_sign,
+            predicted_p_6h=forecast.predicted_p_6h,
+            predicted_p_12h=forecast.predicted_p_12h,
+            zambretti_24h=forecast.zambretti_24h,
         )
         self._records.append(record)
         if len(self._records) > MAX_RECORDS:
             del self._records[: len(self._records) - MAX_RECORDS]
         self._dirty = True
         await self.async_save()
+
+    async def async_observe_pressure(
+        self,
+        actual_pressure: float | None,
+        now: datetime.datetime,
+    ) -> None:
+        """Record intermediate 6h and 12h observed pressures across open windows."""
+        await self.async_load()
+        if actual_pressure is None:
+            return
+
+        changed = False
+        for record in self._records:
+            if record.verified:
+                continue
+            issued = self._parse_time(record.issued_at)
+            if issued is None or now < issued:
+                continue
+            elapsed_hours = (now - issued).total_seconds() / 3600.0
+            if 5.0 <= elapsed_hours <= 7.5 and record.p_6h_observed is None:
+                record.p_6h_observed = round(actual_pressure, 1)
+                changed = True
+            if 11.0 <= elapsed_hours <= 13.5 and record.p_12h_observed is None:
+                record.p_12h_observed = round(actual_pressure, 1)
+                changed = True
+
+        if changed:
+            self._dirty = True
 
     async def async_observe_rain(
         self,
@@ -258,6 +334,80 @@ class ForecastLedger:
         if newly_wet:
             await self.async_save()
 
+    @staticmethod
+    def _evaluate_pressure_hit(
+        record: LedgerRecord,
+        actual_pressure: float,
+        pressure_error: float | None,
+    ) -> bool:
+        """Evaluate whether a 24h pressure forecast counts as a meteorological hit."""
+        if record.predicted_p_24h is None or pressure_error is None:
+            return True
+
+        actual_delta = actual_pressure - record.p_now
+        effective_tolerance = min(
+            MAX_VOLATILITY_TOLERANCE,
+            PRESSURE_HIT_TOLERANCE + 0.25 * abs(actual_delta),
+        )
+        if abs(pressure_error) <= effective_tolerance:
+            return True
+
+        if (
+            record.predicted_delta_24h is not None
+            and abs(record.predicted_delta_24h) >= 1.5
+            and abs(actual_delta) >= 3.0
+            and actual_delta * record.predicted_delta_24h > 0
+            and abs(pressure_error) <= DIRECTIONAL_HIT_MAX_ERROR
+        ):
+            return True
+
+        if abs(pressure_error) <= DIRECTIONAL_HIT_MAX_ERROR:
+            if (
+                record.predicted_p_6h is not None
+                and record.p_6h_observed is not None
+                and abs(record.p_6h_observed - record.predicted_p_6h) <= INTERMEDIATE_HIT_TOLERANCE
+            ):
+                return True
+            if (
+                record.predicted_p_12h is not None
+                and record.p_12h_observed is not None
+                and abs(record.p_12h_observed - record.predicted_p_12h)
+                <= INTERMEDIATE_HIT_TOLERANCE
+            ):
+                return True
+
+        return False
+
+    @classmethod
+    def _evaluate_record_hit(
+        cls,
+        record: LedgerRecord,
+        actual_pressure: float,
+        actual_state: str | None,
+        rain_observed: bool | None,
+        pressure_error: float | None,
+    ) -> bool:
+        """Evaluate overall forecast hit from pressure, state, and rain criteria."""
+        pressure_hit = cls._evaluate_pressure_hit(record, actual_pressure, pressure_error)
+
+        actual_severity = zambretti_severity(actual_state)
+        predicted_state = record.consensus_state or record.zambretti_state
+        predicted_severity = zambretti_severity(predicted_state)
+        state_hit = True
+        if (
+            actual_state is not None
+            and predicted_severity is not None
+            and actual_severity is not None
+        ):
+            state_hit = abs(predicted_severity - actual_severity) <= 1
+
+        rain_hit = True
+        if rain_observed is not None and record.precip_probability is not None:
+            predicted_rain = record.precip_probability >= 50
+            rain_hit = predicted_rain == rain_observed
+
+        return bool(pressure_hit and state_hit and rain_hit)
+
     async def async_verify(
         self,
         actual_pressure: float | None,
@@ -279,7 +429,6 @@ class ForecastLedger:
         if actual_pressure is None:
             return 0
 
-        actual_severity = zambretti_severity(actual_state)
         verified_count = 0
 
         for record in self._records:
@@ -289,22 +438,9 @@ class ForecastLedger:
             if issued is None or now - issued < VERIFY_AFTER:
                 continue
 
-            predicted_state = record.consensus_state or record.zambretti_state
-            predicted_severity = zambretti_severity(predicted_state)
-
             pressure_error: float | None = None
-            pressure_hit = True
             if record.predicted_p_24h is not None:
                 pressure_error = round(actual_pressure - record.predicted_p_24h, 2)
-                pressure_hit = abs(pressure_error) <= PRESSURE_HIT_TOLERANCE
-
-            state_hit = True
-            if (
-                actual_state is not None
-                and predicted_severity is not None
-                and actual_severity is not None
-            ):
-                state_hit = abs(predicted_severity - actual_severity) <= 1
 
             observed_rain = record.rain_observed
             if rain is True:
@@ -314,13 +450,14 @@ class ForecastLedger:
             if observed_rain is not None:
                 record.rain_observed = observed_rain
 
-            rain_hit = True
-            if observed_rain is not None and record.precip_probability is not None:
-                predicted_rain = record.precip_probability >= 50
-                rain_hit = predicted_rain == observed_rain
-
             record.verified = True
-            record.hit = bool(pressure_hit and state_hit and rain_hit)
+            record.hit = self._evaluate_record_hit(
+                record,
+                actual_pressure,
+                actual_state,
+                observed_rain,
+                pressure_error,
+            )
             record.pressure_error = pressure_error
             record.actual_state = actual_state
             verified_count += 1
@@ -354,6 +491,11 @@ class ForecastLedger:
     def precip_bias(self) -> float:
         """Return the calibrated precipitation probability offset (%)."""
         return self._precip_bias
+
+    @property
+    def pressure_bias(self) -> float:
+        """Return the calibrated 24-hour pressure offset (hPa)."""
+        return self._pressure_bias
 
     @property
     def calibration_samples(self) -> int:
@@ -426,6 +568,7 @@ class ForecastLedger:
             "wind_factor": self.wind_factor,
             "seasonal_factor": self.seasonal_factor,
             "precip_bias": self.precip_bias,
+            "pressure_bias": self.pressure_bias,
         }
 
     # ── Internals ────────────────────────────────────────────────────────
@@ -444,12 +587,12 @@ class ForecastLedger:
     ) -> float:
         """Adjust a directional bias multiplier (+1 fair, -1 unsettled)."""
         stronger_bad = missed_wet or (
-            pressure_diff is not None and pressure_diff < -PRESSURE_HIT_TOLERANCE
+            pressure_diff is not None and pressure_diff < -CALIBRATION_PRESSURE_TOLERANCE
         )
         stronger_good = false_wet or (
             rain_observed is not True
             and pressure_diff is not None
-            and pressure_diff > PRESSURE_HIT_TOLERANCE
+            and pressure_diff > CALIBRATION_PRESSURE_TOLERANCE
         )
 
         if sign < 0:
@@ -539,6 +682,23 @@ class ForecastLedger:
             elif false_wet:
                 self._precip_bias = _clamp(
                     self._precip_bias - PRECIP_BIAS_STEP, PRECIP_BIAS_MIN, PRECIP_BIAS_MAX, 1
+                )
+
+        # 5. Systematic 24h pressure bias
+        if self.calibration_samples >= CALIBRATION_MIN_SAMPLES and pressure_diff is not None:
+            if pressure_diff > CALIBRATION_PRESSURE_TOLERANCE:
+                self._pressure_bias = _clamp(
+                    self._pressure_bias + PRESSURE_BIAS_STEP,
+                    PRESSURE_BIAS_MIN,
+                    PRESSURE_BIAS_MAX,
+                    2,
+                )
+            elif pressure_diff < -CALIBRATION_PRESSURE_TOLERANCE:
+                self._pressure_bias = _clamp(
+                    self._pressure_bias - PRESSURE_BIAS_STEP,
+                    PRESSURE_BIAS_MIN,
+                    PRESSURE_BIAS_MAX,
+                    2,
                 )
 
     @staticmethod

@@ -425,3 +425,55 @@ def test_apparent_temperature_cloud_base_and_barometric_stress():
     storm = calculate_barometric_stress(-4.0, -16.0, 0.3)
     assert calm is not None and storm is not None
     assert 0 <= calm < 20 and storm >= 85
+
+
+def test_linear_pressure_trend_recency_weighting():
+    """Test WLS reacts faster to recent inflection than unweighted OLS while keeping linear fit exact."""
+    now = datetime.datetime(2026, 11, 21, 12, 0, tzinfo=datetime.UTC)
+    # Pressure fell for 3 hours, then stabilized and began rising in the last 3 hours
+    inflecting = [
+        (now - datetime.timedelta(hours=6), 1000.0),
+        (now - datetime.timedelta(hours=5), 997.0),
+        (now - datetime.timedelta(hours=4), 994.0),
+        (now - datetime.timedelta(hours=3), 992.0),
+        (now - datetime.timedelta(hours=2), 994.0),
+        (now - datetime.timedelta(hours=1), 996.0),
+        (now, 999.0),
+    ]
+    slope, r2 = linear_pressure_trend(inflecting, now, hours=6)
+    assert slope is not None and r2 is not None
+    # Unweighted OLS would still be negative here; WLS detects the upward turn
+    assert slope > 0.0
+    assert 0.0 <= r2 <= 1.0
+
+
+def test_extrapolations_wave_exhaustion_reversion_and_pressure_bias():
+    """Test R² damping, deep-trough saturation/reversion, and pressure_bias offset."""
+    # Deep trough at 990 hPa falling fast after an already-large 12h drop:
+    # legacy single-rate extrapolation would overshoot below 980 hPa; new logic tempers it.
+    tempered = calculate_extrapolations(
+        p_now=990.0,
+        p_3h=994.0,
+        p_6h=997.0,
+        p_12h=1001.0,
+        p_24h=996.0,
+        trend_rate_3h=-3.0,
+        trend_r2=0.95,
+    )
+    assert tempered[24].predicted_pressure > 990.0 - 8.0
+
+    # Low R² (noisy trend) dampens 24h extrapolation compared to high R²
+    high_r2 = calculate_extrapolations(
+        p_now=1010.0, p_3h=1008.0, p_12h=1006.0, trend_rate_3h=2.0, trend_r2=0.95
+    )
+    low_r2 = calculate_extrapolations(
+        p_now=1010.0, p_3h=1008.0, p_12h=1006.0, trend_rate_3h=2.0, trend_r2=0.15
+    )
+    assert low_r2[24].predicted_pressure < high_r2[24].predicted_pressure
+
+    # Calibrated pressure_bias shifts 24h by full bias and 12h by half bias
+    biased = calculate_extrapolations(
+        p_now=1010.0, p_3h=1008.0, p_12h=1006.0, trend_rate_3h=2.0, trend_r2=0.95, pressure_bias=2.0
+    )
+    assert biased[24].predicted_pressure == pytest.approx(high_r2[24].predicted_pressure + 2.0)
+    assert biased[12].predicted_pressure == pytest.approx(high_r2[12].predicted_pressure + 1.0)

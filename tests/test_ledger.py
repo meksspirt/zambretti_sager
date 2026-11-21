@@ -15,6 +15,7 @@ from custom_components.zambretti_sager.ledger import (
     MAX_RECORDS,
     MIN_CALIBRATION_DELTA,
     PRECIP_BIAS_STEP,
+    PRESSURE_BIAS_STEP,
     SEASONAL_FACTOR_STEP,
     WIND_FACTOR_STEP,
     ForecastLedger,
@@ -358,3 +359,108 @@ async def test_ledger_calibrates_wind_seasonal_and_precip_bias():
     assert ledger.wind_factor == pytest.approx(1.0)
     assert ledger.seasonal_factor == pytest.approx(1.0)
     assert ledger.precip_bias == pytest.approx(0.0)
+    assert ledger.pressure_bias == pytest.approx(0.0)
+
+
+@pytest.mark.asyncio
+async def test_ledger_intermediate_checkpoints_and_directional_hits():
+    """Test intermediate 6h/12h checkpoints, directional trend hits, and volatility scaling."""
+    ledger = ForecastLedger(None, "entry", store=FakeStore())
+    now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
+
+    # 1. Intermediate 6h/12h checkpoint credit when a front reverses after 12h
+    f1 = ForecastData(
+        available=True,
+        p_now=1000.0,
+        zambretti_state="unsettled_rain_later",
+        consensus_state="unsettled_rain_later",
+        precip_probability=60,
+        predicted_p_6h=997.0,
+        predicted_p_12h=995.0,
+        predicted_p_24h=993.0,
+        delta_3h=-1.5,
+    )
+    await ledger.async_record(f1, now)
+    await ledger.async_observe_pressure(997.5, now + datetime.timedelta(hours=6))
+    await ledger.async_observe_pressure(995.5, now + datetime.timedelta(hours=12))
+    assert ledger._records[0].p_6h_observed == 997.5
+    assert ledger._records[0].p_12h_observed == 995.5
+
+    # Wave rebounds to 1000.5 (+7.5 error vs 993.0, within DIRECTIONAL_HIT_MAX_ERROR=8.0)
+    await ledger.async_verify(1000.5, None, now + datetime.timedelta(hours=25))
+    assert ledger.last_hit == "hit"
+
+    # 2. Directional trend hit when both predicted and actual move strongly in the same direction
+    t2 = now + datetime.timedelta(days=2)
+    f2 = _forecast(issued_pressure=1005.0, predicted_24h=1001.0)
+    await ledger.async_record(f2, t2)
+    # Actual drops -11 hPa to 994.0 (error -7.0 hPa, same falling direction, <= 8.0 hPa)
+    await ledger.async_verify(994.0, None, t2 + datetime.timedelta(hours=25))
+    assert ledger.last_hit == "hit"
+
+    # 3. Volatility-scaled tolerance allows up to 6.5 hPa during large 10+ hPa swings
+    t3 = now + datetime.timedelta(days=4)
+    f3 = _forecast(issued_pressure=1005.0, predicted_24h=1009.0)
+    await ledger.async_record(f3, t3)
+    # Actual reverses by -10 hPa to 995.0 -> wait, check 5.5 hPa error on 10 hPa actual swing
+    await ledger.async_verify(1014.5, None, t3 + datetime.timedelta(hours=25))
+    assert ledger.last_hit == "hit"
+
+    # 4. Large error (> 8.0 hPa) still counts as miss
+    t4 = now + datetime.timedelta(days=6)
+    await ledger.async_record(_forecast(issued_pressure=1000.0, predicted_24h=992.0), t4)
+    await ledger.async_verify(1005.0, None, t4 + datetime.timedelta(hours=25))
+    assert ledger.last_hit == "miss"
+
+
+@pytest.mark.asyncio
+async def test_ledger_retroactive_rescore_on_load():
+    """Test persisted verified records are re-scored under updated criteria on load."""
+    store = FakeStore(
+        {
+            "damping": 0.51,
+            "records": [
+                {
+                    "issued_at": "2026-11-19T20:11:00+00:00",
+                    "zambretti_state": "fairly_fine_showers_likely",
+                    "sager_state": "sager_fair_no_change",
+                    "consensus_state": "fairly_fine_showers_likely",
+                    "precip_probability": 70,
+                    "p_now": 1001.0,
+                    "predicted_p_24h": 1004.7,
+                    "predicted_delta_24h": 3.7,
+                    "delta_3h": 0.0,
+                    "verified": True,
+                    "hit": False,
+                    "pressure_error": -3.7,
+                }
+            ],
+        }
+    )
+    ledger = ForecastLedger(None, "entry", store=store)
+    await ledger.async_load()
+    assert ledger.accuracy == 100
+    assert ledger.last_hit == "hit"
+    assert ledger._dirty is True
+
+
+@pytest.mark.asyncio
+async def test_ledger_calibrates_and_resets_pressure_bias():
+    """Test systematic 24h pressure_bias adaptation, persistence, and reset."""
+    store = FakeStore()
+    ledger = ForecastLedger(None, "entry", store=store)
+    now = datetime.datetime(2026, 9, 21, 12, 0, tzinfo=datetime.UTC)
+
+    for idx in range(CALIBRATION_MIN_SAMPLES):
+        t = now + datetime.timedelta(days=idx * 2)
+        await ledger.async_record(_forecast(issued_pressure=1010.0, predicted_24h=1006.0), t)
+        await ledger.async_verify(1012.0, None, t + datetime.timedelta(hours=25))
+
+    assert ledger.pressure_bias == pytest.approx(PRESSURE_BIAS_STEP)
+
+    reloaded = ForecastLedger(None, "entry", store=FakeStore(store.saved))
+    await reloaded.async_load()
+    assert reloaded.pressure_bias == pytest.approx(PRESSURE_BIAS_STEP)
+
+    await reloaded.async_reset()
+    assert reloaded.pressure_bias == pytest.approx(0.0)

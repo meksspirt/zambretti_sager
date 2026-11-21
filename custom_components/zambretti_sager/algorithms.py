@@ -498,7 +498,7 @@ def linear_pressure_trend(
     now: datetime.datetime,
     hours: int = 6,
 ) -> tuple[float | None, float | None]:
-    """Fit a least-squares line to recent pressure samples.
+    """Fit a recency-weighted least-squares line to recent pressure samples.
 
     Args:
         entries: Chronologically sorted (timestamp, pressure) pairs.
@@ -510,7 +510,7 @@ def linear_pressure_trend(
         three points or less than one hour of data is available.
     """
     cutoff = now - datetime.timedelta(hours=hours)
-    points = [(t, p) for t, p in entries if t >= cutoff]
+    points = [(t, p) for t, p in entries if cutoff <= t <= now]
     if len(points) < 3:
         return None, None
 
@@ -521,21 +521,26 @@ def linear_pressure_trend(
 
     xs = [(t - first_ts).total_seconds() / 3600.0 for t, _ in points]
     ys = [p for _, p in points]
-    n = len(points)
-    sum_x = sum(xs)
-    sum_y = sum(ys)
-    sum_xx = sum(x * x for x in xs)
-    sum_xy = sum(x * y for x, y in zip(xs, ys, strict=True))
-    denominator = n * sum_xx - sum_x * sum_x
+    # Recency-weighted least squares emphasizes recent readings so inflections
+    # are captured quickly without amplifying single-sample noise.
+    weights = [1.0 + 1.5 * ((x / span_hours) ** 2) for x in xs]
+    sum_w = sum(weights)
+    sum_x = sum(w * x for w, x in zip(weights, xs, strict=True))
+    sum_y = sum(w * y for w, y in zip(weights, ys, strict=True))
+    sum_xx = sum(w * x * x for w, x in zip(weights, xs, strict=True))
+    sum_xy = sum(w * x * y for w, x, y in zip(weights, xs, ys, strict=True))
+    denominator = sum_w * sum_xx - sum_x * sum_x
     if denominator == 0:
         return None, None
 
-    slope = (n * sum_xy - sum_x * sum_y) / denominator
-    intercept = (sum_y - slope * sum_x) / n
+    slope = (sum_w * sum_xy - sum_x * sum_y) / denominator
+    intercept = (sum_y - slope * sum_x) / sum_w
 
-    mean_y = sum_y / n
-    ss_tot = sum((y - mean_y) ** 2 for y in ys)
-    ss_res = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys, strict=True))
+    mean_y = sum_y / sum_w
+    ss_tot = sum(w * (y - mean_y) ** 2 for w, y in zip(weights, ys, strict=True))
+    ss_res = sum(
+        w * (y - (slope * x + intercept)) ** 2 for w, x, y in zip(weights, xs, ys, strict=True)
+    )
     r_squared = 1.0 if ss_tot <= 1e-9 else max(0.0, min(1.0, 1.0 - ss_res / ss_tot))
 
     return round(slope * 3.0, 3), round(r_squared, 2)
@@ -905,21 +910,42 @@ def calculate_extrapolations(
     damping: float = DAMPING_EXPONENT,
     seasonal_factor: float = 1.0,
     wind_factor: float = 1.0,
+    p_24h: float | None = None,
+    trend_r2: float | None = None,
+    pressure_bias: float = 0.0,
 ) -> dict[int, ExtrapolatedForecast]:
     """Calculate extrapolated pressure and Zambretti states for 6h, 12h, and 24h horizons.
 
-    Applies non-linear synoptic damping (alpha ≈ 0.65 by default) to prevent
-    unrealistically extreme pressure deviations on longer horizons, and clamps
-    to physical bounds. When a least-squares ``trend_rate_3h`` (hPa/3h) is
-    supplied, it replaces the noisy two-point rates for all horizons. The
-    damping exponent may be adapted by the forecast verification ledger.
+    Applies non-linear synoptic damping (alpha ≈ 0.65 by default), R² confidence
+    scaling, wave exhaustion in deep anomalies, synoptic restoring pull toward
+    1013.25 hPa, and optional calibrated ``pressure_bias``.
     """
     alpha = min(1.0, max(0.3, damping))
 
     if trend_rate_3h is not None:
         rate_3h = trend_rate_3h
-        rate_12_3h = trend_rate_3h
-        rate_24_3h = trend_rate_3h
+        if trend_r2 is not None or p_6h is not None or p_12h is not None or p_24h is not None:
+            d3 = p_now - p_3h
+            r2_eff = max(0.0, min(1.0, trend_r2)) if trend_r2 is not None else 0.75
+            if trend_r2 is not None:
+                rate_12_3h = (0.75 * trend_rate_3h + 0.25 * d3) * (0.45 + 0.55 * r2_eff)
+                rate_24_3h = (0.65 * trend_rate_3h + 0.35 * d3) * (0.35 + 0.65 * r2_eff)
+            else:
+                rate_12_3h = trend_rate_3h
+                rate_24_3h = trend_rate_3h
+
+            anomaly = p_now - 1013.25
+            if anomaly * rate_24_3h > 0 and abs(anomaly) > 10.0:
+                rate_24_3h *= max(0.1, 1.0 - (abs(anomaly) - 10.0) / 10.0)
+                rate_12_3h *= max(0.3, 1.0 - (abs(anomaly) - 10.0) / 16.0)
+
+            if p_12h is not None:
+                move_12 = p_now - p_12h
+                if move_12 * rate_24_3h > 0 and abs(move_12) > 4.0:
+                    rate_24_3h /= 1.0 + (abs(move_12) - 4.0) / 4.0
+        else:
+            rate_12_3h = trend_rate_3h
+            rate_24_3h = trend_rate_3h
     else:
         rate_3h = p_now - p_3h
 
@@ -938,6 +964,12 @@ def calculate_extrapolations(
             h_24 = 3
         rate_24_3h = (p_now - p_ref_24) / h_24 * 3
 
+    reversion_24 = 0.0
+    if trend_r2 is not None or p_24h is not None:
+        anomaly = p_now - 1013.25
+        if abs(anomaly) > 14.0:
+            reversion_24 = max(-6.0, min(6.0, -anomaly * 0.25 * ((abs(anomaly) - 14.0) / 8.0)))
+
     # 6h extrapolation: (6/3)^alpha
     delta_6h = rate_3h * (2.0**alpha)
     predicted_p_6h = round(_clamp_pressure(p_now + delta_6h), 1)
@@ -955,7 +987,7 @@ def calculate_extrapolations(
     )
 
     # 12h extrapolation: (12/3)^alpha
-    delta_12h = rate_12_3h * (4.0**alpha)
+    delta_12h = rate_12_3h * (4.0**alpha) + 0.5 * reversion_24 + 0.5 * pressure_bias
     predicted_p_12h = round(_clamp_pressure(p_now + delta_12h), 1)
     zambretti_12h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(
@@ -971,7 +1003,7 @@ def calculate_extrapolations(
     )
 
     # 24h extrapolation: (24/3)^alpha
-    delta_24h = rate_24_3h * (8.0**alpha)
+    delta_24h = rate_24_3h * (8.0**alpha) + reversion_24 + pressure_bias
     predicted_p_24h = round(_clamp_pressure(p_now + delta_24h), 1)
     zambretti_24h = ZAMBRETTI_MAPPING.get(
         calculate_zambretti_index(

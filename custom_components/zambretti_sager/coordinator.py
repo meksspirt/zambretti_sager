@@ -384,15 +384,18 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
             calibration_wind_factor=self._ledger.wind_factor,
             calibration_seasonal_factor=self._ledger.seasonal_factor,
             calibration_precip_bias=self._ledger.precip_bias,
+            calibration_pressure_bias=self._ledger.pressure_bias,
             timestamp=now_dt,
         )
 
         forecast_data = ForecastEngine.compute(observations)
 
-        # Track rain across active forecast windows, verify matured forecasts,
-        # then record this snapshot. Do not pass a future forecast state as
-        # actual_state; verification checks observed pressure and rain.
+        # Track rain and intermediate pressures across active forecast windows,
+        # verify matured forecasts, then record this snapshot. Do not pass a
+        # future forecast state as actual_state; verification checks observed
+        # pressure and rain.
         await self._ledger.async_observe_rain(rain, now_dt)
+        await self._ledger.async_observe_pressure(forecast_data.p_now, now_dt)
         await self._ledger.async_verify(
             forecast_data.p_now,
             None,
@@ -413,6 +416,7 @@ class ZambrettiSagerCoordinator(DataUpdateCoordinator[ForecastData]):
         forecast_data.wind_factor = self._ledger.wind_factor
         forecast_data.seasonal_factor = self._ledger.seasonal_factor
         forecast_data.precip_bias = self._ledger.precip_bias
+        forecast_data.pressure_bias = self._ledger.pressure_bias
 
         self._fire_events(forecast_data)
 

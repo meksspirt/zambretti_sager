@@ -305,6 +305,7 @@ SENSOR_DESCRIPTIONS: tuple[ZambrettiSensorEntityDescription, ...] = (
             "wind_factor": d.wind_factor,
             "seasonal_factor": d.seasonal_factor,
             "precip_bias": d.precip_bias,
+            "pressure_bias": d.pressure_bias,
         },
     ),
     # ── Timestamp ───────────────────────────────────────────────────────
